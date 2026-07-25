@@ -26,9 +26,23 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(here, '..');
-const schemaDir = resolve(repoRoot, 'contract/schemas');
-const outputPath = resolve(repoRoot, 'src/generated/contractTypes.ts');
+
+/**
+ * Read paths resolve from this file, never from a parent. The contract is its own
+ * repository and is embedded in a consumer as a submodule, so `schemas/` sits beside
+ * this script in both layouts and only the consumer's root moves.
+ */
+const schemaDir = resolve(here, 'schemas');
+const packagePath = resolve(here, 'package.json');
+
+/**
+ * The write path is the one thing that genuinely belongs to the consumer: the types are
+ * generated into the repository that embeds the contract, not into the contract itself.
+ * Run standalone, `..` is whatever directory happens to contain the checkout, so this is
+ * guarded below rather than trusted.
+ */
+const consumerRoot = resolve(here, '..');
+const outputPath = resolve(consumerRoot, 'src/generated/contractTypes.ts');
 
 /** File name → exported type name. Explicit, so a new schema is a deliberate addition. */
 const TYPE_NAMES = {
@@ -152,7 +166,7 @@ async function build() {
     blocks.push(`${doc}export type ${typeName} = ${renderType(schema, typeName, 0)};`);
   }
 
-  const version = JSON.parse(await readFile(resolve(repoRoot, 'contract/package.json'), 'utf8')).version;
+  const version = JSON.parse(await readFile(packagePath, 'utf8')).version;
 
   return [
     '/**',
@@ -175,7 +189,25 @@ async function build() {
   ].join('\n');
 }
 
+/**
+ * Refuse to run outside a consumer. The contract repository has no `src/generated/`, so a
+ * standalone checkout would otherwise create one in whatever directory contains it — a
+ * write outside the repository, silently, and a `--check` that reports a stale file that
+ * was never meant to exist here.
+ */
+async function assertEmbeddedInConsumer() {
+  try {
+    await readFile(resolve(consumerRoot, 'package.json'), 'utf8');
+  } catch {
+    console.error('This generator emits types into the repository that embeds the contract.');
+    console.error(`No package.json found at ${consumerRoot}.`);
+    console.error('Run it from that repository, where the contract is checked out as a submodule.');
+    process.exit(1);
+  }
+}
+
 async function main() {
+  await assertEmbeddedInConsumer();
   const generated = await build();
   const checkMode = process.argv.includes('--check');
 
