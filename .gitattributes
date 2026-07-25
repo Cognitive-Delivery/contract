@@ -1,0 +1,20 @@
+# Line endings are part of the contract.
+#
+# This repository is consumed as a submodule, and a submodule does NOT inherit the
+# parent repository's .gitattributes. Without this file a Windows checkout converts
+# the JavaScript to CRLF while every file in the consuming repository stays LF, and
+# importing the conformance runner or the lock generator fails there and only there.
+#
+# It matters beyond the submodule case too: the schemas and fixtures are hashed into
+# schemas.lock.json and compared byte for byte. A checkout that rewrites line endings
+# changes those bytes, so a conformance run could disagree with itself across platforms.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
