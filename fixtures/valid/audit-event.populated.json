@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "event_id": "e1",
+  "event_type": "task.status_updated",
+  "session_id": "s1",
+  "request_id": "r1",
+  "spec_slug": "demo",
+  "task_id": "1.1",
+  "phase": "InProgress",
+  "actor": {
+    "kind": "agent",
+    "runtime": "claude-code",
+    "model_vendor": "anthropic",
+    "model_family": "claude",
+    "model_version": "5"
+  },
+  "summary": "Marked 1.1 complete.",
+  "reasoning": "Task finished.",
+  "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "outcome": "success",
+  "details": {
+    "task_id": "1.1",
+    "count": 3,
+    "verified": true
+  }
+}

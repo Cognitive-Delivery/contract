@@ -1,0 +1,1 @@
+sealed is a string rather than a list. Sealing is part of the contract, and a reader that mis-parses it could let a downstream layer relax a control the organisation fixed.

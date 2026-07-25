@@ -1,0 +1,6 @@
+{
+  "adoption_tier": 2,
+  "break_glass": {
+    "mode": "always-on"
+  }
+}

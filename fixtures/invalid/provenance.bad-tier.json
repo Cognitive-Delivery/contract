@@ -1,0 +1,19 @@
+{
+  "artefact_path": "a.md",
+  "cdf": {
+    "schema_version": "1.0",
+    "spec": "s",
+    "phase": "Draft",
+    "author": "a",
+    "runtime_agent": "x",
+    "model_vendor": "v",
+    "model_family": "f",
+    "adoption_tier": 7,
+    "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "steering_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "timestamp": "2026-07-25T10:00:00.000Z",
+    "reviewer": null,
+    "review_id": null,
+    "policy_version": "p"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/config-core.schema.json",
+  "title": "CDF config, shared core",
+  "description": "The part of .cdf/config.yaml that every Cognitive Delivery implementation must understand identically. Product-specific sections are deliberately NOT here: a product carries its own alongside these, which is why additionalProperties is true at the root.",
+  "type": "object",
+  "properties": {
+    "adoption_tier": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "description": "How much governance this workspace has adopted. Read by the Index, so it must mean the same thing everywhere."
+    },
+    "governance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "refresh_mode": {
+          "type": "string",
+          "enum": [
+            "on-open",
+            "manual",
+            "scheduled"
+          ]
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "review_policy": {
+      "type": "object",
+      "description": "Who must review, and whether the author may. Security-relevant: an implementation that ignored reviewer_cannot_be_implementer would let work approve itself.",
+      "properties": {
+        "cross_model_review_required": {
+          "type": "boolean"
+        },
+        "reviewer_cannot_be_implementer": {
+          "type": "boolean"
+        },
+        "required_reviewers": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "cdi": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "aggregation_endpoint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Null means local only. Null is the default and is a value, not an omission."
+        }
+      },
+      "additionalProperties": true
+    },
+    "break_glass": {
+      "type": "object",
+      "description": "The exceptional override. Security-relevant: an implementation that widened this beyond one spec and one non-final gate would break the policy the framework states.",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "self-service-logged",
+            "two-person",
+            "disabled"
+          ]
+        },
+        "timeout_minutes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "sealed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Dotted paths of fields an upper layer has fixed. SEALING IS PART OF THE CONTRACT, and any implementation that ignores it fails conformance. A sealed field may not be relaxed by a downstream layer: a lower layer may match the sealed value or make it stricter, never looser. Ignoring this would let a workspace quietly undo a control its organisation set."
+    }
+  },
+  "additionalProperties": true
+}

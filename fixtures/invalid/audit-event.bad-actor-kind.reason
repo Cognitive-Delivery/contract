@@ -1,0 +1,1 @@
+actor.kind is 'robot'. The kinds are human, agent and system; the privacy model depends on recording a kind rather than an identity, so the set is closed.

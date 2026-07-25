@@ -1,0 +1,661 @@
+{
+  "note": "Generated. The additive-only rule for 1.x is enforced against this file by test/unit/contractCompatibility.test.ts.",
+  "schemaSetVersion": "1.0.0",
+  "major": "1",
+  "schemas": {
+    "audit-event.schema.json": {
+      "actor": {
+        "required": false,
+        "type": "object"
+      },
+      "actor.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "human",
+          "system"
+        ]
+      },
+      "actor.model_family": {
+        "required": false,
+        "type": "string"
+      },
+      "actor.model_vendor": {
+        "required": false,
+        "type": "string"
+      },
+      "actor.model_version": {
+        "required": false,
+        "type": "string"
+      },
+      "actor.runtime": {
+        "required": false,
+        "type": "string"
+      },
+      "details": {
+        "required": false,
+        "type": "object"
+      },
+      "event_id": {
+        "required": false,
+        "type": "string"
+      },
+      "event_type": {
+        "required": true,
+        "type": "string"
+      },
+      "outcome": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "failure",
+          "partial",
+          "success"
+        ]
+      },
+      "phase": {
+        "required": false,
+        "type": "string"
+      },
+      "reasoning": {
+        "required": false,
+        "type": "string"
+      },
+      "request_hash": {
+        "required": false,
+        "type": "string"
+      },
+      "request_id": {
+        "required": false,
+        "type": "string"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string"
+      },
+      "session_id": {
+        "required": false,
+        "type": "string"
+      },
+      "spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "summary": {
+        "required": false,
+        "type": "string"
+      },
+      "task_id": {
+        "required": false,
+        "type": "string"
+      },
+      "timestamp": {
+        "required": true,
+        "type": "string"
+      }
+    },
+    "cdi-assessment.schema.json": {
+      "#dimensionId": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "capability-calibration",
+          "constraint-fidelity",
+          "provenance-integrity",
+          "review-substance",
+          "scope-definition",
+          "supervisory-clarity"
+        ]
+      },
+      "assessment_id": {
+        "required": true,
+        "type": "string"
+      },
+      "assessor": {
+        "required": true,
+        "type": "string"
+      },
+      "created_at": {
+        "required": true,
+        "type": "string"
+      },
+      "dimensions": {
+        "required": true,
+        "type": "array"
+      },
+      "dimensions[]": {
+        "required": false,
+        "type": "object"
+      },
+      "dimensions[].evidence": {
+        "required": true,
+        "type": "string"
+      },
+      "dimensions[].id": {
+        "required": true,
+        "ref": "#/definitions/dimensionId"
+      },
+      "dimensions[].level_label": {
+        "required": true,
+        "type": "string"
+      },
+      "dimensions[].name": {
+        "required": true,
+        "type": "string"
+      },
+      "dimensions[].score": {
+        "required": true,
+        "type": "number"
+      },
+      "next_assessment_due": {
+        "required": true,
+        "type": "string"
+      },
+      "ninety_day_priority": {
+        "required": true,
+        "type": "object"
+      },
+      "ninety_day_priority.action": {
+        "required": true,
+        "type": "string"
+      },
+      "ninety_day_priority.dimension": {
+        "required": true,
+        "ref": "#/definitions/dimensionId"
+      },
+      "ninety_day_priority.review_date": {
+        "required": true,
+        "type": "string"
+      },
+      "ninety_day_priority.success_measure": {
+        "required": true,
+        "type": "string"
+      },
+      "participants": {
+        "required": true,
+        "type": "array"
+      },
+      "participants[]": {
+        "required": false,
+        "type": "string"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string"
+      },
+      "source": {
+        "required": true,
+        "type": "object"
+      },
+      "source.instrument": {
+        "required": true,
+        "type": "string"
+      },
+      "source.version": {
+        "required": true,
+        "type": "string"
+      },
+      "summary": {
+        "required": true,
+        "type": "object"
+      },
+      "summary.average_score": {
+        "required": true,
+        "type": "number"
+      },
+      "summary.lowest_dimensions": {
+        "required": true,
+        "type": "array"
+      },
+      "summary.lowest_dimensions[]": {
+        "required": false,
+        "ref": "#/definitions/dimensionId"
+      },
+      "summary.lowest_score": {
+        "required": true,
+        "type": "number"
+      },
+      "summary.profile": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "audit-ready",
+          "brittle",
+          "emerging",
+          "flat",
+          "split"
+        ]
+      }
+    },
+    "cdi-signal.schema.json": {
+      "adoption_tier": {
+        "required": true,
+        "type": "integer",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "details": {
+        "required": false,
+        "type": "object"
+      },
+      "event_type": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "adoption_tier.changed",
+          "agent.trajectory_analyzed",
+          "approval.calibrated",
+          "architecture.currency_assessed",
+          "architecture.currency_snapshot_saved",
+          "architecture.insight_discussed",
+          "artefact.lint_completed",
+          "artefact.recorded",
+          "artefact.structure_invalid",
+          "artefact.written",
+          "break_glass.reverted",
+          "break_glass.used",
+          "cdi.assessment_recorded",
+          "chat.turn_completed",
+          "chat.turn_started",
+          "config.drift_detected",
+          "decision.evidence_checked",
+          "decision.record_created",
+          "decision.record_linked",
+          "delivery.metrics_computed",
+          "deploy.assurance_report_generated",
+          "deploy.assurance_signoff_recorded",
+          "deploy.strategy_discussed",
+          "diagram.generated",
+          "disclosure.evaluated",
+          "execution.plan_created",
+          "execution.task_claimed",
+          "fg.comparison.created",
+          "fg.comparison.synthesis_created",
+          "fg.dispatch.cancelled",
+          "fg.dispatch.completed",
+          "fg.dispatch.confirmed",
+          "fg.dispatch.expired",
+          "fg.dispatch.failed",
+          "fg.dispatch.previewed",
+          "fg.dispatch.started",
+          "fg.integration.confirmation_required",
+          "fg.integration.evidence_checked",
+          "fg.integration.previewed",
+          "fg.integration.result_recorded",
+          "fg.orchestration.cancelled",
+          "fg.orchestration.completed",
+          "fg.orchestration.degraded",
+          "fg.orchestration.planned",
+          "fg.orchestration.started",
+          "fg.orchestration.worker_updated",
+          "fg.proposal.accepted",
+          "fg.proposal.archived",
+          "fg.proposal.converted",
+          "fg.proposal.created",
+          "fg.proposal.rejected",
+          "fg.proposal.superseded",
+          "fleet.enforcement_exported",
+          "governance.attestation_generated",
+          "governance.compliance_exported",
+          "governance.guardrail_promoted",
+          "governance.ledger_sealed",
+          "governance.ledger_verified",
+          "governance.seal_applied",
+          "governance.source_unreachable",
+          "governance.synced",
+          "hook.executed",
+          "hook.failed",
+          "integration.action_failed",
+          "integration.action_requested",
+          "integration.action_succeeded",
+          "integration.gate_evidence_checked",
+          "integration.health_checked",
+          "integration.previewed",
+          "knowledge.graph_built",
+          "knowledge.graph_queried",
+          "memory.approved",
+          "memory.captured",
+          "memory.lesson_recorded",
+          "memory.rejected",
+          "migration.fg_enabled_to_mode",
+          "migration.kiro_applied",
+          "migration.kiro_failed",
+          "migration.kiro_planned",
+          "mode.switch_refused",
+          "mode.switched",
+          "nondev.prd_translated",
+          "phase.advanced",
+          "phase.gate_failed",
+          "phase.reverted",
+          "plane.auth_failed",
+          "plane.connected",
+          "plane.disconnected",
+          "plane.evidence_drop",
+          "plane.evidence_drop_batch",
+          "plane.evidence_replicated",
+          "plane.policy_malformed",
+          "plane.policy_overrode_local",
+          "plane.seat_revoked",
+          "plane.unreachable",
+          "polyglot.scanned",
+          "provenance.drift_detected",
+          "review.recorded",
+          "safety.budget_exceeded",
+          "safety.scan_completed",
+          "session.ended",
+          "session.started",
+          "setup.abandoned",
+          "setup.completed",
+          "spec.archived",
+          "spec.created",
+          "spec.deleted",
+          "task.status_updated",
+          "tool.call_refused",
+          "ux.surface_consolidation_applied",
+          "work.code_map_generated",
+          "work.handoff_generated",
+          "work.impact_computed",
+          "work.intake_classified",
+          "work.journal_generated",
+          "work.journal_note_written",
+          "work.journal_read",
+          "work.session_resumed",
+          "work.tool_invoked",
+          "work.verification_run",
+          "work.worktree_lifecycle",
+          "workspace.initialised",
+          "workspace.onboarding_agent_briefed",
+          "workspace.onboarding_import_applied",
+          "workspace.onboarding_preview_generated",
+          "workspace.onboarding_route_selected",
+          "workspace.onboarding_skipped"
+        ]
+      },
+      "model_family": {
+        "required": false,
+        "type": "string"
+      },
+      "model_vendor": {
+        "required": false,
+        "type": "string"
+      },
+      "model_version": {
+        "required": false,
+        "type": "string"
+      },
+      "outcome": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "failure",
+          "partial",
+          "success"
+        ]
+      },
+      "phase": {
+        "required": false,
+        "type": "string"
+      },
+      "prompt_hash": {
+        "required": false,
+        "type": "string"
+      },
+      "runtime_agent": {
+        "required": false,
+        "type": "string"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string"
+      },
+      "spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "timestamp": {
+        "required": true,
+        "type": "string"
+      },
+      "workspace_id": {
+        "required": true,
+        "type": "string"
+      }
+    },
+    "config-core.schema.json": {
+      "adoption_tier": {
+        "required": false,
+        "type": "integer",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "break_glass": {
+        "required": false,
+        "type": "object"
+      },
+      "break_glass.mode": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "disabled",
+          "self-service-logged",
+          "two-person"
+        ]
+      },
+      "break_glass.timeout_minutes": {
+        "required": false,
+        "type": "integer"
+      },
+      "cdi": {
+        "required": false,
+        "type": "object"
+      },
+      "cdi.aggregation_endpoint": {
+        "required": false,
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "cdi.enabled": {
+        "required": false,
+        "type": "boolean"
+      },
+      "governance": {
+        "required": false,
+        "type": "object"
+      },
+      "governance.profile": {
+        "required": false,
+        "type": "string"
+      },
+      "governance.refresh_mode": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "manual",
+          "on-open",
+          "scheduled"
+        ]
+      },
+      "governance.source": {
+        "required": false,
+        "type": "string"
+      },
+      "provenance": {
+        "required": false,
+        "type": "object"
+      },
+      "provenance.required_fields": {
+        "required": false,
+        "type": "array"
+      },
+      "provenance.required_fields[]": {
+        "required": false,
+        "type": "string"
+      },
+      "review_policy": {
+        "required": false,
+        "type": "object"
+      },
+      "review_policy.cross_model_review_required": {
+        "required": false,
+        "type": "boolean"
+      },
+      "review_policy.required_reviewers": {
+        "required": false,
+        "type": "integer"
+      },
+      "review_policy.reviewer_cannot_be_implementer": {
+        "required": false,
+        "type": "boolean"
+      },
+      "sealed": {
+        "required": false,
+        "type": "array"
+      },
+      "sealed[]": {
+        "required": false,
+        "type": "string"
+      }
+    },
+    "provenance.schema.json": {
+      "#frontMatter": {
+        "required": false,
+        "type": "object"
+      },
+      "#frontMatter.cdf": {
+        "required": true,
+        "ref": "#/definitions/record"
+      },
+      "#journalEntry": {
+        "required": false,
+        "type": "object"
+      },
+      "#journalEntry.artefact_path": {
+        "required": true,
+        "type": "string"
+      },
+      "#journalEntry.cdf": {
+        "required": true,
+        "ref": "#/definitions/record"
+      },
+      "#record": {
+        "required": false,
+        "type": "object"
+      },
+      "#record.adoption_tier": {
+        "required": true,
+        "type": "integer",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "#record.author": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.coding_assistant": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.content_hash": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.implemented_symbols": {
+        "required": false,
+        "type": "array"
+      },
+      "#record.implemented_symbols[]": {
+        "required": false,
+        "type": "object"
+      },
+      "#record.implemented_symbols[].line": {
+        "required": false,
+        "type": "integer"
+      },
+      "#record.implemented_symbols[].path": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.implemented_symbols[].requirementId": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.implemented_symbols[].symbolName": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.model_family": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.model_vendor": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.model_version": {
+        "required": false,
+        "type": "string"
+      },
+      "#record.phase": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.policy_version": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.prompt_hash": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.review_id": {
+        "required": true,
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "#record.reviewer": {
+        "required": true,
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "#record.runtime_agent": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.schema_version": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.spec": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.steering_hash": {
+        "required": true,
+        "type": "string"
+      },
+      "#record.timestamp": {
+        "required": true,
+        "type": "string"
+      }
+    }
+  }
+}

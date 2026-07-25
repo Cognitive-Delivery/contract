@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "workspace_id": "w",
+  "event_type": "workspace.initialised",
+  "adoption_tier": 2,
+  "outcome": "declined"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/audit-event.schema.json",
+  "title": "CDF governance audit event",
+  "description": "One line of the append-only governance journal. Rotated files carry the same shape. Deliberately holds a request hash rather than the request, and a sanitised summary rather than content: this file is retained indefinitely, so anything that reaches it is effectively permanent. CORRECTED against real artefacts: event_id and session_id are NOT required. A writer active between 2026-05-12 and 2026-05-15 emitted 61 codex.health.audit_probe records without them. The journal is append-only and retained indefinitely, so those records are permanent and a conformant reader will meet them. Rejecting real evidence would be worse than a slightly weaker schema. The current writer emits both.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "event_type"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 with a timezone."
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional for historical reasons only \u2014 see the schema description. Current writers emit it."
+    },
+    "event_type": {
+      "type": "string",
+      "description": "OPEN, unlike the CDI signal vocabulary. The journal records what happened; a product may record its own kinds of event."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Optional for historical reasons only \u2014 see the schema description. Current writers emit it."
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "spec_slug": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string",
+      "description": "An OPEN string. This field previously carried a closed six-value software lifecycle union, which meant a product with a different lifecycle could not record its own phase in the shared journal without lying. A reader must tolerate an unrecognised value: not throw, not coerce it to a known one, not drop it."
+    },
+    "actor": {
+      "type": "object",
+      "description": "Who or what acted. Records the KIND of actor and the model, never a person's name, email or git identity.",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "human",
+            "agent",
+            "system"
+          ]
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "model_vendor": {
+          "type": "string"
+        },
+        "model_family": {
+          "type": "string"
+        },
+        "model_version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "string"
+    },
+    "reasoning": {
+      "type": "string"
+    },
+    "request_hash": {
+      "type": "string",
+      "description": "SHA-256 of the request. NEVER the request itself."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure",
+        "partial"
+      ]
+    },
+    "details": {
+      "type": "object",
+      "description": "Sanitised before write: keys matching token, secret, password, authorization, prompt, content, file or path are dropped. Do not defeat this by renaming a sensitive field.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true
+}

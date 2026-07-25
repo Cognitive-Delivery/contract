@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/provenance.schema.json",
+  "title": "CDF provenance",
+  "description": "What produced a governed artefact. CORRECTED against real artefacts: the record is never written bare. It is wrapped under a `cdf` key in Markdown front-matter, and wrapped again as {artefact_path, cdf} in .cdf/specs/<slug>/provenance.jsonl. The TypeScript interface describes only the inner record, and nothing in the type system said so. Validate a front-matter block against #/definitions/frontMatter, a journal line against #/definitions/journalEntry, and the inner object against #/definitions/record. anyOf, not oneOf: a journal entry also satisfies the front-matter shape, since that only requires `cdf`. Prefer validating against the precise definition you expect.",
+  "definitions": {
+    "record": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "spec",
+        "phase",
+        "author",
+        "runtime_agent",
+        "model_vendor",
+        "model_family",
+        "adoption_tier",
+        "prompt_hash",
+        "steering_hash",
+        "timestamp",
+        "reviewer",
+        "review_id",
+        "policy_version"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "description": "Contract version this record was written against. Absent is read as 1.0."
+        },
+        "spec": {
+          "type": "string",
+          "description": "Slug of the governed spec this artefact belongs to."
+        },
+        "phase": {
+          "type": "string",
+          "description": "The lifecycle phase this artefact was produced in. An OPEN string, deliberately: the phase vocabulary belongs to the domain, not to the contract. A reader must not assume any fixed set of values."
+        },
+        "author": {
+          "type": "string"
+        },
+        "runtime_agent": {
+          "type": "string",
+          "description": "Which agent produced this. Attribution, not authentication."
+        },
+        "coding_assistant": {
+          "type": "string"
+        },
+        "model_vendor": {
+          "type": "string"
+        },
+        "model_family": {
+          "type": "string"
+        },
+        "model_version": {
+          "type": "string"
+        },
+        "adoption_tier": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "description": "How much governance this workspace has adopted. Closed: the tiers are the framework."
+        },
+        "prompt_hash": {
+          "type": "string",
+          "description": "SHA-256 of the request. NEVER the request itself."
+        },
+        "steering_hash": {
+          "type": "string"
+        },
+        "content_hash": {
+          "type": "string",
+          "description": "SHA-256 of the artefact body only, excluding this front-matter block."
+        },
+        "timestamp": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "ISO 8601 with a timezone."
+        },
+        "reviewer": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Null means not yet reviewed. Null is a value here, not an omission."
+        },
+        "review_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "implemented_symbols": {
+          "type": "array",
+          "description": "Resolved implementing symbols for the spec's declared requirements. Additive and optional: omitted entirely when nothing resolves, never an empty array. Excluded from content_hash, so it can never affect verification.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "requirementId": {
+                "type": "string"
+              },
+              "symbolName": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true,
+      "title": "The provenance record itself"
+    },
+    "frontMatter": {
+      "type": "object",
+      "description": "The front-matter form: the record under a `cdf` key. No artefact_path \u2014 the file is the artefact.",
+      "required": [
+        "cdf"
+      ],
+      "properties": {
+        "cdf": {
+          "$ref": "#/definitions/record"
+        }
+      },
+      "additionalProperties": true
+    },
+    "journalEntry": {
+      "type": "object",
+      "description": "One line of provenance.jsonl: the record under `cdf`, plus the path of the artefact it describes.",
+      "required": [
+        "artefact_path",
+        "cdf"
+      ],
+      "properties": {
+        "artefact_path": {
+          "type": "string"
+        },
+        "cdf": {
+          "$ref": "#/definitions/record"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/definitions/journalEntry"
+    },
+    {
+      "$ref": "#/definitions/frontMatter"
+    }
+  ]
+}

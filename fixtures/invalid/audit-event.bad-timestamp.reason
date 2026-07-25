@@ -1,0 +1,1 @@
+Timestamp is not ISO 8601 with a timezone. A local-time or free-text stamp cannot be ordered against records from another machine.

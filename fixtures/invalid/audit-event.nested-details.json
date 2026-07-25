@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "event_type": "spec.created",
+  "details": {
+    "nested": {
+      "a": 1
+    }
+  }
+}

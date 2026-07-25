@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "workspace_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "event_type": "work.tool_invoked",
+  "adoption_tier": 3,
+  "spec_slug": "demo",
+  "phase": "Reconciled",
+  "runtime_agent": "gemini-code-assist",
+  "model_vendor": "google",
+  "model_family": "gemini",
+  "model_version": "3",
+  "prompt_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "outcome": "partial",
+  "details": {
+    "tool": "cdf_write_artefact"
+  }
+}

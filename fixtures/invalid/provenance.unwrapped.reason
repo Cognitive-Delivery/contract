@@ -1,0 +1,1 @@
+A bare provenance record. On disk the record is ALWAYS wrapped: under `cdf` in front-matter, and as {artefact_path, cdf} in provenance.jsonl. An unwrapped record is a shape nothing writes.

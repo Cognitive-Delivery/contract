@@ -1,0 +1,30 @@
+{
+  "artefact_path": "a.md",
+  "cdf": {
+    "schema_version": "1.0",
+    "spec": "s",
+    "phase": "Reconciled",
+    "author": "a",
+    "runtime_agent": "codex-cli",
+    "coding_assistant": "Codex",
+    "model_vendor": "openai",
+    "model_family": "gpt",
+    "model_version": "5",
+    "adoption_tier": 4,
+    "prompt_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "steering_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "timestamp": "2026-07-25T10:00:00.000Z",
+    "reviewer": "Jason",
+    "review_id": "review-1",
+    "policy_version": "org",
+    "implemented_symbols": [
+      {
+        "requirementId": "R1.1",
+        "symbolName": "doThing",
+        "path": "src/x.ts",
+        "line": 12
+      }
+    ]
+  }
+}

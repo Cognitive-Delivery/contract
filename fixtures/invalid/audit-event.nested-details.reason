@@ -1,0 +1,1 @@
+details carries a nested object. Details are flat scalars so that redaction can be applied reliably; a nested structure can hide a secret from the key-name filter.

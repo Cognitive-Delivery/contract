@@ -1,0 +1,1 @@
+An event_type outside the closed vocabulary. The Index is computed from this enum, so an unknown value would silently contribute nothing or something wrong.

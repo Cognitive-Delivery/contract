@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/cdi-signal.schema.json",
+  "title": "CDF CDI signal",
+  "description": "One line of the append-only Cognitive Delivery Index signal log. The Index is computed entirely from these plus the governed artefacts on disk, which is why it is domain-neutral: no code, no language, no build and no test appears anywhere in its inputs. Two products writing these differently is the failure this contract exists to prevent.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "workspace_id",
+    "event_type",
+    "adoption_tier"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 with a timezone."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "SHA-256 of the git remote URL. Not a person identifier and not reversible to one."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "workspace.initialised",
+        "workspace.onboarding_route_selected",
+        "workspace.onboarding_preview_generated",
+        "workspace.onboarding_import_applied",
+        "workspace.onboarding_skipped",
+        "workspace.onboarding_agent_briefed",
+        "work.intake_classified",
+        "spec.created",
+        "artefact.recorded",
+        "artefact.written",
+        "artefact.structure_invalid",
+        "artefact.lint_completed",
+        "task.status_updated",
+        "execution.plan_created",
+        "execution.task_claimed",
+        "decision.evidence_checked",
+        "decision.record_created",
+        "decision.record_linked",
+        "cdi.assessment_recorded",
+        "phase.advanced",
+        "phase.reverted",
+        "phase.gate_failed",
+        "review.recorded",
+        "adoption_tier.changed",
+        "break_glass.used",
+        "break_glass.reverted",
+        "mode.switched",
+        "mode.switch_refused",
+        "tool.call_refused",
+        "ux.surface_consolidation_applied",
+        "setup.completed",
+        "setup.abandoned",
+        "plane.connected",
+        "plane.disconnected",
+        "plane.unreachable",
+        "plane.policy_malformed",
+        "plane.policy_overrode_local",
+        "plane.evidence_replicated",
+        "plane.evidence_drop",
+        "plane.evidence_drop_batch",
+        "plane.auth_failed",
+        "plane.seat_revoked",
+        "governance.synced",
+        "governance.seal_applied",
+        "governance.source_unreachable",
+        "provenance.drift_detected",
+        "hook.executed",
+        "hook.failed",
+        "migration.kiro_planned",
+        "migration.kiro_applied",
+        "migration.kiro_failed",
+        "migration.fg_enabled_to_mode",
+        "integration.previewed",
+        "integration.action_requested",
+        "integration.action_succeeded",
+        "integration.action_failed",
+        "integration.health_checked",
+        "integration.gate_evidence_checked",
+        "fg.dispatch.previewed",
+        "fg.dispatch.confirmed",
+        "fg.dispatch.started",
+        "fg.dispatch.completed",
+        "fg.dispatch.failed",
+        "fg.dispatch.cancelled",
+        "fg.dispatch.expired",
+        "fg.proposal.created",
+        "fg.proposal.accepted",
+        "fg.proposal.rejected",
+        "fg.proposal.archived",
+        "fg.proposal.superseded",
+        "fg.proposal.converted",
+        "fg.comparison.created",
+        "fg.comparison.synthesis_created",
+        "fg.integration.previewed",
+        "fg.integration.confirmation_required",
+        "fg.integration.result_recorded",
+        "fg.integration.evidence_checked",
+        "fg.orchestration.planned",
+        "fg.orchestration.started",
+        "fg.orchestration.worker_updated",
+        "fg.orchestration.completed",
+        "fg.orchestration.cancelled",
+        "fg.orchestration.degraded",
+        "session.started",
+        "session.ended",
+        "config.drift_detected",
+        "spec.archived",
+        "spec.deleted",
+        "work.tool_invoked",
+        "work.worktree_lifecycle",
+        "chat.turn_started",
+        "chat.turn_completed",
+        "work.code_map_generated",
+        "work.verification_run",
+        "work.handoff_generated",
+        "work.session_resumed",
+        "work.impact_computed",
+        "governance.ledger_sealed",
+        "governance.ledger_verified",
+        "governance.compliance_exported",
+        "work.journal_generated",
+        "work.journal_note_written",
+        "work.journal_read",
+        "governance.attestation_generated",
+        "knowledge.graph_built",
+        "knowledge.graph_queried",
+        "governance.guardrail_promoted",
+        "memory.captured",
+        "memory.approved",
+        "memory.lesson_recorded",
+        "memory.rejected",
+        "delivery.metrics_computed",
+        "agent.trajectory_analyzed",
+        "approval.calibrated",
+        "nondev.prd_translated",
+        "disclosure.evaluated",
+        "diagram.generated",
+        "fleet.enforcement_exported",
+        "safety.scan_completed",
+        "safety.budget_exceeded",
+        "polyglot.scanned",
+        "architecture.currency_assessed",
+        "architecture.currency_snapshot_saved",
+        "architecture.insight_discussed",
+        "deploy.strategy_discussed",
+        "deploy.assurance_report_generated",
+        "deploy.assurance_signoff_recorded"
+      ],
+      "description": "CLOSED, unlike the audit journal's event_type. The Index is computed from this vocabulary, so a second product adding a value is a contract change and should be one. Governed by ADR-013."
+    },
+    "adoption_tier": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "spec_slug": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string",
+      "description": "An OPEN string, for the same reason as on the audit event. A reader must tolerate an unrecognised value: not throw, not coerce, not drop."
+    },
+    "runtime_agent": {
+      "type": "string"
+    },
+    "model_vendor": {
+      "type": "string"
+    },
+    "model_family": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "description": "SHA-256. NEVER the prompt itself."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure",
+        "partial"
+      ]
+    },
+    "details": {
+      "type": "object",
+      "description": "Must never contain secrets, personal data or file contents.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
+    }
+  },
+  "additionalProperties": true
+}

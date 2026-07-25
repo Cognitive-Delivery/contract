@@ -1,0 +1,33 @@
+{
+  "adoption_tier": 3,
+  "governance": {
+    "source": "org",
+    "refresh_mode": "on-open",
+    "profile": "strict"
+  },
+  "review_policy": {
+    "cross_model_review_required": true,
+    "reviewer_cannot_be_implementer": true,
+    "required_reviewers": 1
+  },
+  "provenance": {
+    "required_fields": [
+      "author",
+      "timestamp"
+    ]
+  },
+  "cdi": {
+    "enabled": true,
+    "aggregation_endpoint": null
+  },
+  "break_glass": {
+    "mode": "two-person",
+    "timeout_minutes": 30
+  },
+  "sealed": [
+    "review_policy.reviewer_cannot_be_implementer"
+  ],
+  "some_other_product_section": {
+    "anything": true
+  }
+}

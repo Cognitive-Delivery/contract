@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "assessment_id": "a",
+  "created_at": "2026-07-25T10:00:00.000Z",
+  "assessor": "j",
+  "participants": [],
+  "dimensions": [
+    {
+      "id": "scope-definition",
+      "name": "n",
+      "score": 9,
+      "level_label": "l",
+      "evidence": "e"
+    }
+  ],
+  "summary": {
+    "average_score": 9,
+    "lowest_score": 9,
+    "lowest_dimensions": [
+      "scope-definition"
+    ],
+    "profile": "flat"
+  },
+  "ninety_day_priority": {
+    "dimension": "scope-definition",
+    "action": "a",
+    "success_measure": "m",
+    "review_date": "2026-10-01"
+  },
+  "next_assessment_due": "2026-10-01T00:00:00.000Z",
+  "source": {
+    "instrument": "Cognitive Delivery Index",
+    "version": "1.0"
+  }
+}
