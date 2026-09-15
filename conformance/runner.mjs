@@ -26,7 +26,15 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = resolve(here, '..', 'fixtures');
 
 /** Fixture file prefix → the shape it exercises. */
-export const SHAPES = ['provenance', 'audit-event', 'cdi-signal', 'cdi-assessment', 'config-core'];
+export const SHAPES = [
+  'provenance',
+  'audit-event',
+  'cdi-signal',
+  'cdi-assessment',
+  'config-core',
+  'agent-lease-manifest',
+  'agent-lease',
+];
 
 function shapeOf(file) {
   return SHAPES.find((shape) => basename(file).startsWith(`${shape}.`)) ?? null;

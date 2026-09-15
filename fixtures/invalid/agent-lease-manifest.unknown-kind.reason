@@ -1,0 +1,1 @@
+`agent.kind` is `daemon`. The kinds are native, delegated-cli, plugin and external, and they are closed because each one is a different way the harness contains the agent; an unrecognised kind cannot be contained.

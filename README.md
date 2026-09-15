@@ -26,6 +26,8 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `cdi-signal` | One line of the Index signal log |
 | `cdi-assessment` | A recorded human assessment against the six dimensions |
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
+| `agent-lease-manifest` | What an agent declares it needs before the harness lets it run |
+| `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
 
 ## What is deliberately not in it
 
@@ -87,7 +89,7 @@ anything that reaches it is effectively permanent.
 ## Layout
 
 ```
-schemas/          the five JSON Schemas
+schemas/          the JSON Schemas, one file per shape, each self-contained
 fixtures/valid/   minimal and fully populated, per shape
 fixtures/invalid/ each beside a .reason file saying why it must be rejected
 conformance/      the reference runner; takes an adapter, imports no product

@@ -1,0 +1,1 @@
+`allow.write_paths` contains `../x`. Paths are workspace-relative and may not escape the workspace: the schema rejects a leading `..` segment, an absolute path and any `/..` segment, and the registry re-checks every resolved path against the workspace root.

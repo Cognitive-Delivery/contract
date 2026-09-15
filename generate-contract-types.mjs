@@ -12,7 +12,7 @@
  * Output is deterministic — stable key order, no timestamps, no random data. The header
  * carries a `(generated — do not edit)` marker.
  *
- * Deliberately narrow: it handles only the JSON Schema subset these five schemas use.
+ * Deliberately narrow: it handles only the JSON Schema subset these schemas use.
  * A general JSON-Schema-to-TypeScript compiler would be a dependency and a maintenance
  * surface, and the contract package is dependency-free on purpose. If a schema starts
  * using a construct this does not understand, it throws rather than emitting something
@@ -51,6 +51,8 @@ const TYPE_NAMES = {
   'cdi-signal.schema.json': 'ContractCdiSignal',
   'cdi-assessment.schema.json': 'ContractCdiAssessment',
   'config-core.schema.json': 'ContractConfigCore',
+  'agent-lease-manifest.schema.json': 'AgentLeaseManifest',
+  'agent-lease.schema.json': 'AgentLease',
 };
 
 function pascal(name) {

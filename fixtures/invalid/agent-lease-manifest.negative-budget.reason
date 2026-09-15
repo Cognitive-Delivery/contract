@@ -1,0 +1,1 @@
+`budget.steps` is -1 and `budget.cost_usd` is -0.5. A budget is a ceiling and every ceiling is non-negative; a negative value would read as unlimited to a careless clamp, which is the opposite of what a budget is for.

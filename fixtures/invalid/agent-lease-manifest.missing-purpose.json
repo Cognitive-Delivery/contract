@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "agent": {
+    "name": "reviewer",
+    "kind": "native",
+    "runtime_agent": "unknown"
+  },
+  "intent": {},
+  "allow": {
+    "tools": [],
+    "read_paths": [],
+    "write_paths": [],
+    "hosts": [],
+    "commands": []
+  },
+  "deny": {
+    "commands": [],
+    "paths": [],
+    "hosts": []
+  },
+  "budget": {},
+  "approvals": []
+}

@@ -1,0 +1,1 @@
+No `expires_at`. A lease without an expiry never stops opening things, and a lease that never stops is a permanent credential; every lease is bounded in time.

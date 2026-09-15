@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "lease_id": "3e7a9c5d-1b2f-4a8e-9c6d-5b4a3f2e1d0c",
+  "manifest": {
+    "schema_version": "1.0",
+    "agent": {
+      "name": "implementer worker 2",
+      "kind": "delegated-cli",
+      "runtime_agent": "claude-code",
+      "provider": "anthropic",
+      "model": {
+        "vendor": "anthropic",
+        "family": "claude",
+        "version": "5"
+      },
+      "harness_version": "2.67.0"
+    },
+    "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+    "intent": {
+      "spec_slug": "demo",
+      "task_id": "1.1",
+      "purpose": "Implement task 1.1 of demo within its file scope."
+    },
+    "allow": {
+      "tools": [
+        "cdf_write_artefact",
+        "cdf_update_task_status",
+        "cdf_record_provenance"
+      ],
+      "read_paths": [
+        "**"
+      ],
+      "write_paths": [
+        "src/demo/**",
+        "test/unit/demo*.test.ts"
+      ],
+      "hosts": [],
+      "commands": [
+        "claude"
+      ]
+    },
+    "deny": {
+      "commands": [
+        "sudo",
+        "su",
+        "docker",
+        "ssh",
+        "curl",
+        "wget",
+        "launchctl",
+        "systemctl"
+      ],
+      "paths": [
+        ".cdf/audit/**",
+        ".cdf/runtime/**",
+        ".env"
+      ],
+      "hosts": [
+        "*.internal.example"
+      ]
+    },
+    "budget": {
+      "steps": 200,
+      "wall_clock_ms": 900000,
+      "tokens": 250000,
+      "cost_usd": 3,
+      "depth": 1,
+      "fan_out": 0
+    },
+    "approvals": [
+      "external.write",
+      "phase.advance"
+    ],
+    "attestation": {
+      "issuer": "bridge",
+      "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+      "key_fingerprint": "sha256:3b1f0e"
+    }
+  },
+  "declared_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+  "issued_at": "2026-09-15T10:00:00.000Z",
+  "expires_at": "2026-09-15T10:15:00.000Z",
+  "issuer_session_id": "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a",
+  "key_fingerprint": "sha256:3b1f0e",
+  "signature": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+}

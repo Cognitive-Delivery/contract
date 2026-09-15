@@ -1,0 +1,1 @@
+`signature` is not 64 lower-case hex characters. The signature is HMAC-SHA256 over the canonical bytes of the lease, so anything that is not a 32-byte hex digest was never produced by the kernel and must not be verified against.

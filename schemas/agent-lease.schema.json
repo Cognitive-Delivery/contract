@@ -1,0 +1,360 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/agent-lease.schema.json",
+  "title": "Agent Lease",
+  "description": "The grant envelope the kernel returns for an accepted Agent Lease Manifest. The lease id is the only key that opens anything: the tool gate, the dispatcher, and later the egress proxy and process supervisor all key off it. `manifest` is the GRANTED manifest after narrowing; `declared_hash` is the SHA-256 of the declared manifest's canonical bytes, so the narrowing diff can be reconstructed from the two. `signature` is HMAC-SHA256, lower-case hex, over the canonical bytes of every field except `signature`; `key_fingerprint` names the key without revealing it. A lease with a parent is a child whose grant is a subset of the parent's; that containment is the registry's rule, not this schema's, because a schema cannot see the parent.",
+  "definitions": {
+    "grantedManifest": {
+      "description": "The GRANTED manifest: the same shape as the Agent Lease Manifest the agent declared, after narrowing. This is a dereferenced copy of agent-lease-manifest.schema.json, inlined because the contract keeps every schema self-contained (a reader compiles each file on its own, with no cross-file references). A test in the consumer asserts the copy is identical to the source.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "agent",
+        "intent",
+        "allow",
+        "deny",
+        "budget",
+        "approvals"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "enum": [
+            "1.0"
+          ],
+          "description": "Contract version this manifest was written against."
+        },
+        "agent": {
+          "type": "object",
+          "description": "Who is asking. `name` is a label for the cockpit; `kind` says how the harness runs it; `runtime_agent` is the existing closed agent vocabulary so a lease keys to the same identity every audit event already carries.",
+          "required": [
+            "name",
+            "kind",
+            "runtime_agent"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Display label: the worker role, the session, the plugin. Not an identity."
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "native",
+                "delegated-cli",
+                "plugin",
+                "external"
+              ],
+              "description": "How the harness runs this agent. native: inside the kernel's own process. delegated-cli: a spawned coding CLI. plugin: loaded into the host. external: presented over a bridge from outside the harness."
+            },
+            "runtime_agent": {
+              "type": "string",
+              "enum": [
+                "codex-cli",
+                "claude-code",
+                "gemini-code-assist",
+                "github-copilot",
+                "unknown"
+              ],
+              "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell."
+            },
+            "provider": {
+              "type": "string",
+              "description": "The organisation or product providing the agent, when it differs from the runtime."
+            },
+            "model": {
+              "type": "object",
+              "description": "The model behind the agent, for attribution. Never a prompt, never a key.",
+              "required": [
+                "vendor",
+                "family"
+              ],
+              "properties": {
+                "vendor": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "family": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            },
+            "harness_version": {
+              "type": "string",
+              "description": "Version of the harness that generated or presented this manifest."
+            }
+          },
+          "additionalProperties": true
+        },
+        "parent_lease_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "description": "The lease this manifest is presented under, when it is a child. A root manifest has none and is narrowed against the workspace policy instead."
+        },
+        "intent": {
+          "type": "object",
+          "description": "Why the agent is running. `purpose` is required and non-empty: a manifest with no stated purpose is refused.",
+          "required": [
+            "purpose"
+          ],
+          "properties": {
+            "spec_slug": {
+              "type": "string",
+              "description": "The governed spec this run serves, when there is one."
+            },
+            "task_id": {
+              "type": "string",
+              "description": "The task within that spec, when there is one."
+            },
+            "purpose": {
+              "type": "string",
+              "minLength": 1,
+              "description": "One sentence of intent. Recorded in the audit journal, so no prompt and no content."
+            }
+          },
+          "additionalProperties": true
+        },
+        "allow": {
+          "type": "object",
+          "description": "What the agent asks to be allowed. Every list is required and may be empty; an empty `tools` list in a GRANTED manifest is a lease that opens nothing, which is why the kernel refuses rather than grants it. Granted lists are always a subset of the parent's.",
+          "required": [
+            "tools",
+            "read_paths",
+            "write_paths",
+            "hosts",
+            "commands"
+          ],
+          "properties": {
+            "tools": {
+              "type": "array",
+              "description": "Governed tool names the agent may call.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "read_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may read. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+              }
+            },
+            "write_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may change. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+              }
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hostnames the agent may reach, with an optional leading wildcard label (`*.example.com`). Enforced by the egress proxy once it keys off the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "commands": {
+              "type": "array",
+              "description": "Executable names the agent may run.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "deny": {
+          "type": "object",
+          "description": "What the agent must not do even if `allow` would otherwise permit it. Granted deny lists are the UNION of the declared and the parent's, so a child can never shed a parent's refusal.",
+          "required": [
+            "commands",
+            "paths",
+            "hosts"
+          ],
+          "properties": {
+            "commands": {
+              "type": "array",
+              "description": "Executable names refused outright, for example sudo, su, docker, ssh, curl, wget, launchctl, systemctl.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+              }
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hostnames refused outright.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "budget": {
+          "type": "object",
+          "description": "Ceilings. Every field is optional and non-negative; an absent field means the parent's remaining budget applies. A child's granted budget is clamped to its parent's remaining, `depth` is decremented per generation and `fan_out` is decremented on the parent as each child is issued.",
+          "properties": {
+            "steps": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tool calls or turns."
+            },
+            "wall_clock_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum lifetime in milliseconds; the lease expires when it is spent."
+            },
+            "tokens": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum model tokens, input plus output."
+            },
+            "cost_usd": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum spend in US dollars."
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many generations of child lease may be issued beneath this one. Zero means no children."
+            },
+            "fan_out": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many child leases may be live under this one at once."
+            }
+          },
+          "additionalProperties": true
+        },
+        "approvals": {
+          "type": "array",
+          "description": "Action names that need a human before the agent may perform them. Required and may be empty.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "attestation": {
+          "type": "object",
+          "description": "Who vouches for the declaration. Optional: an agent presenting its own manifest has nothing to sign with, and the bridge or harness signs on its behalf.",
+          "required": [
+            "issuer"
+          ],
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "bridge",
+                "harness",
+                "plugin"
+              ],
+              "description": "Which party produced the declaration."
+            },
+            "signature": {
+              "type": "string",
+              "pattern": "^[0-9a-f]+$",
+              "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign."
+            },
+            "key_fingerprint": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Fingerprint of the key that produced `signature`. Never the key."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "type": "object",
+  "required": [
+    "schema_version",
+    "lease_id",
+    "manifest",
+    "declared_hash",
+    "issued_at",
+    "expires_at",
+    "issuer_session_id",
+    "key_fingerprint",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ],
+      "description": "Contract version this lease was written against."
+    },
+    "lease_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "The grant's identity. Lower-case UUID, the same shape as a capability token id."
+    },
+    "manifest": {
+      "$ref": "#/definitions/grantedManifest"
+    },
+    "declared_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256, lower-case hex, of the canonical bytes of the manifest as DECLARED, before narrowing."
+    },
+    "parent_lease_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "The lease this one was issued under. Absent for a root lease."
+    },
+    "issued_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 with a timezone."
+    },
+    "expires_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO 8601 with a timezone. After this instant the lease opens nothing, whatever its status."
+    },
+    "issuer_session_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The kernel session that issued the lease."
+    },
+    "key_fingerprint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Fingerprint of the signing key. Never the key."
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "HMAC-SHA256, lower-case hex, over the canonical bytes of every field except this one."
+    }
+  },
+  "additionalProperties": true
+}

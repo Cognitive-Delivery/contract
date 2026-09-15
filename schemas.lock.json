@@ -3,6 +3,505 @@
   "schemaSetVersion": "1.0.0",
   "major": "1",
   "schemas": {
+    "agent-lease-manifest.schema.json": {
+      "#agent": {
+        "required": false,
+        "type": "object"
+      },
+      "#agent.harness_version": {
+        "required": false,
+        "type": "string"
+      },
+      "#agent.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "delegated-cli",
+          "external",
+          "native",
+          "plugin"
+        ]
+      },
+      "#agent.model": {
+        "required": false,
+        "ref": "#/definitions/model"
+      },
+      "#agent.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#agent.provider": {
+        "required": false,
+        "type": "string"
+      },
+      "#agent.runtime_agent": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "claude-code",
+          "codex-cli",
+          "gemini-code-assist",
+          "github-copilot",
+          "unknown"
+        ]
+      },
+      "#allow": {
+        "required": false,
+        "type": "object"
+      },
+      "#allow.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#allow.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#allow.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#allow.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#allow.read_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#allow.read_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#allow.tools": {
+        "required": true,
+        "type": "array"
+      },
+      "#allow.tools[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#allow.write_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#allow.write_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#attestation": {
+        "required": false,
+        "type": "object"
+      },
+      "#attestation.issuer": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "bridge",
+          "harness",
+          "plugin"
+        ]
+      },
+      "#attestation.key_fingerprint": {
+        "required": false,
+        "type": "string"
+      },
+      "#attestation.signature": {
+        "required": false,
+        "type": "string"
+      },
+      "#budget": {
+        "required": false,
+        "type": "object"
+      },
+      "#budget.cost_usd": {
+        "required": false,
+        "type": "number"
+      },
+      "#budget.depth": {
+        "required": false,
+        "type": "integer"
+      },
+      "#budget.fan_out": {
+        "required": false,
+        "type": "integer"
+      },
+      "#budget.steps": {
+        "required": false,
+        "type": "integer"
+      },
+      "#budget.tokens": {
+        "required": false,
+        "type": "integer"
+      },
+      "#budget.wall_clock_ms": {
+        "required": false,
+        "type": "integer"
+      },
+      "#deny": {
+        "required": false,
+        "type": "object"
+      },
+      "#deny.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#deny.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#deny.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#deny.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#deny.paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#deny.paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#intent": {
+        "required": false,
+        "type": "object"
+      },
+      "#intent.purpose": {
+        "required": true,
+        "type": "string"
+      },
+      "#intent.spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "#intent.task_id": {
+        "required": false,
+        "type": "string"
+      },
+      "#model": {
+        "required": false,
+        "type": "object"
+      },
+      "#model.family": {
+        "required": true,
+        "type": "string"
+      },
+      "#model.vendor": {
+        "required": true,
+        "type": "string"
+      },
+      "#model.version": {
+        "required": false,
+        "type": "string"
+      },
+      "agent": {
+        "required": true,
+        "ref": "#/definitions/agent"
+      },
+      "allow": {
+        "required": true,
+        "ref": "#/definitions/allow"
+      },
+      "approvals": {
+        "required": true,
+        "type": "array"
+      },
+      "approvals[]": {
+        "required": false,
+        "type": "string"
+      },
+      "attestation": {
+        "required": false,
+        "ref": "#/definitions/attestation"
+      },
+      "budget": {
+        "required": true,
+        "ref": "#/definitions/budget"
+      },
+      "deny": {
+        "required": true,
+        "ref": "#/definitions/deny"
+      },
+      "intent": {
+        "required": true,
+        "ref": "#/definitions/intent"
+      },
+      "parent_lease_id": {
+        "required": false,
+        "type": "string"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      }
+    },
+    "agent-lease.schema.json": {
+      "#grantedManifest": {
+        "required": false,
+        "type": "object"
+      },
+      "#grantedManifest.agent": {
+        "required": true,
+        "type": "object"
+      },
+      "#grantedManifest.agent.harness_version": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.agent.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "delegated-cli",
+          "external",
+          "native",
+          "plugin"
+        ]
+      },
+      "#grantedManifest.agent.model": {
+        "required": false,
+        "type": "object"
+      },
+      "#grantedManifest.agent.model.family": {
+        "required": true,
+        "type": "string"
+      },
+      "#grantedManifest.agent.model.vendor": {
+        "required": true,
+        "type": "string"
+      },
+      "#grantedManifest.agent.model.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.agent.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#grantedManifest.agent.provider": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.agent.runtime_agent": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "claude-code",
+          "codex-cli",
+          "gemini-code-assist",
+          "github-copilot",
+          "unknown"
+        ]
+      },
+      "#grantedManifest.allow": {
+        "required": true,
+        "type": "object"
+      },
+      "#grantedManifest.allow.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.allow.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.allow.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.allow.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.allow.read_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.allow.read_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.allow.tools": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.allow.tools[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.allow.write_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.allow.write_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.approvals": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.approvals[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.attestation": {
+        "required": false,
+        "type": "object"
+      },
+      "#grantedManifest.attestation.issuer": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "bridge",
+          "harness",
+          "plugin"
+        ]
+      },
+      "#grantedManifest.attestation.key_fingerprint": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.attestation.signature": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.budget": {
+        "required": true,
+        "type": "object"
+      },
+      "#grantedManifest.budget.cost_usd": {
+        "required": false,
+        "type": "number"
+      },
+      "#grantedManifest.budget.depth": {
+        "required": false,
+        "type": "integer"
+      },
+      "#grantedManifest.budget.fan_out": {
+        "required": false,
+        "type": "integer"
+      },
+      "#grantedManifest.budget.steps": {
+        "required": false,
+        "type": "integer"
+      },
+      "#grantedManifest.budget.tokens": {
+        "required": false,
+        "type": "integer"
+      },
+      "#grantedManifest.budget.wall_clock_ms": {
+        "required": false,
+        "type": "integer"
+      },
+      "#grantedManifest.deny": {
+        "required": true,
+        "type": "object"
+      },
+      "#grantedManifest.deny.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.deny.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.deny.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.deny.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.deny.paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#grantedManifest.deny.paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.intent": {
+        "required": true,
+        "type": "object"
+      },
+      "#grantedManifest.intent.purpose": {
+        "required": true,
+        "type": "string"
+      },
+      "#grantedManifest.intent.spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.intent.task_id": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.parent_lease_id": {
+        "required": false,
+        "type": "string"
+      },
+      "#grantedManifest.schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "declared_hash": {
+        "required": true,
+        "type": "string"
+      },
+      "expires_at": {
+        "required": true,
+        "type": "string"
+      },
+      "issued_at": {
+        "required": true,
+        "type": "string"
+      },
+      "issuer_session_id": {
+        "required": true,
+        "type": "string"
+      },
+      "key_fingerprint": {
+        "required": true,
+        "type": "string"
+      },
+      "lease_id": {
+        "required": true,
+        "type": "string"
+      },
+      "manifest": {
+        "required": true,
+        "ref": "#/definitions/grantedManifest"
+      },
+      "parent_lease_id": {
+        "required": false,
+        "type": "string"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "signature": {
+        "required": true,
+        "type": "string"
+      }
+    },
     "audit-event.schema.json": {
       "actor": {
         "required": false,

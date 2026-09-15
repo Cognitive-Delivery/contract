@@ -1,0 +1,1 @@
+No `intent.purpose`. A manifest has to say why the agent is running, because the purpose is what a human reads in the audit journal and in the cockpit; a run with no stated intent is refused, not narrowed.
