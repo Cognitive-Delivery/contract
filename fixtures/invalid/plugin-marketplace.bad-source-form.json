@@ -1,0 +1,15 @@
+{
+  "name": "bad-source-form",
+  "owner": {
+    "name": "Example Owner"
+  },
+  "plugins": [
+    {
+      "name": "ftp-plugin",
+      "source": {
+        "source": "ftp",
+        "url": "ftp://example.com/plugin.tgz"
+      }
+    }
+  ]
+}

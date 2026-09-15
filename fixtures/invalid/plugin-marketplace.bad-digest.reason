@@ -1,0 +1,4 @@
+`cdf.digest` is a lower-case hex sha256: sixty-four characters, nothing else. A digest that
+cannot be compared is worse than no digest, because it reads as a guarantee while providing
+none — the loader would either skip the check silently or refuse every install with a mismatch
+it cannot explain. Absent means "no claim was made"; malformed means the claim is broken.

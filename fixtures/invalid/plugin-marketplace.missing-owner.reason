@@ -1,0 +1,4 @@
+`owner` is required. A marketplace is a list of code a host will fetch and run, and one with no
+owner is an anonymous list of exactly that. There would be nobody for a refusal, a finding or a
+security report to name, and nobody a human could weigh when deciding whether to trust the list
+at all.

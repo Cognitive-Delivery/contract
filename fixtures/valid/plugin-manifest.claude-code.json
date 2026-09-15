@@ -1,0 +1,28 @@
+{
+  "name": "code-reviewer",
+  "displayName": "Code Reviewer",
+  "version": "0.4.1",
+  "description": "A plain Claude Code plugin: one skill, one command, one agent and an MCP server. No CDF block, and its absence is not a defect.",
+  "author": {
+    "name": "Example Maintainers",
+    "url": "https://example.com/code-reviewer"
+  },
+  "homepage": "https://example.com/code-reviewer",
+  "repository": {
+    "type": "git",
+    "url": "https://example.com/code-reviewer.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "review",
+    "quality"
+  ],
+  "category": "Development",
+  "defaultEnabled": true,
+  "skills": [
+    "./skills/demo"
+  ],
+  "commands": "./commands",
+  "agents": "./agents",
+  "mcpServers": "./.mcp.json"
+}

@@ -34,6 +34,8 @@ export const SHAPES = [
   'config-core',
   'agent-lease-manifest',
   'agent-lease',
+  'plugin-manifest',
+  'plugin-marketplace',
 ];
 
 function shapeOf(file) {

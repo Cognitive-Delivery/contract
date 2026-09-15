@@ -1,0 +1,108 @@
+{
+  "$schema": "https://cognitivedelivery.co.uk/contract/1.0.0/plugin-marketplace.schema.json",
+  "name": "cdf-first-party",
+  "owner": {
+    "name": "Cognitive Delivery",
+    "email": "contact@example.com",
+    "url": "https://example.com"
+  },
+  "description": "The first-party CDF plugins, plus three listed from elsewhere.",
+  "version": "1.0.0",
+  "metadata": {
+    "pluginRoot": "./plugins",
+    "description": "Plugins that ship in this repository.",
+    "version": "1.0.0"
+  },
+  "allowCrossMarketplaceDependenciesOn": [
+    "cdf-community"
+  ],
+  "renames": {
+    "cdf-checks": "cdf-data-checks",
+    "cdf-legacy-mirror": null
+  },
+  "plugins": [
+    {
+      "name": "cdf-governance",
+      "source": {
+        "source": "local",
+        "path": "./plugins/cdf-governance"
+      },
+      "displayName": "CDF Governance",
+      "description": "Governed delivery tools, already in this repository: nothing to fetch and nothing to pin.",
+      "category": "Productivity",
+      "defaultEnabled": true,
+      "strict": true
+    },
+    {
+      "name": "cdf-data-checks",
+      "source": {
+        "source": "github",
+        "repo": "cognitive-delivery/cdf-data-checks",
+        "ref": "v1.2.0",
+        "sha": "5b1e0c9a4d3f2e1b0a9c8d7e6f5a4b3c2d1e0f9a"
+      },
+      "displayName": "CDF Data Checks",
+      "version": "1.2.0",
+      "license": "PolyForm-Noncommercial-1.0.0",
+      "keywords": [
+        "data",
+        "quality"
+      ],
+      "tags": [
+        "first-party"
+      ],
+      "author": {
+        "name": "Cognitive Delivery"
+      },
+      "cdf": {
+        "digest": "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea",
+        "capabilities": {
+          "read_paths": [
+            "models/**"
+          ],
+          "write_paths": [
+            ".cdf/checks/**"
+          ],
+          "hosts": [],
+          "commands": [
+            "node"
+          ]
+        }
+      }
+    },
+    {
+      "name": "cdf-doc-packs",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://example.com/cdf-monorepo.git",
+        "path": "packages/doc-packs",
+        "ref": "main"
+      },
+      "description": "One directory of a monorepo. The ref is a branch, so this entry is not pinned and the loader says so before a human decides.",
+      "skills": [
+        "./skills"
+      ],
+      "commands": "./commands",
+      "strict": false
+    },
+    {
+      "name": "example-archive-plugin",
+      "source": {
+        "source": "archive",
+        "url": "https://example.com/downloads/example-plugin-2.0.0.tgz",
+        "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+      },
+      "headers": {
+        "X-Registry-Channel": "stable"
+      },
+      "headersHelper": "./scripts/registry-headers.mjs",
+      "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace."
+    },
+    {
+      "name": "example-relative-plugin",
+      "source": "./plugins/example-relative-plugin",
+      "author": "Example Maintainers",
+      "homepage": "https://example.com/example-relative-plugin"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+`cdf.capabilities` is the lease manifest's `allow` shape, property for property, and it inherits
+the path rule with it: workspace-relative POSIX globs, no absolute paths and no `..` segment.
+`../x` leaves the workspace, so there is no grant the kernel could narrow it to. Refusing it in
+the schema means the refusal happens before anything is fetched, not after.

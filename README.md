@@ -28,6 +28,8 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
 | `agent-lease-manifest` | What an agent declares it needs before the harness lets it run |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
+| `plugin-manifest` | A plugin's `plugin.json`: every Claude Code key, plus the additive `cdf` block |
+| `plugin-marketplace` | A marketplace's `marketplace.json`: every Claude Code key and all seven source forms, plus a per-entry declared digest |
 
 ## What is deliberately not in it
 
@@ -40,6 +42,21 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
   carries its own sections without failing the shared contract.
 - **Implementation.** This is data and generated types. There is no logic here and no
   dependency on any product.
+
+## A superset is a compatibility promise, not a courtesy
+
+`plugin-manifest` and `plugin-marketplace` are strict supersets of Claude Code's two formats.
+Every key Claude Code defines is honoured with the same meaning, so a plugin written for Claude
+Code validates here unchanged, and a plugin written for CDF remains a valid Claude Code plugin.
+The only addition is an optional `cdf` block.
+
+Two consequences follow, and both are deliberate:
+
+- **All seven source forms are declared, including three the harness cannot fetch.** `npm`,
+  `archive` and `command` validate and are *reported* as an unsupported source form. A reader
+  that threw on them would refuse an entire marketplace over one entry nobody asked to install.
+- **`name` is the only required key in a manifest.** That is Claude Code's rule, and adopting it
+  is what makes "validates unchanged" true rather than nearly true.
 
 ## Two closed vocabularies, and why
 

@@ -1,0 +1,14 @@
+{
+  "name": "escaping-write-path",
+  "cdf": {
+    "schemaVersion": "1.0",
+    "capabilities": {
+      "read_paths": [
+        "src/**"
+      ],
+      "write_paths": [
+        "../x"
+      ]
+    }
+  }
+}

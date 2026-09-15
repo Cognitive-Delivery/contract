@@ -1,0 +1,104 @@
+{
+  "name": "cdf-data-checks",
+  "displayName": "CDF Data Checks",
+  "version": "1.2.0",
+  "description": "Native data-quality checks, a tracker strategy and a model provider, contributed to the harness as data.",
+  "author": {
+    "name": "Cognitive Delivery",
+    "email": "contact@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://example.com/plugins/cdf-data-checks",
+  "repository": "https://example.com/plugins/cdf-data-checks.git",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "keywords": [
+    "cdf",
+    "data",
+    "quality"
+  ],
+  "category": "Productivity",
+  "metadata": {
+    "supportChannel": "https://example.com/support"
+  },
+  "defaultEnabled": false,
+  "skills": "./skills/",
+  "commands": [
+    "./commands/",
+    "./extra-commands/"
+  ],
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "lspServers": {
+    "example-lsp": {
+      "command": "example-lsp",
+      "args": [
+        "--stdio"
+      ]
+    }
+  },
+  "cdf": {
+    "schemaVersion": "1.0",
+    "contributes": {
+      "providers": [
+        {
+          "id": "example-inference",
+          "kind": "openai-compatible",
+          "baseUrl": "https://api.example.com/v1",
+          "model": "example-medium",
+          "prices": {
+            "input_per_million": 0.5,
+            "output_per_million": 1.5
+          },
+          "extraHosts": [
+            "cdn.example.com"
+          ]
+        }
+      ],
+      "trackers": [
+        {
+          "id": "examplecorp",
+          "label": "ExampleCorp Work Items",
+          "readAction": "examplecorp.readItemStatus",
+          "commentAction": "examplecorp.commentCdfStatus",
+          "transitionAction": "examplecorp.transitionItem",
+          "createAction": "examplecorp.createItemForSpec",
+          "externalIdLabel": "item id",
+          "externalIdPlaceholder": "e.g. 1234"
+        }
+      ],
+      "docPacks": [
+        "./docs/data-quality-pack.json"
+      ],
+      "checks": [
+        {
+          "id": "null-rate",
+          "worker": "./workers/null-rate.mjs"
+        }
+      ]
+    },
+    "capabilities": {
+      "tools": [
+        "cdf_lint_artefacts"
+      ],
+      "read_paths": [
+        "models/**",
+        ".cdf/specs/**"
+      ],
+      "write_paths": [
+        ".cdf/checks/**"
+      ],
+      "hosts": [
+        "api.example.com"
+      ],
+      "commands": [
+        "node"
+      ]
+    },
+    "attestation": {
+      "issuer": "plugin",
+      "signature": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "key_fingerprint": "ab12cd34ef56"
+    }
+  }
+}

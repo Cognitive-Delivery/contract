@@ -1,0 +1,9 @@
+{
+  "name": "anonymous-marketplace",
+  "plugins": [
+    {
+      "name": "some-plugin",
+      "source": "./plugins/some-plugin"
+    }
+  ]
+}

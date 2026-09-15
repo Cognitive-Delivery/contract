@@ -53,6 +53,8 @@ const TYPE_NAMES = {
   'config-core.schema.json': 'ContractConfigCore',
   'agent-lease-manifest.schema.json': 'AgentLeaseManifest',
   'agent-lease.schema.json': 'AgentLease',
+  'plugin-manifest.schema.json': 'ContractPluginManifest',
+  'plugin-marketplace.schema.json': 'ContractPluginMarketplace',
 };
 
 function pascal(name) {

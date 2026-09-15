@@ -1,0 +1,16 @@
+{
+  "name": "bad-provider-kind",
+  "cdf": {
+    "schemaVersion": "1.0",
+    "contributes": {
+      "providers": [
+        {
+          "id": "mystery",
+          "kind": "grpc-native",
+          "baseUrl": "https://api.example.com",
+          "model": "mystery-1"
+        }
+      ]
+    }
+  }
+}

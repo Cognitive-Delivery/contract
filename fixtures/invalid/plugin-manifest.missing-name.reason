@@ -1,0 +1,4 @@
+`name` is the only required key, and it is required for the same reason Claude Code requires it:
+a manifest that names nothing cannot be addressed, cannot key a decision record, and cannot be
+told apart from a second copy of itself. Everything else in the manifest has a defensible
+default; the identity does not.

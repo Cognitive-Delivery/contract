@@ -1,0 +1,10 @@
+{
+  "name": "bad-attestation-issuer",
+  "cdf": {
+    "schemaVersion": "1.0",
+    "attestation": {
+      "issuer": "marketplace",
+      "key_fingerprint": "ab12cd34ef56"
+    }
+  }
+}

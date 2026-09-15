@@ -1,0 +1,9 @@
+`source` is a closed union: a relative path string, or one of the seven object forms (local,
+github, url, git-subdir, npm, archive, command). `ftp` is none of them, so the entry resolves to
+nothing at all.
+
+This fixture guards a distinction that is easy to collapse. `npm`, `archive` and `command` are
+DECLARED forms the harness cannot fetch in v1: they validate here and are reported as an
+unsupported source form, because refusing a whole marketplace over one entry nobody asked to
+install would be the wrong failure. `ftp` is not a form, and a reader that shrugged at it would
+be inventing a fetch strategy on the publisher's behalf.

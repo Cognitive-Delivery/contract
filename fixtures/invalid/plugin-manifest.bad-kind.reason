@@ -1,0 +1,4 @@
+`kind` is the closed set of wire protocols the harness actually speaks: `openai-compatible` and
+`anthropic`. It is closed because the harness has exactly two clients, not because two felt like
+enough. A provider declaring a third protocol would mount cleanly and then fail on the first
+call, so it is refused where the claim is made rather than where it breaks.

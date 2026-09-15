@@ -1,0 +1,18 @@
+{
+  "name": "bad-digest",
+  "owner": {
+    "name": "Example Owner"
+  },
+  "plugins": [
+    {
+      "name": "some-plugin",
+      "source": {
+        "source": "local",
+        "path": "./plugins/some-plugin"
+      },
+      "cdf": {
+        "digest": "not-a-sha256"
+      }
+    }
+  ]
+}

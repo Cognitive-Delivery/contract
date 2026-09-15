@@ -1,0 +1,5 @@
+`issuer` is the lease manifest's closed vocabulary — agent, bridge, harness, plugin — shared so
+that one reader understands an attestation wherever it appears. A marketplace is not a party
+that can vouch for a plugin's own declaration: it lists the plugin, it does not author it.
+Admitting a new issuer here would make the attestation unverifiable by the reader that checks
+both shapes.

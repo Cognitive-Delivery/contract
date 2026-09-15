@@ -1,0 +1,559 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/plugin-marketplace.schema.json",
+  "title": "CDF Plugin Marketplace",
+  "description": "A marketplace's `marketplace.json`, read from `.claude-plugin/marketplace.json`. A strict superset of Claude Code's: the same owner, metadata, renames and `plugins[]` entries, with the same nested `source` union, plus `local` for a marketplace that lists plugins already in the repository, plus an optional per-entry `cdf` block carrying a declared digest and the capabilities the entry expects. Every source form is DECLARED here, including the three the harness cannot yet fetch, because a marketplace that uses one must parse and be reported rather than fail to load. A listing is not an installation, and a declared digest is a claim to be checked, never a verdict.",
+  "definitions": {
+    "author": {
+      "description": "Who publishes the plugin. An object is the documented form; a bare string is accepted because marketplaces in the wild carry one, and a reader that refused it would refuse a real plugin.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "description": "What the plugin's own code asks to be allowed when the harness runs it out of process. This is the lease manifest's `allow` shape, property for property, because a plugin worker's lease is generated from it and narrowed against the workspace root policy. It is deliberately NOT the store-listing `interface.capabilities` vocabulary a plugin may also carry: that is a shelf label, this is an authorisation request. Every list is optional here — an absent list is a plugin that asks for nothing, which is the correct default — whereas the granted manifest requires all five.",
+      "properties": {
+        "tools": {
+          "type": "array",
+          "description": "Governed tool names the agent may call.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "read_paths": {
+          "type": "array",
+          "description": "Workspace-relative POSIX globs the agent may read. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+          }
+        },
+        "write_paths": {
+          "type": "array",
+          "description": "Workspace-relative POSIX globs the agent may change. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+          }
+        },
+        "hosts": {
+          "type": "array",
+          "description": "Hostnames the agent may reach, with an optional leading wildcard label (`*.example.com`). Enforced by the egress proxy once it keys off the lease.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "commands": {
+          "type": "array",
+          "description": "Executable names the agent may run.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "componentPath": {
+      "description": "A component directory or file, or a list of them. Claude Code accepts a single string or an array of strings for `skills`, `commands` and `agents`, and scans `skills/`, `commands/` and `agents/` when the key is absent, so an absent key is not an empty contribution.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    "componentSource": {
+      "description": "A component declared inline as an object, or a path to the file that declares it. Claude Code accepts both spellings for `hooks`, `mcpServers` and `lspServers`.",
+      "anyOf": [
+        {
+          "type": "object"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "entry": {
+      "type": "object",
+      "description": "One plugin listed by the marketplace. `name` and `source` are required: a listing that names nothing cannot be addressed, and one that resolves to nothing cannot be fetched. Every other key overrides or supplements what the fetched manifest says.",
+      "required": [
+        "name",
+        "source"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "source": {
+          "$ref": "#/definitions/source"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "author": {
+          "$ref": "#/definitions/author"
+        },
+        "homepage": {
+          "type": "string"
+        },
+        "repository": {
+          "$ref": "#/definitions/repository"
+        },
+        "license": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "category": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "defaultEnabled": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean",
+          "description": "Whether the entry must match the fetched manifest exactly. Absent means true: the stricter reading is the default, so a marketplace relaxes it deliberately."
+        },
+        "skills": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "commands": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "agents": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "hooks": {
+          "$ref": "#/definitions/componentSource"
+        },
+        "mcpServers": {
+          "$ref": "#/definitions/componentSource"
+        },
+        "lspServers": {
+          "$ref": "#/definitions/componentSource"
+        },
+        "headers": {
+          "type": "object",
+          "description": "Request headers for an archive or url source. Never credentials: a value that needs a secret belongs in `headersHelper`, which the host runs and whose output the marketplace file never sees.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "headersHelper": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A path inside the marketplace to a helper that produces request headers at fetch time."
+        },
+        "cdf": {
+          "$ref": "#/definitions/entryCdf"
+        }
+      },
+      "additionalProperties": true
+    },
+    "entryCdf": {
+      "type": "object",
+      "description": "The additive CDF block for one entry. Absent in a plain Claude Code marketplace.",
+      "properties": {
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The sha256 the fetched tree must hash to, lower-case hex. A claim the loader checks; a mismatch is a refusal with both digests named, never a warning."
+        },
+        "capabilities": {
+          "$ref": "#/definitions/capabilities"
+        }
+      },
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Marketplace-wide defaults.",
+      "properties": {
+        "pluginRoot": {
+          "type": "string",
+          "description": "The directory relative paths in `source` resolve from."
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "owner": {
+      "type": "object",
+      "description": "Who publishes the marketplace. Required: a marketplace with no owner is an anonymous list of things to execute.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "repository": {
+      "description": "The source repository, as a URL string or as an object carrying one.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "source": {
+      "description": "Where a listed plugin comes from: a relative path inside the marketplace, or one of the seven object forms. The harness fetches `local`, `github`, `url` and `git-subdir` in v1; `npm`, `archive` and `command` parse and are reported as an unsupported source form, because a reader that threw on them would refuse a whole marketplace over one entry it could not fetch.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "$ref": "#/definitions/sourceLocal"
+        },
+        {
+          "$ref": "#/definitions/sourceGithub"
+        },
+        {
+          "$ref": "#/definitions/sourceUrl"
+        },
+        {
+          "$ref": "#/definitions/sourceGitSubdir"
+        },
+        {
+          "$ref": "#/definitions/sourceNpm"
+        },
+        {
+          "$ref": "#/definitions/sourceArchive"
+        },
+        {
+          "$ref": "#/definitions/sourceCommand"
+        }
+      ]
+    },
+    "sourceArchive": {
+      "type": "object",
+      "description": "A downloadable archive. Declared, not fetched in v1: no archive reader exists, and hand-rolling one is where path traversal, absolute entries, symlinks and zip-slip get written wrong.",
+      "required": [
+        "source",
+        "url"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "archive"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The archive digest, lower-case hex."
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceCommand": {
+      "type": "object",
+      "description": "A command the host runs to produce the plugin. Declared, not fetched in v1: the harness does not run a marketplace-supplied command to obtain code it is about to run.",
+      "required": [
+        "source",
+        "command"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "command"
+          ]
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceGitSubdir": {
+      "type": "object",
+      "description": "One directory of a git repository. `path` is repository-relative and may not escape it.",
+      "required": [
+        "source",
+        "url",
+        "path"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "git-subdir"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A branch, tag or other revision. A branch is not a pin."
+        },
+        "sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A commit sha. The only ref that cannot move."
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceGithub": {
+      "type": "object",
+      "description": "A GitHub repository.",
+      "required": [
+        "source",
+        "repo"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "github"
+          ]
+        },
+        "repo": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$",
+          "description": "owner/repo."
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A branch, tag or other revision. A branch is not a pin."
+        },
+        "sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A commit sha. The only ref that cannot move."
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceLocal": {
+      "type": "object",
+      "description": "A path already on disk. The seventh form, beyond Claude Code's six: CDF's own marketplace lists first-party plugins that ship in the repository, and a local source is the only one with nothing to fetch and nothing to pin.",
+      "required": [
+        "source",
+        "path"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "local"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceNpm": {
+      "type": "object",
+      "description": "An npm package. Declared, not fetched in v1: the same missing archive reader, plus a registry the egress policy would have to permit.",
+      "required": [
+        "source",
+        "package"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "npm"
+          ]
+        },
+        "package": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string"
+        },
+        "registry": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "sourceUrl": {
+      "type": "object",
+      "description": "A git repository at an arbitrary URL.",
+      "required": [
+        "source",
+        "url"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "url"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A branch, tag or other revision. A branch is not a pin."
+        },
+        "sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A commit sha. The only ref that cannot move."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "type": "object",
+  "required": [
+    "name",
+    "owner",
+    "plugins"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The marketplace id: lower-case kebab-case."
+    },
+    "owner": {
+      "$ref": "#/definitions/owner"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata"
+    },
+    "allowCrossMarketplaceDependenciesOn": {
+      "type": "array",
+      "description": "Marketplace names this one permits its plugins to depend on. Absent means none.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "renames": {
+      "type": "object",
+      "description": "Old plugin name to new name, or to null when the plugin is withdrawn. A rename does not carry a decision forward: the subject hash changes and the plugin is undecided again.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "description": "The listed plugins. Required, and may be empty: an empty marketplace is a marketplace that lists nothing, not a malformed one.",
+      "items": {
+        "$ref": "#/definitions/entry"
+      }
+    }
+  },
+  "additionalProperties": true
+}

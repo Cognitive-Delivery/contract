@@ -1028,6 +1028,768 @@
         "type": "string"
       }
     },
+    "plugin-manifest.schema.json": {
+      "#attestation": {
+        "required": false,
+        "type": "object"
+      },
+      "#attestation.issuer": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "bridge",
+          "harness",
+          "plugin"
+        ]
+      },
+      "#attestation.key_fingerprint": {
+        "required": false,
+        "type": "string"
+      },
+      "#attestation.signature": {
+        "required": false,
+        "type": "string"
+      },
+      "#author": {
+        "required": false,
+        "type": "object"
+      },
+      "#author.email": {
+        "required": false,
+        "type": "string"
+      },
+      "#author.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#author.url": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities": {
+        "required": false,
+        "type": "object"
+      },
+      "#capabilities.commands": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.hosts": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.read_paths": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.read_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.tools": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.tools[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.write_paths": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.write_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#cdf": {
+        "required": false,
+        "type": "object"
+      },
+      "#cdf.attestation": {
+        "required": false,
+        "ref": "#/definitions/attestation"
+      },
+      "#cdf.capabilities": {
+        "required": false,
+        "ref": "#/definitions/capabilities"
+      },
+      "#cdf.contributes": {
+        "required": false,
+        "ref": "#/definitions/contributes"
+      },
+      "#cdf.schemaVersion": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "#check": {
+        "required": false,
+        "type": "object"
+      },
+      "#check.id": {
+        "required": true,
+        "type": "string"
+      },
+      "#check.worker": {
+        "required": true,
+        "type": "string"
+      },
+      "#componentPath": {
+        "required": false,
+        "type": "array"
+      },
+      "#componentPath[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#componentSource": {
+        "required": false,
+        "type": "string"
+      },
+      "#contributes": {
+        "required": false,
+        "type": "object"
+      },
+      "#contributes.checks": {
+        "required": false,
+        "type": "array"
+      },
+      "#contributes.checks[]": {
+        "required": false,
+        "ref": "#/definitions/check"
+      },
+      "#contributes.docPacks": {
+        "required": false,
+        "type": "array"
+      },
+      "#contributes.docPacks[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#contributes.providers": {
+        "required": false,
+        "type": "array"
+      },
+      "#contributes.providers[]": {
+        "required": false,
+        "ref": "#/definitions/provider"
+      },
+      "#contributes.trackers": {
+        "required": false,
+        "type": "array"
+      },
+      "#contributes.trackers[]": {
+        "required": false,
+        "ref": "#/definitions/tracker"
+      },
+      "#prices": {
+        "required": false,
+        "type": "object"
+      },
+      "#prices.input_per_million": {
+        "required": false,
+        "type": "number"
+      },
+      "#prices.output_per_million": {
+        "required": false,
+        "type": "number"
+      },
+      "#provider": {
+        "required": false,
+        "type": "object"
+      },
+      "#provider.baseUrl": {
+        "required": false,
+        "type": "string"
+      },
+      "#provider.extraHosts": {
+        "required": false,
+        "type": "array"
+      },
+      "#provider.extraHosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#provider.id": {
+        "required": true,
+        "type": "string"
+      },
+      "#provider.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "anthropic",
+          "openai-compatible"
+        ]
+      },
+      "#provider.model": {
+        "required": false,
+        "type": "string"
+      },
+      "#provider.prices": {
+        "required": false,
+        "ref": "#/definitions/prices"
+      },
+      "#repository": {
+        "required": false,
+        "type": "object"
+      },
+      "#tracker": {
+        "required": false,
+        "type": "object"
+      },
+      "#tracker.commentAction": {
+        "required": false,
+        "type": "string"
+      },
+      "#tracker.createAction": {
+        "required": false,
+        "type": "string"
+      },
+      "#tracker.externalIdLabel": {
+        "required": false,
+        "type": "string"
+      },
+      "#tracker.externalIdPlaceholder": {
+        "required": false,
+        "type": "string"
+      },
+      "#tracker.id": {
+        "required": true,
+        "type": "string"
+      },
+      "#tracker.label": {
+        "required": true,
+        "type": "string"
+      },
+      "#tracker.readAction": {
+        "required": true,
+        "type": "string"
+      },
+      "#tracker.transitionAction": {
+        "required": false,
+        "type": "string"
+      },
+      "agents": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "author": {
+        "required": false,
+        "ref": "#/definitions/author"
+      },
+      "category": {
+        "required": false,
+        "type": "string"
+      },
+      "cdf": {
+        "required": false,
+        "ref": "#/definitions/cdf"
+      },
+      "commands": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "defaultEnabled": {
+        "required": false,
+        "type": "boolean"
+      },
+      "description": {
+        "required": false,
+        "type": "string"
+      },
+      "displayName": {
+        "required": false,
+        "type": "string"
+      },
+      "homepage": {
+        "required": false,
+        "type": "string"
+      },
+      "hooks": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "keywords": {
+        "required": false,
+        "type": "array"
+      },
+      "keywords[]": {
+        "required": false,
+        "type": "string"
+      },
+      "license": {
+        "required": false,
+        "type": "string"
+      },
+      "lspServers": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "mcpServers": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "metadata": {
+        "required": false,
+        "type": "object"
+      },
+      "name": {
+        "required": true,
+        "type": "string"
+      },
+      "repository": {
+        "required": false,
+        "ref": "#/definitions/repository"
+      },
+      "skills": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "version": {
+        "required": false,
+        "type": "string"
+      }
+    },
+    "plugin-marketplace.schema.json": {
+      "#author": {
+        "required": false,
+        "type": "object"
+      },
+      "#author.email": {
+        "required": false,
+        "type": "string"
+      },
+      "#author.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#author.url": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities": {
+        "required": false,
+        "type": "object"
+      },
+      "#capabilities.commands": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.commands[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.hosts": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.hosts[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.read_paths": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.read_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.tools": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.tools[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#capabilities.write_paths": {
+        "required": false,
+        "type": "array"
+      },
+      "#capabilities.write_paths[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#componentPath": {
+        "required": false,
+        "type": "array"
+      },
+      "#componentPath[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#componentSource": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry": {
+        "required": false,
+        "type": "object"
+      },
+      "#entry.agents": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#entry.author": {
+        "required": false,
+        "ref": "#/definitions/author"
+      },
+      "#entry.category": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.cdf": {
+        "required": false,
+        "ref": "#/definitions/entryCdf"
+      },
+      "#entry.commands": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#entry.defaultEnabled": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#entry.description": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.displayName": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.headers": {
+        "required": false,
+        "type": "object"
+      },
+      "#entry.headersHelper": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.homepage": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.hooks": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "#entry.keywords": {
+        "required": false,
+        "type": "array"
+      },
+      "#entry.keywords[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.license": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.lspServers": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "#entry.mcpServers": {
+        "required": false,
+        "ref": "#/definitions/componentSource"
+      },
+      "#entry.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#entry.repository": {
+        "required": false,
+        "ref": "#/definitions/repository"
+      },
+      "#entry.skills": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#entry.source": {
+        "required": true,
+        "ref": "#/definitions/source"
+      },
+      "#entry.strict": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#entry.tags": {
+        "required": false,
+        "type": "array"
+      },
+      "#entry.tags[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#entry.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#entryCdf": {
+        "required": false,
+        "type": "object"
+      },
+      "#entryCdf.capabilities": {
+        "required": false,
+        "ref": "#/definitions/capabilities"
+      },
+      "#entryCdf.digest": {
+        "required": false,
+        "type": "string"
+      },
+      "#metadata": {
+        "required": false,
+        "type": "object"
+      },
+      "#metadata.description": {
+        "required": false,
+        "type": "string"
+      },
+      "#metadata.pluginRoot": {
+        "required": false,
+        "type": "string"
+      },
+      "#metadata.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#owner": {
+        "required": false,
+        "type": "object"
+      },
+      "#owner.email": {
+        "required": false,
+        "type": "string"
+      },
+      "#owner.name": {
+        "required": true,
+        "type": "string"
+      },
+      "#owner.url": {
+        "required": false,
+        "type": "string"
+      },
+      "#repository": {
+        "required": false,
+        "type": "object"
+      },
+      "#source": {
+        "required": false,
+        "ref": "#/definitions/sourceCommand"
+      },
+      "#sourceArchive": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceArchive.sha256": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceArchive.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "archive"
+        ]
+      },
+      "#sourceArchive.url": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceCommand": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceCommand.command": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceCommand.mode": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceCommand.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "command"
+        ]
+      },
+      "#sourceCommand.timeout": {
+        "required": false,
+        "type": "integer"
+      },
+      "#sourceGitSubdir": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceGitSubdir.path": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceGitSubdir.ref": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceGitSubdir.sha": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceGitSubdir.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "git-subdir"
+        ]
+      },
+      "#sourceGitSubdir.url": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceGithub": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceGithub.ref": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceGithub.repo": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceGithub.sha": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceGithub.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "github"
+        ]
+      },
+      "#sourceLocal": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceLocal.path": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceLocal.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "local"
+        ]
+      },
+      "#sourceNpm": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceNpm.package": {
+        "required": true,
+        "type": "string"
+      },
+      "#sourceNpm.registry": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceNpm.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "npm"
+        ]
+      },
+      "#sourceNpm.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceUrl": {
+        "required": false,
+        "type": "object"
+      },
+      "#sourceUrl.ref": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceUrl.sha": {
+        "required": false,
+        "type": "string"
+      },
+      "#sourceUrl.source": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "url"
+        ]
+      },
+      "#sourceUrl.url": {
+        "required": true,
+        "type": "string"
+      },
+      "$schema": {
+        "required": false,
+        "type": "string"
+      },
+      "allowCrossMarketplaceDependenciesOn": {
+        "required": false,
+        "type": "array"
+      },
+      "allowCrossMarketplaceDependenciesOn[]": {
+        "required": false,
+        "type": "string"
+      },
+      "description": {
+        "required": false,
+        "type": "string"
+      },
+      "metadata": {
+        "required": false,
+        "ref": "#/definitions/metadata"
+      },
+      "name": {
+        "required": true,
+        "type": "string"
+      },
+      "owner": {
+        "required": true,
+        "ref": "#/definitions/owner"
+      },
+      "plugins": {
+        "required": true,
+        "type": "array"
+      },
+      "plugins[]": {
+        "required": false,
+        "ref": "#/definitions/entry"
+      },
+      "renames": {
+        "required": false,
+        "type": "object"
+      },
+      "version": {
+        "required": false,
+        "type": "string"
+      }
+    },
     "provenance.schema.json": {
       "#frontMatter": {
         "required": false,
