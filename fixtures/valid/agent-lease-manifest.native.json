@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "agent": {
+    "name": "native chat turn (ollama)",
+    "kind": "native",
+    "runtime_agent": "cdf-native",
+    "provider": "ollama",
+    "model": {
+      "vendor": "ollama",
+      "family": "llama3.1"
+    },
+    "harness_version": "2.67.0"
+  },
+  "intent": {
+    "spec_slug": "demo",
+    "task_id": "1.1",
+    "purpose": "Governed chat turn for spec demo task 1.1 (InProgress), run by the native loop."
+  },
+  "allow": {
+    "tools": [
+      "cdf_write_artefact",
+      "cdf_present_manifest"
+    ],
+    "read_paths": [
+      "**"
+    ],
+    "write_paths": [
+      "**"
+    ],
+    "hosts": [
+      "github.com",
+      "127.0.0.1"
+    ],
+    "commands": []
+  },
+  "deny": {
+    "commands": [
+      "sudo",
+      "su",
+      "docker",
+      "ssh",
+      "curl",
+      "wget",
+      "launchctl",
+      "systemctl"
+    ],
+    "paths": [
+      ".cdf/runtime/lease-signing.key"
+    ],
+    "hosts": []
+  },
+  "budget": {
+    "steps": 50,
+    "tokens": 200000,
+    "cost_usd": 1.0,
+    "wall_clock_ms": 600000,
+    "depth": 1,
+    "fan_out": 1
+  },
+  "approvals": [],
+  "attestation": {
+    "issuer": "harness"
+  }
+}

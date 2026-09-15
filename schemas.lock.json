@@ -38,6 +38,7 @@
         "required": true,
         "type": "string",
         "enum": [
+          "cdf-native",
           "claude-code",
           "codex-cli",
           "gemini-code-assist",
@@ -294,6 +295,7 @@
         "required": true,
         "type": "string",
         "enum": [
+          "cdf-native",
           "claude-code",
           "codex-cli",
           "gemini-code-assist",

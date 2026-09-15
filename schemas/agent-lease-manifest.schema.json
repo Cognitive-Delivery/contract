@@ -57,9 +57,10 @@
             "claude-code",
             "gemini-code-assist",
             "github-copilot",
+            "cdf-native",
             "unknown"
           ],
-          "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell."
+          "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell. `cdf-native` (schema set 1.0, additive) is the harness's own native turn loop: the kernel drives a model provider directly, with no vendor CLI or SDK."
         },
         "provider": {
           "type": "string",
