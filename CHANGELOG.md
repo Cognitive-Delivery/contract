@@ -17,6 +17,28 @@ tooling in this repository.
 
 Nothing yet.
 
+## [1.0.2] — 2026-09-19
+
+### Fixed
+
+- **The published 1.0.1 tarball shipped a stale `schemas.lock.json`.** It recorded
+  `schemaSetVersion: "1.0.0"` because the correction landed after the tag, so the artefact on npm
+  disagreed with the repository. Only `major` is load-bearing — the additive-only rule is scoped
+  to it, and it read `1` throughout — so nothing downstream was at risk, but a governance contract
+  publishing a record of itself that is out of date is the wrong thing to leave standing.
+
+  Both of this repository's gates had said it was fine: `check:additive` compares schema *shapes*
+  and never looks at the version field, so it printed "Lock is current" over a stale one. It took
+  a **downstream consumer's** test to notice. `npm test` now checks the lock's version alongside
+  the README's and the CHANGELOG's.
+
+### Changed
+
+- **`CONTRIBUTING.md` says what `npm test` actually runs** — four checks now, including the
+  canonical-bytes vectors — and what `check:additive` deliberately does not. It also has a section
+  on changing the specification, because §7 cannot be edited casually: every hash in this contract
+  is taken over those bytes, so a change there invalidates every signature anyone has produced.
+
 ## [1.0.1] — 2026-09-19
 
 The first release published from CI, and therefore **the first carrying a provenance
@@ -101,6 +123,7 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.0

@@ -11,9 +11,27 @@ npm test                 # the conformance corpus against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
-`npm test` runs every valid fixture, every rejection and its written reason, and a round trip
-that must not lose an unknown field. `npm run check:additive` compares the schema set against
-the shape it had before your change; in CI the baseline is the branch you are merging into.
+`npm test` runs four things: every valid fixture, every rejection and its written reason, a
+round trip that must not lose an unknown field, and the canonical-bytes vectors of
+[SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) §7. It also checks that the version
+in `package.json` matches the one stated in the README, the CHANGELOG and `schemas.lock.json` —
+added because the lock silently kept the previous version through a release.
+
+`npm run check:additive` compares the schema set against the shape it had before your change; in
+CI the baseline is the branch you are merging into. Note what it does **not** do: it compares
+schema shapes only, and will report "Lock is current" on a lock whose version field is stale.
+That check lives in `npm test`.
+
+## Changing the specification
+
+`SPEC-agent-lease-manifest.md` is normative, in RFC 2119 language, and the schemas are not free
+to disagree with it. If a change makes the two say different things, one of them is wrong and
+the pull request has to say which.
+
+Section 7 — canonical bytes — is the part to be most careful with. Every hash in this contract
+is taken over those bytes, so a change there silently invalidates every signature anyone has
+ever produced. Any change to it needs a matching change to `conformance/canonical-vectors.json`
+and, realistically, a major version.
 
 ## Changing a schema
 
