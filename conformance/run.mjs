@@ -6,8 +6,43 @@
  * checkable by someone who has never met the product: clone, install, run, read the exit code.
  */
 
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * The repository's own version, stated in three places, checked as one.
+ *
+ * Not a conformance property — a currency one, and it belongs in `npm test` because that is what
+ * runs on every push. The README's version line silently fell behind on the 1.0.1 bump and was
+ * caught by a person reading it, which is the failure mode this repository argues against
+ * everywhere else. A version in prose is a fact with a short half-life unless something checks it.
+ */
+async function checkVersionCurrency() {
+  const root = resolve(here, '..');
+  const [pkg, readme, changelog] = await Promise.all([
+    readFile(resolve(root, 'package.json'), 'utf8'),
+    readFile(resolve(root, 'README.md'), 'utf8'),
+    readFile(resolve(root, 'CHANGELOG.md'), 'utf8'),
+  ]);
+  const version = JSON.parse(pkg).version;
+  const problems = [];
+  if (!readme.includes(`Version **${version}**`)) {
+    problems.push(`README.md does not carry "Version **${version}**"`);
+  }
+  if (!changelog.includes(`## [${version}]`)) {
+    problems.push(`CHANGELOG.md has no "## [${version}]" section`);
+  }
+  if (!changelog.includes(`[${version}]: https://`)) {
+    problems.push(`CHANGELOG.md has no link definition for [${version}]`);
+  }
+  return { version, problems };
+}
 
 const adapter = await createAjvAdapter();
 const report = await runConformance(adapter);
@@ -17,9 +52,14 @@ console.log(
   + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}.`,
 );
 
-if (report.failures.length > 0) {
-  console.error(`\n${report.failures.length} failure(s):\n`);
-  for (const failure of report.failures) {
+const currency = await checkVersionCurrency();
+console.log(`Version ${currency.version} stated consistently in package.json, README and CHANGELOG.`);
+
+const failures = [...report.failures, ...currency.problems];
+
+if (failures.length > 0) {
+  console.error(`\n${failures.length} failure(s):\n`);
+  for (const failure of failures) {
     console.error(`  - ${failure}`);
   }
   process.exit(1);
