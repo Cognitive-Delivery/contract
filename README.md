@@ -94,6 +94,21 @@ the baseline is the branch being merged into; on a push it is the previous commi
 
 Every artefact carries `schema_version`. One without it is read as `1.0.0`.
 
+## Installing
+
+```
+npm install @cognitive-delivery/contract
+```
+
+Releases are published from CI through npm trusted publishing, so each one carries a provenance
+attestation linking the package on the registry to the commit and the workflow that built it.
+A contract that asks other people to record what produced an artefact should be able to show
+what produced its own.
+
+You can also use it straight from this repository, as a submodule or a clone pinned to a tag.
+`schemas/` and `fixtures/` are plain files and an implementation in another language needs
+nothing else.
+
 ## Running the checks
 
 ```
@@ -146,6 +161,3 @@ schemas with a corpus let them demonstrate it, and let anyone else check the cla
 
 The implementations remain PolyForm Noncommercial 1.0.0. Reading and writing the format is open;
 building a competing governed-delivery product out of this codebase is not.
-
-Use it from this repository, as a submodule or a clone pinned to a tag. Consume `schemas/` and
-`fixtures/` as files; nothing here needs a package manager.

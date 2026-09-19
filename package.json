@@ -1,5 +1,5 @@
 {
-  "name": "cdf-contract",
+  "name": "@cognitive-delivery/contract",
   "version": "1.0.0",
   "description": "The Cognitive Delivery governance contract: the artefact shapes any implementation must read and write identically, with a conformance corpus.",
   "license": "Apache-2.0",
@@ -21,6 +21,10 @@
     "cognitive-delivery"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "files": [
     "LICENSE",
     "schemas",
@@ -31,7 +35,17 @@
   ],
   "exports": {
     "./schemas/*": "./schemas/*",
-    "./conformance/runner.mjs": "./conformance/runner.mjs"
+    "./fixtures/*": "./fixtures/*",
+    "./conformance/runner.mjs": "./conformance/runner.mjs",
+    "./conformance/ajv-adapter.mjs": "./conformance/ajv-adapter.mjs"
+  },
+  "peerDependencies": {
+    "ajv": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ajv": {
+      "optional": true
+    }
   },
   "scripts": {
     "test": "node ./conformance/run.mjs",

@@ -1,0 +1,59 @@
+name: release
+
+# Publishes to npm when a v* tag is pushed, through npm trusted publishing: GitHub Actions
+# proves its identity to npm over OIDC, so there is no long-lived token in a repository
+# secret to leak or rotate. Provenance is attached, which is the point. A contract that
+# asks other people to record what produced an artefact should be able to show what
+# produced its own.
+#
+# Trusted publishing is configured per package at npmjs.com/package/@cognitive-delivery/
+# contract/access, which requires the package to exist. The first 1.0.0 is therefore
+# published by hand; every release after it comes through here.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # the OIDC token npm checks. Without it the publish is unauthenticated.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      # Trusted publishing needs npm 11.5.1 or later, which is newer than the npm bundled
+      # with the Node versions Actions ships.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+
+      # Nothing is published that has not passed the corpus and the additive-only guard.
+      # A release is the last moment the promise in the README can still be kept.
+      - run: npm test
+      - run: node ./check-additive.mjs --baseline-ref HEAD^
+
+      # The tag and the version in package.json must agree, or the registry records a
+      # version no tag points at.
+      - name: Tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $PKG."
+            exit 1
+          fi
+          echo "Publishing $PKG."
+
+      - run: npm publish
