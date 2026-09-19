@@ -1,6 +1,6 @@
 {
-  "note": "Generated. The additive-only rule for 1.x is enforced against this file by test/unit/contractCompatibility.test.ts.",
-  "schemaSetVersion": "1.0.0",
+  "note": "Generated. The additive-only rule for 1.x is enforced against this file by test/unit/contractCompatibility.test.ts. schemaSetVersion is the PACKAGE version; only `major` is load-bearing.",
+  "schemaSetVersion": "1.0.1",
   "major": "1",
   "schemas": {
     "agent-lease-manifest.schema.json": {

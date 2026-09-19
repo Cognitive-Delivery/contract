@@ -76,7 +76,14 @@ export async function buildLock() {
   const version = JSON.parse(await readFile(resolve(here, 'package.json'), 'utf8')).version;
 
   return {
-    note: 'Generated. The additive-only rule for 1.x is enforced against this file by test/unit/contractCompatibility.test.ts.',
+    note: 'Generated. The additive-only rule for 1.x is enforced against this file by test/unit/contractCompatibility.test.ts. schemaSetVersion is the PACKAGE version; only `major` is load-bearing.',
+    // NOTE ON THE NAME. This is the PACKAGE version, and 1.0.1 is where that first stopped
+    // being the same thing as the schema set's version: it changed nothing in schemas/, because
+    // it released the specification and the canonical-bytes vectors. Only `major` is
+    // load-bearing — the additive-only rule is scoped to it — and a tooling-only release cannot
+    // move a major, so nothing downstream is affected. Left as the package version deliberately,
+    // rather than derived from whether schemas/ changed, because that derivation would have to
+    // diff against the previous lock to decide what to write into the lock.
     schemaSetVersion: version,
     major: version.split('.')[0],
     schemas,
