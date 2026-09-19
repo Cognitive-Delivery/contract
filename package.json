@@ -1,6 +1,6 @@
 {
   "name": "@cognitive-delivery/contract",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Cognitive Delivery governance contract: the artefact shapes any implementation must read and write identically, with a conformance corpus.",
   "license": "Apache-2.0",
   "author": "Jason Cruz Falzon <jason@cognitivedelivery.co.uk>",

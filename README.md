@@ -3,7 +3,7 @@
 The artefact shapes any Cognitive Delivery implementation must read and write identically, plus
 a conformance corpus that proves it does.
 
-Version **1.0.0**, versioned independently of any product that implements it.
+Version **1.0.1**, versioned independently of any product that implements it.
 
 ## Why this exists
 

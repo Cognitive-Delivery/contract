@@ -15,6 +15,18 @@ tooling in this repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.0.1] — 2026-09-19
+
+The first release published from CI, and therefore **the first carrying a provenance
+attestation** — 1.0.0 went out by hand because npm trusted publishing must be configured on a
+package that already exists. A contract that asks other people to record what produced an
+artefact should be able to show what produced its own; from here it can.
+
+No schema changed. This release is the specification, the vectors and the tooling around them.
+The published tarball is 91 files.
+
 ### Added
 
 - **A normative specification for the Agent Lease Manifest** (`SPEC-agent-lease-manifest.md`). The
@@ -89,5 +101,6 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.0
