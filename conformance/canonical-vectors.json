@@ -1,0 +1,143 @@
+{
+  "_comment": [
+    "Canonicalisation test vectors for SPEC-agent-lease-manifest.md section 7.",
+    "Every hash in this contract \u2014 declared_hash, every signature, the ledger chain \u2014 is taken over",
+    "canonical bytes, so two implementations that disagree here agree about nothing else either.",
+    "Run them with conformance/runner.mjs by supplying a `canonicalise(value) => string` on your",
+    "adapter. `canonical` is the expected byte string; `sha256` is its SHA-256 in lower-case hex, and",
+    "is the authoritative check because it survives any mangling this file might suffer in transit.",
+    "This file is written in pure ASCII, with every character above U+007E escaped, so that nothing",
+    "in it depends on an editor, a terminal or a transfer preserving bytes it might not."
+  ],
+  "vectors": [
+    {
+      "name": "member-order",
+      "why": "Members are emitted in ascending key order, not insertion order. Note that \"Mike\" precedes \"_under\" precedes \"alpha\": the comparison is on code units, so upper case sorts before underscore sorts before lower case.",
+      "value": {
+        "zulu": 1,
+        "alpha": 2,
+        "Mike": 3,
+        "_under": 4
+      },
+      "canonical": "{\"Mike\":3,\"_under\":4,\"alpha\":2,\"zulu\":1}",
+      "sha256": "84cfe7da4de73ef2713b84142639fa3e3fbdd542603374779817013b9c967210"
+    },
+    {
+      "name": "nested-order",
+      "why": "Ordering is recursive. A nested object sorts its own members; array order is significant and is left exactly as given.",
+      "value": {
+        "outer": {
+          "b": 1,
+          "a": 2
+        },
+        "list": [
+          {
+            "z": 1,
+            "y": 2
+          },
+          3,
+          "x"
+        ]
+      },
+      "canonical": "{\"list\":[{\"y\":2,\"z\":1},3,\"x\"],\"outer\":{\"a\":2,\"b\":1}}",
+      "sha256": "6bda481e6b1b1d90c7a636d810cfbba9160b0862c3f19cd2539da979f126632b"
+    },
+    {
+      "name": "absent-is-omitted",
+      "why": "An absent member is omitted entirely; a member explicitly set to null is serialised as null. These are different artefacts with different hashes, which is why the rule has to be stated.",
+      "value": {
+        "present": 1,
+        "explicit_null": null
+      },
+      "canonical": "{\"explicit_null\":null,\"present\":1}",
+      "sha256": "5a0688f9ccc3f2d86e25a7a2af4549465caf9726ee8fbc4a287028b328895a89"
+    },
+    {
+      "name": "empty-containers",
+      "why": "An empty object and an empty array each have bytes of their own and are not elided.",
+      "value": {
+        "object": {},
+        "array": []
+      },
+      "canonical": "{\"array\":[],\"object\":{}}",
+      "sha256": "13b38aeab2e18a2c62de2945db9600720801b483e41936f5a154dbda7261be70"
+    },
+    {
+      "name": "string-escapes",
+      "why": "The escape set is closed. Only these characters are escaped, the five short forms are preferred over \\u, and \\u uses LOWER-CASE hexadecimal.",
+      "value": {
+        "quote": "\"",
+        "backslash": "\\",
+        "bs": "\b",
+        "tab": "\t",
+        "lf": "\n",
+        "ff": "\f",
+        "cr": "\r",
+        "nul": "\u0000",
+        "unit_sep": "\u001f"
+      },
+      "canonical": "{\"backslash\":\"\\\\\",\"bs\":\"\\b\",\"cr\":\"\\r\",\"ff\":\"\\f\",\"lf\":\"\\n\",\"nul\":\"\\u0000\",\"quote\":\"\\\"\",\"tab\":\"\\t\",\"unit_sep\":\"\\u001f\"}",
+      "sha256": "61faa99ea7a0fc78b2922edfa89132fb94fa0897ee467c6679d01c4427bbec48"
+    },
+    {
+      "name": "string-literals",
+      "why": "Everything the escape set does not name is emitted literally as UTF-8. U+007F is the one that divides implementations: some escapers escape it, and an implementation that does will produce different bytes and a different hash.",
+      "value": {
+        "del": "\u007f",
+        "accented": "caf\u00e9",
+        "cjk": "\u65e5\u672c",
+        "emoji": "\ud83d\ude00",
+        "nbsp": "\u00a0"
+      },
+      "canonical": "{\"accented\":\"caf\u00e9\",\"cjk\":\"\u65e5\u672c\",\"del\":\"\u007f\",\"emoji\":\"\ud83d\ude00\",\"nbsp\":\"\u00a0\"}",
+      "sha256": "d7a442354ffe9a9453636132d97937f8cd81669c1243c87a130e02bc42cc4bde"
+    },
+    {
+      "name": "lone-surrogate",
+      "why": "An unpaired surrogate is escaped as lower-case \\udXXX rather than emitted as invalid UTF-8. A canonicaliser that emits the replacement character instead changes the hash.",
+      "value": {
+        "broken": "\ud800"
+      },
+      "canonical": "{\"broken\":\"\\ud800\"}",
+      "sha256": "78b801dd0ea9131f10c50032d211c2d133fe813f4bf6f0c5bdee5c233a60cf78"
+    },
+    {
+      "name": "numbers",
+      "why": "Finite numbers take the shortest round-tripping form of ECMA-262 Number::toString, which is where a language with a different float formatter will diverge. Negative zero is deliberately absent: it canonicalises to 0, so a signed zero cannot be expressed or distinguished in these bytes.",
+      "value": {
+        "int": 42,
+        "negative": -7,
+        "zero": 0,
+        "fraction": 0.5,
+        "exponent": 1e+21,
+        "small": 1e-7,
+        "max_safe_int": 9007199254740991
+      },
+      "canonical": "{\"exponent\":1e+21,\"fraction\":0.5,\"int\":42,\"max_safe_int\":9007199254740991,\"negative\":-7,\"small\":1e-7,\"zero\":0}",
+      "sha256": "4946e320d8c00858618d3b8b057d0110e1afcd38761f4c99185426ffb722a1d5"
+    },
+    {
+      "name": "utf16-key-order",
+      "why": "The ordering that catches people out, and the reason the specification says UTF-16 rather than code point. U+1D400 is a surrogate pair beginning \\ud835; U+FF21 is the single unit \\uff21. By code unit U+1D400 sorts FIRST, by code point it sorts LAST. An implementation sorting by code point produces different bytes here. The specification also advises keeping member names ASCII so this never arises in practice.",
+      "value": {
+        "\ud835\udc00": "non-bmp",
+        "\uff21": "fullwidth-A",
+        "a": "ascii"
+      },
+      "canonical": "{\"a\":\"ascii\",\"\ud835\udc00\":\"non-bmp\",\"\uff21\":\"fullwidth-A\"}",
+      "sha256": "88fa84b11088d87b369ca717e46dfdd7dbc67b6b0498ae8e3ef63caeeee8f5e5"
+    }
+  ],
+  "must_fail": [
+    {
+      "name": "infinity",
+      "construct": "Infinity",
+      "why": "A non-finite number MUST cause serialisation to fail rather than produce a placeholder. JSON has no literal for it, so an implementation that emits null or 1e999 has silently changed the artefact being signed."
+    },
+    {
+      "name": "nan",
+      "construct": "NaN",
+      "why": "As above. NaN is the likelier accident of the two, because it arrives from arithmetic rather than from a literal."
+    }
+  ]
+}

@@ -12,7 +12,10 @@ import { createAjvAdapter } from './ajv-adapter.mjs';
 const adapter = await createAjvAdapter();
 const report = await runConformance(adapter);
 
-console.log(`Conformance: ${report.validCount} valid fixtures, ${report.invalidCount} rejections.`);
+console.log(
+  `Conformance: ${report.validCount} valid fixtures, ${report.invalidCount} rejections, `
+  + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}.`,
+);
 
 if (report.failures.length > 0) {
   console.error(`\n${report.failures.length} failure(s):\n`);

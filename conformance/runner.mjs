@@ -8,7 +8,8 @@
  *
  * It takes the implementation under test as an argument and imports nothing from any product.
  *
- * Three things are asserted, and the third is the one people forget:
+ * Four things are asserted. The third is the one people forget, and the fourth is the one that
+ * decides whether two implementations can verify each other's signatures at all:
  *
  *   1. Every valid fixture is accepted.
  *   2. Every invalid fixture is rejected — and carries a written reason why, because
@@ -16,14 +17,19 @@
  *   3. A valid fixture round-trips **without losing unknown-but-valid fields**. That is what
  *      lets a newer writer and an older reader coexist, and it is the property most easily
  *      broken by a well-meaning field pick.
+ *   4. Canonical bytes match, for an adapter that offers a `canonicalise`. Schema agreement is
+ *      not interoperability: every hash in this contract is taken over canonical bytes, so two
+ *      implementations that both pass 1 to 3 and disagree here cannot check each other's work.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = resolve(here, '..', 'fixtures');
+const vectorsFile = resolve(here, 'canonical-vectors.json');
 
 /** Fixture file prefix → the shape it exercises. */
 export const SHAPES = [
@@ -71,7 +77,60 @@ async function reasonFor(file) {
 }
 
 /**
- * @param adapter {{ validate(shape: string, value: unknown): boolean }}
+ * Section 7 of the specification, as executable vectors.
+ *
+ * Optional, because an implementation that only reads artefacts never canonicalises anything.
+ * An implementation that issues, signs or hashes one is not conformant without this, and the
+ * report says so by name rather than by silence: `canonicalChecked` is false when it was skipped.
+ */
+async function checkCanonicalisation(adapter, failures) {
+  if (typeof adapter.canonicalise !== 'function') {
+    return false;
+  }
+  const doc = JSON.parse(await readFile(vectorsFile, 'utf8'));
+
+  for (const vector of doc.vectors) {
+    let bytes;
+    try {
+      bytes = adapter.canonicalise(vector.value);
+    } catch (error) {
+      failures.push(`canonical/${vector.name}: threw (${error.message}) — ${vector.why}`);
+      continue;
+    }
+    if (typeof bytes !== 'string') {
+      failures.push(`canonical/${vector.name}: canonicalise must return a string, got ${typeof bytes}`);
+      continue;
+    }
+    // The hash is the authoritative comparison: it survives anything that might mangle this
+    // file in transit. The byte string is reported because a hash alone is undebuggable.
+    const digest = createHash('sha256').update(bytes, 'utf8').digest('hex');
+    if (digest !== vector.sha256) {
+      failures.push(
+        `canonical/${vector.name}: expected ${JSON.stringify(vector.canonical)} (sha256 ${vector.sha256}), `
+        + `got ${JSON.stringify(bytes)} (sha256 ${digest}) — ${vector.why}`,
+      );
+    }
+  }
+
+  for (const c of doc.must_fail) {
+    const value = { x: c.construct === 'NaN' ? Number.NaN : Number.POSITIVE_INFINITY };
+    let threw = false;
+    try {
+      adapter.canonicalise(value);
+    } catch {
+      threw = true;
+    }
+    if (!threw) {
+      failures.push(`canonical/${c.name}: serialised without failing, but it must fail — ${c.why}`);
+    }
+  }
+  return true;
+}
+
+/**
+ * @param adapter {{ validate(shape: string, value: unknown): boolean,
+ *                   roundTrip?(shape: string, value: unknown): unknown,
+ *                   canonicalise?(value: unknown): string }}
  * @returns a report; `failures` empty means conformant.
  */
 export async function runConformance(adapter) {
@@ -124,9 +183,13 @@ export async function runConformance(adapter) {
     }
   }
 
+  // 4. Canonical bytes, if this implementation produces any.
+  const canonicalChecked = await checkCanonicalisation(adapter, failures);
+
   return {
     validCount: valid.length,
     invalidCount: invalid.length,
+    canonicalChecked,
     failures,
   };
 }

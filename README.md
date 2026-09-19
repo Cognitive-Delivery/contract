@@ -177,6 +177,24 @@ Both run in CI on every push and pull request, against Node 20 and 22. The point
 that a third party can check the claim, so the check has to be runnable by someone who has never
 seen the product.
 
+### Canonical bytes
+
+`npm test` also runs the canonicalisation vectors, and this is the part worth reading before
+you write an implementation in another language.
+
+Every hash in this contract — `declared_hash`, every signature, the ledger chain — is taken over
+**canonical bytes**. Schema agreement is not interoperability: two implementations can accept and
+reject exactly the same artefacts and still produce different bytes for the same declaration, and
+therefore be unable to verify a single one of each other's signatures. Everything looks correct
+right up until somebody else's hash arrives.
+
+`conformance/canonical-vectors.json` holds nine vectors with their expected byte strings and
+SHA-256 digests, plus two values that must *fail* to serialise. Supply a `canonicalise(value)`
+on your adapter and the runner checks them; omit it and the run reports **NOT CHECKED** rather
+than passing quietly. The rules themselves are section 7 of
+[SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) — the escape set is closed, keys sort
+by UTF-16 code unit, and an absent member is omitted rather than nulled.
+
 ## Privacy properties that must not be lost
 
 These are not stylistic. Audit and Index evidence is append-only and retained indefinitely, so
@@ -199,6 +217,7 @@ fixtures/invalid/  each beside a .reason file saying why it must be rejected
 conformance/       the reference runner; takes an adapter, imports no product
   runner.mjs       the corpus, run against whatever adapter you pass it
   ajv-adapter.mjs  the reference adapter, so the corpus runs here and not only in a product
+  canonical-vectors.json  the canonical-bytes vectors of SPEC section 7, in pure ASCII
   run.mjs          `npm test`
 schemas.lock.json  the recorded shape, and what the additive-only guard compares against
 check-additive.mjs that guard

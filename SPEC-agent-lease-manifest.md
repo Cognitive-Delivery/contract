@@ -235,7 +235,20 @@ A value is serialised to UTF-8 with no insignificant whitespace, by these rules:
 
 1. `null` serialises as `null`.
 2. A boolean serialises as `true` or `false`.
-3. A string serialises as a JSON string per RFC 8259.
+3. A string serialises as a JSON string per RFC 8259, escaped **exactly** as follows, because RFC
+   8259 permits several escapings of the same string and a hash cannot tolerate a choice:
+   - `"` becomes `\"` and `\` becomes `\\`;
+   - U+0008, U+0009, U+000A, U+000C and U+000D become `\b`, `\t`, `\n`, `\f` and `\r`;
+   - any other character in U+0000–U+001F becomes `\u` followed by four **lower-case** hexadecimal
+     digits;
+   - an unpaired surrogate becomes `\u` followed by four lower-case hexadecimal digits;
+   - **every other character is emitted literally as UTF-8**, including U+007F and every character
+     above U+007F. An implementation **MUST NOT** escape a character this list does not name.
+
+   These are the escaping rules of [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) (JSON
+   Canonicalization Scheme) §3.2.2.2 and of ECMA-262 `JSON.stringify`, so an implementation on a
+   JavaScript runtime gets them for free and one elsewhere has a second specification to check
+   against.
 4. A number **MUST** be finite. A non-finite number **MUST** cause serialisation to fail rather than
    produce a placeholder. Finite numbers serialise in the shortest round-tripping form defined by
    ECMA-262 `Number::toString`.
@@ -261,6 +274,21 @@ The reference implementation uses HMAC-SHA256 with a per-deployment key. This sp
 > which is the issuer itself. It does not let a third party verify a lease without being given that
 > key. An asymmetric scheme, with the public half published, is the obvious improvement and is not
 > yet implemented. Any claim of third-party verifiability should be read against this paragraph.
+
+### 7.1 Test vectors
+
+Everything above is executable. `conformance/canonical-vectors.json` carries nine vectors — member
+ordering, recursion, absent versus null, empty containers, the escape set, the literal set,
+unpaired surrogates, number forms, and UTF-16 versus code-point key order — each with its expected
+byte string and the SHA-256 of those bytes, plus two cases that **MUST** fail to serialise. An
+implementation runs them by supplying a `canonicalise(value) => string` to `conformance/runner.mjs`;
+one that does not offer it is reported as unchecked rather than as passing. The file is written in
+pure ASCII, with every character above U+007E escaped, so nothing in it depends on an editor or a
+transfer preserving bytes it might not.
+
+An implementation that issues, signs or hashes an artefact is **not conformant** without passing
+these. Schema agreement is not interoperability: two implementations can accept and reject exactly
+the same artefacts and still be unable to verify a single one of each other's signatures.
 
 ## 8. Threat model
 
@@ -296,7 +324,10 @@ An implementation claiming conformance with schema set 1.0 **MUST**:
 2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant.
 3. Record every issue, narrowing and refusal.
 4. Produce canonical bytes per §7 such that its `declared_hash` for a given declaration matches the
-   value another conforming implementation produces.
+   value another conforming implementation produces, and pass every vector in
+   `conformance/canonical-vectors.json` (§7.1). An implementation that only *reads* artefacts and
+   never issues, signs or hashes one is exempt from this clause and **MUST** say so when it claims
+   conformance, because the runner reports it as unchecked rather than as passed.
 5. Pass the published conformance corpus: accept every fixture under `fixtures/valid/` and reject
    every fixture under `fixtures/invalid/`, each of which carries a `.reason` file stating what the
    rejection is for.
@@ -309,6 +340,12 @@ The corpus is the conformance test. A schema alone is not: two implementations c
 against the same schema and still disagree about what they refuse, which is the disagreement that
 matters.
 
+**Schema agreement is not interoperability.** Two implementations can accept and reject exactly the
+same artefacts and still produce different bytes for the same declaration, and therefore be unable
+to verify a single one of each other's signatures. §7.1 is the half of the corpus that catches this,
+and it is the half an implementation is most likely to skip, because everything looks correct
+until somebody else's hash arrives.
+
 **The corpus tests schema validity, not issuance.** These are different questions and an implementer
 **MUST NOT** conflate them. A fixture under `fixtures/valid/` is a well-formed manifest; it is not a
 manifest that must be granted a lease. `agent-lease-manifest.minimal.json` is the clearest case: it
@@ -316,8 +353,10 @@ validates, and an issuer **MUST** refuse it, because it declares `kind: "native"
 `runtime_agent: "unknown"` (§4.2) and because narrowing leaves `allow.tools` empty (§5.2). Both
 statements are true at once.
 
-Conformance therefore has two halves: validate as the schemas say, and issue or refuse as §4 and §5
-say. An implementation that passes the corpus has demonstrated the first only.
+Conformance therefore has three halves, which is one more than the phrase allows and exactly the
+point: validate as the schemas say, canonicalise as §7 says, and issue or refuse as §4 and §5 say.
+The corpus checks the first two. The third is checked by the implementation's own tests, and a
+claim of conformance **SHOULD** say where those are.
 
 ## 10. Compatibility
 
@@ -359,4 +398,4 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
-| 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time; the schemas referred to "canonical bytes" without defining them |
+| 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time — the schemas had referred to "canonical bytes" in six descriptions without defining them anywhere — down to the closed escape set and UTF-16 key ordering, with executable test vectors at §7.1 |

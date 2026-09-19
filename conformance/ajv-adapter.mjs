@@ -53,5 +53,47 @@ export async function createAjvAdapter() {
     roundTrip(shape, value) {
       return JSON.parse(JSON.stringify(value));
     },
+
+    canonicalise(value) {
+      return canonicalise(value);
+    },
   };
+}
+
+/**
+ * Canonical bytes, per section 7 of `SPEC-agent-lease-manifest.md`.
+ *
+ * Thirty lines, and every hash in the contract rests on them. It is short because the rules
+ * lean on `JSON.stringify`, whose string escaping and number formatting the specification
+ * adopts wholesale — deliberately, so that a JavaScript implementation cannot drift from the
+ * text by accident. An implementation in a language without those exact semantics has to do
+ * this part by hand, which is what `conformance/canonical-vectors.json` is for.
+ */
+export function canonicalise(value) {
+  if (value === null) {
+    return 'null';
+  }
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      // A placeholder here would silently change the artefact being signed.
+      throw new Error('canonicalise: a non-finite number is not serialisable');
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'string' || typeof value === 'boolean') {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    // Element order is significant and is left exactly as given.
+    return `[${value.map(canonicalise).join(',')}]`;
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value)
+      // An absent member is omitted, not serialised as null.
+      .filter(([, member]) => member !== undefined)
+      // `<` on JavaScript strings compares UTF-16 code units, which is the normative order.
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([key, member]) => `${JSON.stringify(key)}:${canonicalise(member)}`).join(',')}}`;
+  }
+  throw new Error(`canonicalise: unsupported value of type ${typeof value}`);
 }

@@ -35,6 +35,22 @@ tooling in this repository.
   path containment is deliberately conservative, so a parent granted `src/*.ts` does **not** contain
   a child declaring `src/a.ts`.
 
+- **Canonicalisation test vectors** (`conformance/canonical-vectors.json`), and a fourth check in
+  the conformance runner that executes them. Nine vectors — member ordering, recursion, absent
+  versus null, empty containers, the escape set, the literal set, unpaired surrogates, number forms,
+  and the UTF-16 versus code-point key ordering that is the one most likely to diverge — each with
+  its expected byte string and the SHA-256 of those bytes, plus two values that must *fail* to
+  serialise rather than produce a placeholder.
+
+  Supply a `canonicalise(value)` on your adapter and the runner checks them. Omit it and the run
+  reports **NOT CHECKED** rather than passing quietly, because a silent skip on the one check that
+  decides whether two implementations can verify each other's signatures is worse than no check.
+  The file is pure ASCII, every character above U+007E escaped, so nothing in it depends on an
+  editor or a transfer preserving bytes it might not.
+
+  The reference canonicaliser now lives in `conformance/ajv-adapter.mjs` as an exported function,
+  so the repository demonstrates the rules rather than only describing them.
+
 ### Fixed
 
 - **`publishConfig.provenance: true` made the first release impossible to publish.** It requires a CI
