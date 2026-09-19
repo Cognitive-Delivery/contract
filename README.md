@@ -85,10 +85,26 @@ field requires **2.0.0** and a documented migration. Customers have these files 
 repositories and older readers will still be reading them.
 
 This is not a promise in a README. `schemas.lock.json` holds a normalised digest of required
-fields and property types, and a test fails the build when the rule is broken without a major
+fields and property types, and a check fails the build when the rule is broken without a major
 version change.
 
+The comparison is against the shape *before* the change, not against the lock sitting beside the
+schemas: a lock regenerated in the same commit agrees with whatever broke it. On a pull request
+the baseline is the branch being merged into; on a push it is the previous commit.
+
 Every artefact carries `schema_version`. One without it is read as `1.0.0`.
+
+## Running the checks
+
+```
+npm ci
+npm test                 # the corpus, against the reference adapter
+npm run check:additive   # the lock is current, and this change is additive
+```
+
+Both run in CI on every push and pull request, against Node 20 and 22. The point of a corpus is
+that a third party can check the claim, so the check has to be runnable by someone who has never
+seen the product.
 
 ## Privacy properties that must not be lost
 
@@ -106,11 +122,15 @@ anything that reaches it is effectively permanent.
 ## Layout
 
 ```
-schemas/          the JSON Schemas, one file per shape, each self-contained
-fixtures/valid/   minimal and fully populated, per shape
-fixtures/invalid/ each beside a .reason file saying why it must be rejected
-conformance/      the reference runner; takes an adapter, imports no product
-schemas.lock.json the additive-only guard
+schemas/           the JSON Schemas, one file per shape, each self-contained
+fixtures/valid/    minimal and fully populated, per shape
+fixtures/invalid/  each beside a .reason file saying why it must be rejected
+conformance/       the reference runner; takes an adapter, imports no product
+  runner.mjs       the corpus, run against whatever adapter you pass it
+  ajv-adapter.mjs  the reference adapter, so the corpus runs here and not only in a product
+  run.mjs          `npm test`
+schemas.lock.json  the recorded shape, and what the additive-only guard compares against
+check-additive.mjs that guard
 ```
 
 ## Licence
@@ -127,5 +147,5 @@ schemas with a corpus let them demonstrate it, and let anyone else check the cla
 The implementations remain PolyForm Noncommercial 1.0.0. Reading and writing the format is open;
 building a competing governed-delivery product out of this codebase is not.
 
-This package is still unpublished. The licence question is settled; publishing is a separate
-decision about when the schema set is stable enough to promise 1.x compatibility to strangers.
+Use it from this repository, as a submodule or a clone pinned to a tag. Consume `schemas/` and
+`fixtures/` as files; nothing here needs a package manager.

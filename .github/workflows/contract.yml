@@ -1,0 +1,81 @@
+name: contract
+
+# The README says a test fails the build when the additive-only rule is broken.
+# This is that build. It runs on the repository a stranger clones, not only inside a product.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: conformance corpus
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # Every valid fixture accepted, every invalid one rejected with a written reason,
+      # and an unknown field surviving a round trip.
+      - run: npm test
+
+  compatibility:
+    name: additive-only guard
+    runs-on: ubuntu-latest
+    steps:
+      # The comparison is against the shape before this change, so the history is needed.
+      # A shallow clone would leave nothing to compare against and quietly pass.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # On a pull request the baseline is the branch being merged into. On a push to main it
+      # is the previous commit. Either way the lock must also be current, or there is no record
+      # of the shape this change started from.
+      - name: Compare against the base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            node ./check-additive.mjs --baseline-ref "origin/${{ github.base_ref }}"
+          else
+            node ./check-additive.mjs --baseline-ref HEAD^
+          fi
+
+  line-endings:
+    name: line endings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Schemas and fixtures are hashed into schemas.lock.json and compared byte for byte, so a
+      # checkout that rewrites line endings can make a conformance run disagree with itself
+      # across platforms. .gitattributes pins this; the check is that it still holds.
+      - name: No CRLF in tracked text
+        run: |
+          if git grep -I --files-with-matches $'\r$' -- . ':!*.png' ':!*.jpg'; then
+            echo "The files above contain CRLF line endings. See .gitattributes."
+            exit 1
+          fi
+          echo "All tracked text files are LF."

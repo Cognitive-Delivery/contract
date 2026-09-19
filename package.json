@@ -3,7 +3,23 @@
   "version": "1.0.0",
   "description": "The Cognitive Delivery governance contract: the artefact shapes any implementation must read and write identically, with a conformance corpus.",
   "license": "Apache-2.0",
-  "author": "Jason Cruz Falzon",
+  "author": "Jason Cruz Falzon <jason@cognitivedelivery.co.uk>",
+  "homepage": "https://cognitivedelivery.co.uk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cognitive-Delivery/contract.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cognitive-Delivery/contract/issues"
+  },
+  "keywords": [
+    "governance",
+    "json-schema",
+    "provenance",
+    "audit",
+    "conformance",
+    "cognitive-delivery"
+  ],
   "type": "module",
   "files": [
     "LICENSE",
@@ -18,11 +34,17 @@
     "./conformance/runner.mjs": "./conformance/runner.mjs"
   },
   "scripts": {
+    "test": "node ./conformance/run.mjs",
+    "lock": "node ./generate-schemas-lock.mjs",
+    "check:additive": "node ./check-additive.mjs",
     "generate": "node ./generate-contract-types.mjs",
     "check": "node ./generate-contract-types.mjs --check"
   },
   "cdfContract": {
     "schemaSetVersion": "1.0.0",
     "compatibility": "Within 1.x, changes are additive only. New optional fields are allowed. Renaming, removing, narrowing or redefining a field requires 2.0.0 and a documented migration."
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0"
   }
 }

@@ -1,0 +1,10 @@
+# Every change to the contract is reviewed by its maintainer.
+# The schemas, the corpus and the lock are what other implementations are held to, so a change
+# here is a change to something outside this repository.
+
+*                       @datajace
+
+/schemas/               @datajace
+/fixtures/              @datajace
+/schemas.lock.json      @datajace
+/.github/               @datajace
