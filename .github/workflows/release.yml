@@ -56,4 +56,11 @@ jobs:
           fi
           echo "Publishing $PKG."
 
-      - run: npm publish
+      # `--provenance` here rather than in publishConfig.provenance. Setting it in
+      # package.json makes EVERY publish demand a CI provider, so a publish from a
+      # laptop fails with "Automatic provenance generation not supported for
+      # provider: null" — which is exactly how 1.0.0 got stuck, because the first
+      # release of a package has to go out by hand (trusted publishing is
+      # configured per package and needs the package to exist). CI still attests
+      # every release; a hand publish is now possible when it has to be.
+      - run: npm publish --provenance
