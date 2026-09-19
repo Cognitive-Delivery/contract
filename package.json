@@ -30,7 +30,9 @@
     "fixtures",
     "conformance",
     "schemas.lock.json",
-    "README.md"
+    "README.md",
+    "SPEC-agent-lease-manifest.md",
+    "CHANGELOG.md"
   ],
   "exports": {
     "./schemas/*": "./schemas/*",

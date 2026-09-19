@@ -26,7 +26,7 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `cdi-signal` | One line of the Index signal log |
 | `cdi-assessment` | A recorded human assessment against the six dimensions |
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
-| `agent-lease-manifest` | What an agent declares it needs before the harness lets it run |
+| `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
 | `plugin-manifest` | A plugin's `plugin.json`: every Claude Code key, plus the additive `cdf` block |
 | `plugin-marketplace` | A marketplace's `marketplace.json`: every Claude Code key and all seven source forms, plus a per-entry declared digest |
@@ -108,6 +108,62 @@ what produced its own.
 You can also use it straight from this repository, as a submodule or a clone pinned to a tag.
 `schemas/` and `fixtures/` are plain files and an implementation in another language needs
 nothing else.
+
+## A worked example
+
+A child agent asks for less than its parent holds, and gets less again than it asked for.
+
+The **parent** lease grants a broad scope:
+
+```json
+{ "allow": { "tools": ["cdf_read_steering", "cdf_write_artefact"],
+             "read_paths": ["**"], "write_paths": ["src/**"],
+             "hosts": ["*.anthropic.com"], "commands": [] },
+  "deny":  { "commands": ["sudo"], "paths": [".cdf/runtime/**"], "hosts": [] },
+  "budget": { "tokens": 200000, "depth": 2, "fan_out": 4 } }
+```
+
+A **worker declares** what it wants — note it asks for one tool the parent does not hold, a host the
+parent does not allow, and more tokens than remain:
+
+```json
+{ "schema_version": "1.0",
+  "agent":  { "name": "implementer", "kind": "delegated-cli", "runtime_agent": "claude-code" },
+  "intent": { "purpose": "Implement task 1.1 within its file scope.", "spec_slug": "phase-9", "task_id": "1.1" },
+  "allow":  { "tools": ["cdf_write_artefact", "cdf_break_glass_advance"],
+              "read_paths": ["src/**"], "write_paths": ["src/projects/**"],
+              "hosts": ["api.anthropic.com", "example.com"], "commands": [] },
+  "deny":   { "commands": [], "paths": [], "hosts": [] },
+  "budget": { "tokens": 500000 },
+  "approvals": [] }
+```
+
+The issuer **grants**:
+
+```json
+{ "allow": { "tools": ["cdf_write_artefact"],
+             "read_paths": ["src/**"], "write_paths": ["src/projects/**"],
+             "hosts": ["api.anthropic.com"], "commands": [] },
+  "deny":  { "commands": ["sudo"], "paths": [".cdf/runtime/**"], "hosts": [] },
+  "budget": { "tokens": 200000, "depth": 1, "fan_out": 4 } }
+```
+
+Reading the difference:
+
+- `cdf_break_glass_advance` is **gone** — tools intersect by exact name, and the parent never held it.
+- `example.com` is **gone** — the parent's `*.anthropic.com` does not contain it.
+- `api.anthropic.com` **survives** — the parent's wildcard contains it.
+- `src/projects/**` **survives** — the parent's `src/**` contains it, so containment keeps a genuine
+  narrowing rather than dropping it as an exact-match miss would.
+- `tokens` is **clamped** to what the parent had left, not what the child asked for.
+- `depth` is **decremented**: this worker may issue one further generation, not two.
+- The parent's `deny` entries are **inherited** although the child declared none. A child cannot shed
+  a refusal.
+
+Nothing about the child's identity opens anything. The lease id does.
+
+The full rules, including the six conditions that require a refusal, are in
+[SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md).
 
 ## Running the checks
 
