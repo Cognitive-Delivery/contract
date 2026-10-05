@@ -28,8 +28,8 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
 | `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
-| `plugin-manifest` | A plugin's `plugin.json`: every Claude Code key, plus the additive `cdf` block |
-| `plugin-marketplace` | A marketplace's `marketplace.json`: every Claude Code key and all seven source forms, plus a per-entry declared digest |
+| `plugin-manifest` | A plugin's `plugin.json`: the keys the Claude Code manifest reference documents, as of 2026-10-05, plus two CDF extensions (`cdf`, plugin-level `category`) |
+| `plugin-marketplace` | A marketplace's `marketplace.json`: the keys and seven source forms the Claude Code marketplace reference documents, as of 2026-10-05, plus two CDF extensions (`local`, per-entry `cdf`) |
 
 ## What is deliberately not in it
 
@@ -43,20 +43,44 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 - **Implementation.** This is data and generated types. There is no logic here and no
   dependency on any product.
 
-## A superset is a compatibility promise, not a courtesy
+## What the plugin schemas model, and what they add
 
-`plugin-manifest` and `plugin-marketplace` are strict supersets of Claude Code's two formats.
-Every key Claude Code defines is honoured with the same meaning, so a plugin written for Claude
-Code validates here unchanged, and a plugin written for CDF remains a valid Claude Code plugin.
-The only addition is an optional `cdf` block.
+`plugin-manifest` and `plugin-marketplace` model the fields the Claude Code
+[manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference) and
+[marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference) document,
+**as read on 2026-10-05**, with the same meaning, and pass unknown keys through as Claude Code does
+(it strips an unknown top-level key with a warning). Where Claude Code's object is strict
+(`userConfig` options, `channels` entries, `lspServers` configs, monitors) the contract's is too,
+because honouring a key with the same meaning there means refusing an unknown one. The evidence is
+in the corpus: the manifest reference's own example manifest and Anthropic's marketplace for its
+bundled plugins both validate as fixtures.
 
-Two consequences follow, and both are deliberate:
+This is a dated statement, not a standing guarantee. The references change; a key added after that
+date validates here (the content model is open) but is not yet modelled, and the date in the schema
+descriptions says how current the modelling is. An earlier README promised more than a schema can
+keep about a moving target: that every key Claude Code would ever define was already here. That
+wording stopped being true as Claude Code grew, and it is now a banned claim in the reference
+implementation's documentation gate.
 
-- **All seven source forms are declared, including three the harness cannot fetch.** `npm`,
-  `archive` and `command` validate and are *reported* as an unsupported source form. A reader
-  that threw on them would refuse an entire marketplace over one entry nobody asked to install.
+**The contract has, Claude Code lacks.** Two extensions, both named here so no one mistakes them
+for Claude Code's:
+
+- **`cdf`** on a manifest and on a marketplace entry: what the harness alone understands
+  (contributions, capabilities, attestation, a declared digest).
+- **`local`** as a marketplace source form, for a marketplace that lists plugins already on disk.
+  Claude Code's only local form is the relative-path string; CDF's first-party marketplace ships
+  its plugins inside the repository and needs a form with nothing to fetch and nothing to pin.
+- **`category`** on a manifest. Claude Code documents `category` on a marketplace entry only and
+  strips it from `plugin.json` with a warning; CDF's plugin decision records key on it.
+
+Two consequences of following Claude Code's rules are deliberate:
+
+- **All seven Claude Code source forms are declared, including three the harness cannot fetch.**
+  `npm`, `archive` and `command` validate and are *reported* as an unsupported source form. A
+  reader that threw on them would refuse an entire marketplace over one entry nobody asked to
+  install.
 - **`name` is the only required key in a manifest.** That is Claude Code's rule, and adopting it
-  is what makes "validates unchanged" true rather than nearly true.
+  is what lets a Claude Code plugin validate here.
 
 ## Two closed vocabularies, and why
 

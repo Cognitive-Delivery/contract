@@ -106,6 +106,13 @@ tooling in this repository.
 
 ### Changed
 
+- **The README no longer claims the plugin schemas contain every key Claude Code defines.** The
+  sentence was true at 1.0.0 and stopped being true as Claude Code grew; a standing superlative
+  about a moving target is the kind of sentence this contract exists to refuse. The README now says
+  what is modelled and as of which date, names the two CDF extensions (`cdf`; the `local` source
+  form; plugin-level `category`) so nobody mistakes them for Claude Code's, and the old wording is
+  a banned claim in the reference implementation's documentation gate.
+
 - **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes
   are the RFC 8785 (JSON Canonicalization Scheme) serialisation after removing absent members, with
   the field-by-field rules kept as an informative restatement. The restatement was already RFC 8785
