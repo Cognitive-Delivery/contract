@@ -1,0 +1,1 @@
+`allow.tool_args` is keyed by `*`. Argument constraints are declared per tool, under the tool identity rule, and `*` names no tool.
