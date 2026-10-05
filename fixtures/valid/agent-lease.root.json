@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "lease_id": "5a1d2c3b-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+  "manifest": {
+    "schema_version": "1.0",
+    "agent": {
+      "name": "worker",
+      "kind": "delegated-cli",
+      "runtime_agent": "claude-code"
+    },
+    "intent": {
+      "purpose": "Implement task 1.1 within its file scope."
+    },
+    "allow": {
+      "tools": [
+        "cdf_write_artefact",
+        "cdf_read_steering"
+      ],
+      "read_paths": [
+        "**"
+      ],
+      "write_paths": [
+        "**"
+      ],
+      "hosts": [
+        "api.anthropic.com"
+      ],
+      "commands": []
+    },
+    "deny": {
+      "commands": [
+        "sudo",
+        "su",
+        "docker",
+        "ssh",
+        "curl",
+        "wget"
+      ],
+      "paths": [
+        ".cdf/runtime/lease-signing.key",
+        ".cdf/steering/**"
+      ],
+      "hosts": []
+    },
+    "budget": {
+      "tokens": 1000000,
+      "depth": 3,
+      "fan_out": 8
+    },
+    "approvals": []
+  },
+  "declared_hash": "75ea526d62c73a2455e61eb014629e62c466206900ea9775f1f11d33cd2c3099",
+  "issued_at": "2026-10-05T06:00:00.000Z",
+  "expires_at": "2026-10-05T06:15:00.000Z",
+  "issuer_session_id": "conformance",
+  "key_fingerprint": "sha256:9d12c441941d9b5e",
+  "signature": "38a1acc9290eb1e144fbfee3251a9e3d5ee3b26618c9b92bee5c1f8533b38684"
+}

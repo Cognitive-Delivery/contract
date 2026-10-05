@@ -1,0 +1,4 @@
+# TEST KEY. Published on purpose so the signed fixtures in this corpus can be verified by anyone.
+# A verifier MUST refuse any lease signed with this key outside a conformance run (SPEC section 7).
+# 32 bytes, lower-case hex. HMAC-SHA256 over the canonical bytes of every lease field except signature.
+f26727a6f3ac3817c4ea31fd126ed165a8e5e3cda28cdfe6900c26ea54a98df3

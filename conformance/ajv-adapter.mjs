@@ -16,6 +16,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schemaDir = resolve(here, '..', 'schemas');
@@ -56,6 +57,25 @@ export async function createAjvAdapter() {
 
     canonicalise(value) {
       return canonicalise(value);
+    },
+
+    /** SHA-256 of the canonical bytes, lower-case hex: `declared_hash` and every hash in the contract. */
+    hash(value) {
+      return createHash('sha256').update(canonicalise(value), 'utf8').digest('hex');
+    },
+
+    /**
+     * The reference algorithm, HMAC-SHA256 over the canonical bytes of every lease field except
+     * `signature`, compared in constant time. Anything malformed is `false`, never a throw.
+     */
+    verify(lease, keyHex) {
+      if (!lease || typeof lease !== 'object' || typeof lease.signature !== 'string' || !/^[0-9a-f]{64}$/.test(lease.signature)) {
+        return false;
+      }
+      const { signature, ...unsigned } = lease;
+      const expected = createHmac('sha256', Buffer.from(keyHex, 'hex')).update(canonicalise(unsigned), 'utf8').digest();
+      const provided = Buffer.from(signature, 'hex');
+      return provided.length === expected.length && timingSafeEqual(provided, expected);
     },
   };
 }

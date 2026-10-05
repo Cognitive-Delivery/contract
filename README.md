@@ -182,6 +182,17 @@ Both run in CI on every push and pull request, against Node 20 and 22, beside a 
 every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
 check has to be runnable by someone who has never seen the product.
 
+### Signature vectors and rejection places
+
+`conformance/signature-vectors.json` names lease fixtures signed with the published **test key**
+(`conformance/test-key.txt`) and the declarations they were issued from. Supply `hash(value)` and
+`verify(lease, keyHex)` on your adapter and the runner checks that your `declared_hash` matches,
+that the fixtures verify, and that they stop verifying when a byte of the signature or of the
+granted manifest changes. The key is public on purpose; a verifier must refuse it outside a
+conformance run. Every invalid fixture also carries an `.expect.json` naming the instance path its
+rejection must be reported at, and the runner checks it when your adapter reports its errors
+(`lastErrors`, Ajv's shape): rejecting a fixture for the wrong reason is not conformance.
+
 ### Narrowing vectors
 
 `conformance/narrowing-vectors.json` is the third half of conformance made executable: a declared

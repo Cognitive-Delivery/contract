@@ -24,6 +24,8 @@
  *      1 to 3 and disagree here cannot check each other's work.
  *   5. Narrowing matches the vectors of §5, for an adapter that offers `narrow`; every adapter
  *      has the vectors checked for shape.
+ *   6. The signed fixtures verify under the published test key, for an adapter that offers
+ *      `hash` and `verify`, and stop verifying when a byte changes.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -54,7 +56,8 @@ function shapeOf(file) {
 
 async function loadFixtures(kind) {
   const dir = join(fixturesDir, kind);
-  const files = (await readdir(dir)).filter((name) => name.endsWith('.json')).sort();
+  // `.expect.json` sits beside a fixture and is not one.
+  const files = (await readdir(dir)).filter((name) => name.endsWith('.json') && !name.endsWith('.expect.json')).sort();
   const loaded = [];
 
   for (const file of files) {
@@ -75,6 +78,22 @@ async function reasonFor(file) {
   try {
     const text = await readFile(join(fixturesDir, 'invalid', file.replace(/\.json$/, '.reason')), 'utf8');
     return text.trim();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The machine-readable half of a rejection: `{ "path": "/allow/write_paths/0", "keyword": "not" }`.
+ * `path` MUST match the instance path of one error the implementation reports, so a fixture
+ * cannot be rejected for the wrong reason and pass; `keyword` is informative, because validators
+ * name keywords differently. An adapter reports its errors through `lastErrors`
+ * (`[{ instancePath, keyword }]`, Ajv's shape) when it can; one that cannot is checked for
+ * rejection only and the run says so.
+ */
+async function expectFor(file) {
+  try {
+    return JSON.parse(await readFile(join(fixturesDir, 'invalid', file.replace(/\.json$/, '.expect.json')), 'utf8'));
   } catch {
     return null;
   }
@@ -239,10 +258,63 @@ async function checkNarrowing(adapter, failures) {
 }
 
 /**
+ * Section 7's signatures, as executable vectors: a signed lease fixture, the declaration it was
+ * issued from, and the published TEST key. For an adapter offering `hash(value)` and
+ * `verify(lease, keyHex)`: `hash(declared)` equals `declared_hash`, `verify` accepts the fixture
+ * and refuses it with one signature byte changed. An adapter without them is reported as not
+ * checked. The reference adapter implements the reference algorithm, HMAC-SHA256.
+ */
+async function checkSignatures(adapter, failures) {
+  const doc = JSON.parse(await readFile(resolve(here, 'signature-vectors.json'), 'utf8'));
+  const keyHex = (await readFile(resolve(here, '..', doc.key), 'utf8')).split('\n').map((l) => l.trim()).find((l) => /^[0-9a-f]{64}$/.test(l));
+  if (!keyHex) {
+    failures.push('signatures: conformance/test-key.txt carries no 64-hex-character key line.');
+    return false;
+  }
+  const loadDeclared = async (ref) => {
+    const [file, name] = ref.split('#');
+    const data = JSON.parse(await readFile(resolve(here, '..', file), 'utf8'));
+    if (!name) return data;
+    const vector = (data.vectors ?? []).find((v) => v.name === name);
+    if (!vector) throw new Error(`no vector ${name} in ${file}`);
+    return vector.declared;
+  };
+  const behavioural = typeof adapter.hash === 'function' && typeof adapter.verify === 'function';
+  for (const vector of doc.vectors) {
+    const where = `signature/${vector.name}`;
+    const lease = JSON.parse(await readFile(resolve(here, '..', vector.lease), 'utf8'));
+    if (!adapter.validate('agent-lease', lease)) {
+      failures.push(`${where}: the lease fixture does not validate; the vector is malformed.`);
+      continue;
+    }
+    if (!behavioural) continue;
+    const declared = await loadDeclared(vector.declared);
+    const hash = adapter.hash(declared);
+    if (hash !== lease.declared_hash) {
+      failures.push(`${where}: hash(declared) is ${hash}, lease.declared_hash is ${lease.declared_hash}. Two implementations that disagree here cannot reconstruct the narrowing diff from each other's records.`);
+    }
+    if (adapter.verify(lease, keyHex) !== true) {
+      failures.push(`${where}: the fixture's signature does not verify under the test key.`);
+    }
+    const tampered = { ...lease, signature: (lease.signature[0] === '0' ? '1' : '0') + lease.signature.slice(1) };
+    if (adapter.verify(tampered, keyHex) !== false) {
+      failures.push(`${where}: a lease with one signature byte changed still verifies.`);
+    }
+    const edited = { ...lease, manifest: { ...lease.manifest, intent: { ...lease.manifest.intent, purpose: `${lease.manifest.intent.purpose} ` } } };
+    if (adapter.verify(edited, keyHex) !== false) {
+      failures.push(`${where}: a lease whose granted manifest was edited after issue still verifies. The signature must cover every field but itself.`);
+    }
+  }
+  return behavioural;
+}
+
+/**
  * @param adapter {{ validate(shape: string, value: unknown): boolean,
  *                   roundTrip?(shape: string, value: unknown): unknown,
  *                   canonicalise?(value: unknown): string,
- *                   narrow?(declared: unknown, parent: unknown): { granted: unknown } | { refusals: string[] } }}
+ *                   narrow?(declared: unknown, parent: unknown): { granted: unknown } | { refusals: string[] },
+ *                   hash?(value: unknown): string, verify?(lease: unknown, keyHex: string): boolean,
+ *                   lastErrors?: Array<{ instancePath: string, keyword: string }> }}
  * @returns a report; `failures` empty means conformant.
  */
 export async function runConformance(adapter) {
@@ -257,14 +329,27 @@ export async function runConformance(adapter) {
     }
   }
 
-  // 2. Every invalid fixture is rejected, and says why it must be.
+  // 2. Every invalid fixture is rejected, says why it must be, and is rejected AT the place it says.
+  let errorPathsChecked = false;
   for (const fixture of invalid) {
     const reason = await reasonFor(fixture.file);
     if (!reason) {
       failures.push(`invalid/${fixture.file}: no .reason file. An invalid fixture without a stated reason is untestable folklore.`);
     }
+    const expected = await expectFor(fixture.file);
+    if (!expected || typeof expected.path !== 'string') {
+      failures.push(`invalid/${fixture.file}: no .expect.json with a "path". A rejection with no stated place can be a rejection for the wrong reason.`);
+    }
     if (adapter.validate(fixture.shape, fixture.data)) {
       failures.push(`invalid/${fixture.file}: accepted, but must be rejected — ${reason ?? 'no reason given'}`);
+      continue;
+    }
+    if (expected && typeof expected.path === 'string' && Array.isArray(adapter.lastErrors)) {
+      errorPathsChecked = true;
+      const paths = adapter.lastErrors.map((e) => e.instancePath || '/');
+      if (!paths.includes(expected.path)) {
+        failures.push(`invalid/${fixture.file}: rejected, but not at ${expected.path} — the implementation reported ${JSON.stringify([...new Set(paths)])}. A rejection for the wrong reason is not conformance.`);
+      }
     }
   }
 
@@ -301,21 +386,37 @@ export async function runConformance(adapter) {
   // 5. Narrowing: structural for everyone, behavioural for an adapter that narrows.
   const narrowingChecked = await checkNarrowing(adapter, failures);
 
+  // 6. Signatures: the fixtures verify under the published test key, for an adapter that verifies.
+  const signaturesChecked = await checkSignatures(adapter, failures);
+
   return {
     validCount: valid.length,
     invalidCount: invalid.length,
     canonicalChecked,
     narrowingChecked,
+    signaturesChecked,
+    errorPathsChecked,
     failures,
   };
 }
 
 const UNKNOWN_KEY = 'a_field_from_a_newer_writer';
 
+/** The first nested plain object a fixture carries, by sorted key, or null. */
+function firstNestedObjectKey(data) {
+  return Object.keys(data).sort().find((k) => data[k] && typeof data[k] === 'object' && !Array.isArray(data[k])) ?? null;
+}
+
+/** Plants the unknown field at the top level AND inside the first nested object, when there is one. */
 function withUnknownField(data) {
-  return { ...data, [UNKNOWN_KEY]: 'kept' };
+  const marked = { ...data, [UNKNOWN_KEY]: 'kept' };
+  const nested = firstNestedObjectKey(data);
+  if (nested) marked[nested] = { ...data[nested], [UNKNOWN_KEY]: 'kept' };
+  return marked;
 }
 
 function hasUnknownField(data) {
-  return Boolean(data) && typeof data === 'object' && data[UNKNOWN_KEY] === 'kept';
+  if (!data || typeof data !== 'object' || data[UNKNOWN_KEY] !== 'kept') return false;
+  const nested = firstNestedObjectKey(Object.fromEntries(Object.entries(data).filter(([k]) => k !== UNKNOWN_KEY)));
+  return nested === null || data[nested]?.[UNKNOWN_KEY] === 'kept';
 }
