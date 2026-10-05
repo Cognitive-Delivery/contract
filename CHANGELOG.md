@@ -96,7 +96,7 @@ deployment validates with zero rejections.
   added where a clause had nothing to point at: a manifest with a bare-major `schema_version`, a
   `runtime_agent` outside the vocabulary, a model without `family`, an `allow` or `deny` missing a
   list, an attestation with an unknown issuer, and a valid home-relative deny path.
-- **The corpus runs under six other validators.** `conformance/suite/` is the corpus in the official
+- **The corpus runs under six other validators.** `conformance/suite/draft7/` is the corpus in the official
   JSON-Schema-Test-Suite format (one file per schema, every fixture a test, written by
   `npm run lock` and checked current by `npm test`), and CI runs it through Bowtie against
   `go-jsonschema`, `rust-jsonschema`, `python-jsonschema`, `java-json-schema`,

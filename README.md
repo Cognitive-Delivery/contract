@@ -221,7 +221,7 @@ every pattern under RE2. The point of a corpus is that a third party can check t
 check has to be runnable by someone who has never seen the product.
 
 Since 1.2 the claim that "a reader in any language needs nothing else" is checked rather than
-made. `conformance/suite/` carries the corpus in the official
+made. `conformance/suite/draft7/` carries the corpus in the official
 [JSON-Schema-Test-Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite) format (one
 file per schema, every fixture a test; `npm test` fails when it is stale), and CI runs it through
 [Bowtie](https://bowtie.report) against six validators in six languages — `go-jsonschema`,
@@ -360,7 +360,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
   traceability-check.mjs    fails `npm test` on an unmapped, stale or edited clause, or a mapping that names nothing
   suite-export.mjs          builds the corpus in the official JSON-Schema-Test-Suite format, and says when the export is stale
-  suite/                    that export, one file per schema; what Bowtie runs under six other validators
+  suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what six other validators run
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII

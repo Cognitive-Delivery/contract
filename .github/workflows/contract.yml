@@ -148,7 +148,7 @@ jobs:
           bowtie suite -D 7 \
             -i go-jsonschema -i rust-jsonschema -i python-jsonschema \
             -i java-json-schema -i dotnet-jsonschema-net -i js-ajv \
-            conformance/suite > "$RUNNER_TEMP/bowtie.jsonl"
+            conformance/suite/draft7 > "$RUNNER_TEMP/bowtie.jsonl"
           bowtie summary --format markdown --show failures "$RUNNER_TEMP/bowtie.jsonl" | tee -a "$GITHUB_STEP_SUMMARY"
 
   portability-sourcemeta:

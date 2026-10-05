@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { buildSuite, serialiseSuite } from '../conformance/suite-export.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const dir = resolve(here, '..', 'conformance', 'suite');
+const dir = resolve(here, '..', 'conformance', 'suite', 'draft7');
 
 await mkdir(dir, { recursive: true });
 const suite = await buildSuite();

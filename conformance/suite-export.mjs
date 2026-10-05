@@ -1,6 +1,7 @@
 /**
  * The corpus in the official JSON-Schema-Test-Suite format, so validators that are not this
- * runner can run it: one file per schema under `conformance/suite/`, each a JSON array of test
+ * runner can run it: one file per schema under `conformance/suite/draft7/` (Bowtie reads the dialect
+ * from the directory's name, as in the official suite's `tests/draft7`), each a JSON array of test
  * cases `{ description, schema, tests: [{ description, data, valid }] }`
  * (https://github.com/json-schema-org/JSON-Schema-Test-Suite, test-schema.json).
  *
@@ -72,7 +73,7 @@ export function serialiseSuite(cases) {
 /** Files under `conformance/suite/` that differ from what `buildSuite()` produces now. */
 export async function staleSuiteFiles() {
   const suite = await buildSuite();
-  const dir = join(here, 'suite');
+  const dir = join(here, 'suite', 'draft7');
   const stale = [];
   let present = [];
   try { present = (await readdir(dir)).filter((n) => n.endsWith('.json')); } catch { present = []; }
