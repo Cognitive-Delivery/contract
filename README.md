@@ -174,13 +174,23 @@ The full rules, including the six conditions that require a refusal, are in
 
 ```
 npm ci
-npm test                 # the corpus, against the reference adapter
+npm test                 # the corpus, the vectors and the guard's own tests, against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
-Both run in CI on every push and pull request, against Node 20 and 22. The point of a corpus is
-that a third party can check the claim, so the check has to be runnable by someone who has never
-seen the product.
+Both run in CI on every push and pull request, against Node 20 and 22, beside a job that compiles
+every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
+check has to be runnable by someone who has never seen the product.
+
+### Narrowing vectors
+
+`conformance/narrowing-vectors.json` is the third half of conformance made executable: a declared
+manifest and a parent grant, and either the granted manifest narrowing must produce or the refusal
+codes (R1 to R6 of SPEC §5.2) it must return. Supply `narrow(declared, parent)` on your adapter and
+the runner compares granted manifests by canonical bytes and refusal sets exactly; omit it and the
+run says **behaviour NOT CHECKED** while still checking every vector's shape. The vectors were
+generated from the reference implementation and committed, so a disagreement is a finding about one
+of the two implementations, and either kind is wanted.
 
 ### Canonical bytes
 
