@@ -1,0 +1,1 @@
+`allow.write_paths` contains `src/..\x`: a legitimate prefix followed by a backslash traversal. Refused by the backslash rule; the segment rule alone would not see `..` here because the separator after it is not a slash.

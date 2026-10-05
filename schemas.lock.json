@@ -90,7 +90,13 @@
       "#allow.read_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#allow.tools": {
@@ -109,7 +115,13 @@
       "#allow.write_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#attestation": {
@@ -202,7 +214,11 @@
       "#deny.paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/"
+        ],
         "minLength": 1
       },
       "#intent": {
@@ -383,7 +399,13 @@
       "#grantedManifest.allow.read_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#grantedManifest.allow.tools": {
@@ -402,7 +424,13 @@
       "#grantedManifest.allow.write_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#grantedManifest.approvals": {
@@ -504,7 +532,11 @@
       "#grantedManifest.deny.paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/"
+        ],
         "minLength": 1
       },
       "#grantedManifest.intent": {
@@ -1222,7 +1254,13 @@
       "#capabilities.read_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#capabilities.tools": {
@@ -1241,7 +1279,13 @@
       "#capabilities.write_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#cdf": {
@@ -1281,7 +1325,13 @@
       "#check.worker": {
         "required": true,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#componentPath": {
@@ -1318,7 +1368,13 @@
       "#contributes.docPacks[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#contributes.providers": {
@@ -1574,7 +1630,13 @@
       "#capabilities.read_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#capabilities.tools": {
@@ -1593,7 +1655,13 @@
       "#capabilities.write_paths[]": {
         "required": false,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#componentPath": {
@@ -1837,7 +1905,13 @@
       "#sourceGitSubdir.path": {
         "required": true,
         "type": "string",
-        "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
         "minLength": 1
       },
       "#sourceGitSubdir.ref": {

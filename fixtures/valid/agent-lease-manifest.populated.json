@@ -25,7 +25,10 @@
       "cdf_record_provenance"
     ],
     "read_paths": [
-      "**"
+      "**",
+      "./docs/**",
+      "src/./lib/**",
+      "%2e%2e/not-traversal/**"
     ],
     "write_paths": [
       "src/demo/**",
@@ -52,7 +55,9 @@
     "paths": [
       ".cdf/audit/**",
       ".cdf/runtime/**",
-      ".env"
+      ".env",
+      "~/.ssh/**",
+      "~/.aws/**"
     ],
     "hosts": [
       "*.internal.example"

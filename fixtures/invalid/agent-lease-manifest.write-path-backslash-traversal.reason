@@ -1,0 +1,1 @@
+`allow.write_paths` contains `..\x`. The old lookahead rule refused `../x` and let this through, because it looked for a `..` segment followed by a forward slash. Refusing every backslash closes the gap without reasoning about separators.
