@@ -306,6 +306,12 @@ The reference implementation uses HMAC-SHA256 with a per-deployment key. This sp
 **not** require a particular algorithm, but an implementation **MUST** state which it uses, and
 **MUST NOT** accept a lease whose algorithm it cannot verify.
 
+The corpus publishes a **test key** (`conformance/test-key.txt`) and lease fixtures signed with it
+(`conformance/signature-vectors.json`), so that `declared_hash` and signature verification can be
+checked across implementations rather than asserted. The key is public by design. A verifier
+**MUST** refuse any lease signed with it outside a conformance run; the reference implementation
+holds its own per-deployment key and refuses every other.
+
 > **Known limitation.** A symmetric signature proves the lease was issued by a holder of the key,
 > which is the issuer itself. It does not let a third party verify a lease without being given that
 > key. An asymmetric scheme, with the public half published, is the obvious improvement and is not
@@ -363,13 +369,19 @@ An implementation claiming conformance with schema set 1.0 **MUST**:
    every vector in `conformance/narrowing-vectors.json` by supplying `narrow` on its adapter.
 3. Record every issue, narrowing and refusal.
 4. Produce canonical bytes per §7 such that its `declared_hash` for a given declaration matches the
-   value another conforming implementation produces, and pass every vector in
-   `conformance/canonical-vectors.json` (§7.1). An implementation that only *reads* artefacts and
+   value another conforming implementation produces, pass every vector in
+   `conformance/canonical-vectors.json` and `conformance/jcs/` (§7.1), and, when it verifies
+   signatures, pass `conformance/signature-vectors.json` by supplying `hash` and `verify` on its
+   adapter: the fixtures verify under the published test key and stop verifying when one byte of
+   the signature or of the granted manifest changes. An implementation that only *reads* artefacts and
    never issues, signs or hashes one is exempt from this clause and **MUST** say so when it claims
    conformance, because the runner reports it as unchecked rather than as passed.
 5. Pass the published conformance corpus: accept every fixture under `fixtures/valid/` and reject
-   every fixture under `fixtures/invalid/`, each of which carries a `.reason` file stating what the
-   rejection is for.
+   every fixture under `fixtures/invalid/` **at the place its `.expect.json` names**. Each invalid
+   fixture carries a `.reason` file stating what the rejection is for and an `.expect.json` naming
+   the instance path the rejection must be reported at; an implementation that rejects a fixture
+   somewhere else has rejected it for the wrong reason, which is not conformance. The runner checks
+   the path when the adapter reports its errors, and says so when it cannot.
 6. State which signature algorithm it uses.
 
 An implementation **SHOULD** publish the result of running the corpus, so that the claim is evidence
@@ -443,6 +455,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.0 | 2026-10-05 | §7 publishes a test key and signed fixtures so verification is checked across implementations; §9 requires a rejection to be reported at the place each invalid fixture's `.expect.json` names, and extends the round trip to a nested unknown field |
 | 1.0 | 2026-10-05 | §5.2 gives the six refusal conditions stable identifiers R1 to R6; §9 adds the narrowing vectors to the corpus, so the third half of conformance is checked by the corpus rather than left to each implementation's own tests |
 | 1.0 | 2026-10-05 | §7 states normatively that canonical bytes are RFC 8785 after undefined-removal, so existing JCS libraries and RFC 8785's own test vectors (now in the corpus) apply; the field-by-field rules become an informative restatement. Every integer field is bounded at 2^53 − 1 for I-JSON. No byte of any existing hash changes: the restatement was already RFC 8785, which is the point of saying so |
 | 1.0 | 2026-10-05 | §4.4 names the five refused `allow` path forms (adding a leading `~`, a drive-letter prefix and any backslash to the absolute and `..` forms) and permits a home-relative `deny` path; the schemas express the rule without lookahead so RE2 validators can load it. The reference implementation already refused all five; the schema and the text now agree with it |

@@ -80,8 +80,14 @@ Index measures. That is a contract change and is governed by ADR-013.
 **A reader that throws on something it does not recognise.** `phase` is an open string, unknown
 source forms are reported rather than rejected, and unknown fields survive a round trip.
 
-**A fixture under `invalid/` with no `.reason` file beside it.** "This should fail" with no
-reason is untestable folklore, and the runner fails the build for it.
+**A fixture under `invalid/` with no `.reason` file and no `.expect.json` beside it.** "This should
+fail" with no reason is untestable folklore, and "this should fail" with no place is a rejection
+that can happen for the wrong reason and pass; the runner fails the build for either. The
+`.expect.json` is `{ "path": "/where", "keyword": "why" }`: `path` must match an error the
+implementation reports, `keyword` is informative.
+
+**A signed fixture that does not verify under `conformance/test-key.txt`.** Re-sign it with the
+test key; never commit a lease signed with a real key, and never commit a real key.
 
 **Anything that widens what may reach a permanent record.** See [SECURITY.md](SECURITY.md).
 

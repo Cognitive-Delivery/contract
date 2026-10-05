@@ -67,6 +67,21 @@ tooling in this repository.
   bytes and refusal sets exactly; one that does not is reported as not checked. Every adapter has
   the vectors checked for shape. §5.2's six conditions gain stable identifiers R1 to R6.
 
+- **A published test key, verifiable signed fixtures and signature vectors**
+  (`conformance/test-key.txt`, `conformance/signature-vectors.json`). The lease fixtures carried
+  `cccc…` and `dddd…` for `declared_hash` and `signature`, so no verifier could be tested against the
+  corpus. They are re-signed under a public test key (which a verifier must refuse outside a
+  conformance run), a root lease fixture is added, and an adapter offering `hash` and `verify` is
+  checked for matching `declared_hash`, acceptance, and refusal when one byte of the signature or
+  of the granted manifest changes. The reference adapter implements the reference HMAC-SHA256.
+
+- **Every invalid fixture carries an `.expect.json`** naming the instance path the rejection must be
+  reported at, and the runner checks it when the adapter reports its errors. Adding them found two
+  fixtures (`cdi-signal.bad-outcome`, `cdi-signal.unknown-event`) that this release's `workspace_id`
+  shape had started rejecting first for the wrong reason; both now carry a digest-shaped
+  `workspace_id` so they fail only for the reason their `.reason` states. The unknown-field round
+  trip now plants the field inside the first nested object as well as at the top level.
+
 ### Changed
 
 - **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes

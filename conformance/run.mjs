@@ -87,7 +87,9 @@ const report = await runConformance(adapter);
 console.log(
   `Conformance: ${report.validCount} valid fixtures, ${report.invalidCount} rejections, `
   + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}, `
-  + `narrowing ${report.narrowingChecked ? 'checked' : 'vectors well-formed, behaviour NOT CHECKED (the reference adapter validates only; the reference implementation runs them in its own suite)'}.`,
+  + `narrowing ${report.narrowingChecked ? 'checked' : 'vectors well-formed, behaviour NOT CHECKED (the reference adapter validates only; the reference implementation runs them in its own suite)'}, `
+  + `signatures ${report.signaturesChecked ? 'checked' : 'NOT CHECKED (adapter offers no hash/verify)'}, `
+  + `rejection paths ${report.errorPathsChecked ? 'checked' : 'NOT CHECKED (adapter reports no errors)'}.`,
 );
 
 const currency = await checkVersionCurrency();

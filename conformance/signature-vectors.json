@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Signature vectors for SPEC section 7. Each names a signed lease fixture, the fixture it was DECLARED from, and the key file.",
+    "An adapter offering hash(value) and verify(lease, keyHex) is checked: hash(declared) equals lease.declared_hash, verify(lease, key) is true,",
+    "and verify of the lease with one signature byte changed is false. The key is a published TEST key; a verifier MUST refuse it outside a conformance run.",
+    "The reference algorithm is HMAC-SHA256 over the canonical bytes of every lease field except signature, lower-case hex."
+  ],
+  "key": "conformance/test-key.txt",
+  "algorithm": "hmac-sha256",
+  "vectors": [
+    {
+      "name": "populated",
+      "lease": "fixtures/valid/agent-lease.populated.json",
+      "declared": "fixtures/valid/agent-lease-manifest.populated.json"
+    },
+    {
+      "name": "minimal-declared-but-must-be-refused-at-issue",
+      "lease": "fixtures/valid/agent-lease.minimal.json",
+      "declared": "fixtures/valid/agent-lease-manifest.minimal.json",
+      "why": "Validates and verifies; an issuer MUST still refuse it (R2, R4). Conformance has three halves."
+    },
+    {
+      "name": "root",
+      "lease": "fixtures/valid/agent-lease.root.json",
+      "declared": "conformance/narrowing-vectors.json#root-manifest-narrowed-against-root-policy"
+    }
+  ]
+}
