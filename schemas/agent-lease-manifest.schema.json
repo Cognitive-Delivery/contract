@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/agent-lease-manifest.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease-manifest.schema.json",
   "title": "Agent Lease Manifest",
   "description": "What an agent DECLARES it needs before the kernel lets it run. The manifest is the declared half of a two-part record: the agent (or the bridge or harness presenting on its behalf) declares tools, paths, hosts, commands and budget, and the kernel answers with an Agent Lease whose `manifest` is the GRANTED half, narrowed to what the parent lease and the workspace policy allow. Declared and granted have the same shape on purpose, so the narrowing diff is a plain comparison. Rule 7 of the harness: no manifest, no lease; no lease, no connectivity. A manifest the kernel cannot narrow to a non-empty grant is refused, and the refusal is recorded. Paths are workspace-relative POSIX globs; hosts are hostnames with an optional leading wildcard label; commands are executable names.",
   "definitions": {

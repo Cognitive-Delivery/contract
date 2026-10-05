@@ -109,7 +109,10 @@ what produced its own.
 
 You can also use it straight from this repository, as a submodule or a clone pinned to a tag.
 `schemas/` and `fixtures/` are plain files and an implementation in another language needs
-nothing else.
+nothing else. Each schema is also served at its `$id`
+(`https://cognitive-delivery.github.io/contract/1.x/<file>`), so a validator that resolves
+identifiers finds the current 1.x schema there; the version a document was written against is its
+own `schema_version` field.
 
 ## A worked example
 

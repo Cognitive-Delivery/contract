@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/cdi-signal.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/cdi-signal.schema.json",
   "title": "CDF CDI signal",
   "description": "One line of the append-only Cognitive Delivery Index signal log. The Index is computed entirely from these plus the governed artefacts on disk, which is why it is domain-neutral: no code, no language, no build and no test appears anywhere in its inputs. Two products writing these differently is the failure this contract exists to prevent.",
   "type": "object",

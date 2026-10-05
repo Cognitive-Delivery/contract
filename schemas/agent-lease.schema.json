@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/agent-lease.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease.schema.json",
   "title": "Agent Lease",
   "description": "The grant envelope the kernel returns for an accepted Agent Lease Manifest. The lease id is the only key that opens anything: the tool gate, the dispatcher, and later the egress proxy and process supervisor all key off it. `manifest` is the GRANTED manifest after narrowing; `declared_hash` is the SHA-256 of the declared manifest's canonical bytes, so the narrowing diff can be reconstructed from the two. `signature` is HMAC-SHA256, lower-case hex, over the canonical bytes of every field except `signature`; `key_fingerprint` names the key without revealing it. A lease with a parent is a child whose grant is a subset of the parent's; that containment is the registry's rule, not this schema's, because a schema cannot see the parent.",
   "definitions": {

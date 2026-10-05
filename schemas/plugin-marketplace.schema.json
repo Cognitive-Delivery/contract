@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/plugin-marketplace.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
   "title": "CDF Plugin Marketplace",
   "description": "A marketplace's `marketplace.json`, read from `.claude-plugin/marketplace.json`. A strict superset of Claude Code's: the same owner, metadata, renames and `plugins[]` entries, with the same nested `source` union, plus `local` for a marketplace that lists plugins already in the repository, plus an optional per-entry `cdf` block carrying a declared digest and the capabilities the entry expects. Every source form is DECLARED here, including the three the harness cannot yet fetch, because a marketplace that uses one must parse and be reported rather than fail to load. A listing is not an installation, and a declared digest is a claim to be checked, never a verdict.",
   "definitions": {

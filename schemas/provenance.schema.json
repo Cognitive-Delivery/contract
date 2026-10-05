@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/provenance.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/provenance.schema.json",
   "title": "CDF provenance",
   "description": "What produced a governed artefact. CORRECTED against real artefacts: the record is never written bare. It is wrapped under a `cdf` key in Markdown front-matter, and wrapped again as {artefact_path, cdf} in .cdf/specs/<slug>/provenance.jsonl. The TypeScript interface describes only the inner record, and nothing in the type system said so. Validate a front-matter block against #/definitions/frontMatter, a journal line against #/definitions/journalEntry, and the inner object against #/definitions/record. anyOf, not oneOf: a journal entry also satisfies the front-matter shape, since that only requires `cdf`. Prefer validating against the precise definition you expect.",
   "definitions": {

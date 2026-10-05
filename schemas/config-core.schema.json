@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/config-core.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/config-core.schema.json",
   "title": "CDF config, shared core",
   "description": "The part of .cdf/config.yaml that every Cognitive Delivery implementation must understand identically. Product-specific sections are deliberately NOT here: a product carries its own alongside these, which is why additionalProperties is true at the root.",
   "type": "object",
