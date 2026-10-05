@@ -241,9 +241,13 @@ export async function validateAllowlist(allowlist, root = here) {
 
 /** Entries present in the baseline allow-list that are missing now. The list is history. */
 export function missingAllowlistEntries(baseline, current) {
-  const key = (e) => `${e.finding}|${e.schema}|${e.path}|${e.after}`;
-  const now = new Set((current?.entries ?? []).map(key));
-  return (baseline?.entries ?? []).filter((e) => !now.has(key(e)));
+  // A baseline entry written before `after` existed (1.1.0 and earlier) is matched on finding,
+  // schema and path; one that names its value must still be present with that value.
+  const key = (e) => `${e.finding}|${e.schema}|${e.path}`;
+  const full = (e) => `${key(e)}|${e.after}`;
+  const nowKeys = new Set((current?.entries ?? []).map(key));
+  const nowFull = new Set((current?.entries ?? []).map(full));
+  return (baseline?.entries ?? []).filter((e) => (e.after === undefined ? !nowKeys.has(key(e)) : !nowFull.has(full(e))));
 }
 
 /** Split findings into those an allow-list entry accepts and those it does not. */

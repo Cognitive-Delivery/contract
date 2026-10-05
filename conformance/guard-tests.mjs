@@ -183,7 +183,12 @@ export async function runGuardTests() {
     const entry = { finding: 'PATTERN_TIGHTENED', schema: 'x.schema.json', path: 'a' };
     expect('allowlist-entry-removed', missingAllowlistEntries({ entries: [entry] }, { entries: [] }).length, 1);
     expect('allowlist-entry-kept', missingAllowlistEntries({ entries: [entry] }, { entries: [entry] }).length, 0);
+    // A baseline entry from before `after` existed is satisfied by the same entry with an `after`;
+    // one that names its value is not satisfied by a different value.
+    const { after: _dropped, ...legacy } = { ...entry, after: 'pattern=^x$' };
+    expect('allowlist-legacy-entry-satisfied', missingAllowlistEntries({ entries: [legacy] }, { entries: [{ ...legacy, after: 'pattern=^x$' }] }).length, 0);
+    expect('allowlist-valued-entry-not-satisfied-by-other-value', missingAllowlistEntries({ entries: [{ ...legacy, after: 'pattern=^x$' }] }, { entries: [{ ...legacy, after: 'pattern=^y$' }] }).length, 1);
   }
 
-  return { present: true, count: cases.length + 20, failures };
+  return { present: true, count: cases.length + 22, failures };
 }
