@@ -60,8 +60,9 @@ jobs:
       - name: Pack, install into an empty directory, run the installed test
         run: |
           set -e
+          mkdir -p "$RUNNER_TEMP/pkg" "$RUNNER_TEMP/consumer"
           npm pack --pack-destination "$RUNNER_TEMP/pkg"
-          mkdir "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
+          cd "$RUNNER_TEMP/consumer"
           npm init -y > /dev/null
           npm install "$RUNNER_TEMP"/pkg/cognitive-delivery-contract-*.tgz ajv@^8
           npm test --prefix node_modules/@cognitive-delivery/contract
