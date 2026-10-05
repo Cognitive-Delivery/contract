@@ -1,0 +1,1 @@
+A `revoked` record with no `by`. SPEC §6: a revocation names who revoked, an ancestor lease or the issuer, or a reader cannot tell a legitimate revocation from a line anyone appended.

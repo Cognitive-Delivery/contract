@@ -1,0 +1,9 @@
+{
+  "rule": "L3",
+  "path": "/by",
+  "context": {
+    "chain": [
+      "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c"
+    ]
+  }
+}

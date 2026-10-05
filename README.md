@@ -28,6 +28,7 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
 | `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md); since 1.2 hosts, commands, tools and approvals each have one identity rule (§4.4), so two implementations cannot disagree about what an entry names |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
+| `lease-record` | One line of the lease journal: the decision about a lease (granted, refused with reserved reason codes, narrowed, attached, revoked by an ancestor or the issuer, stopped, completed, expired), with the declared and granted hashes as the two identities of the decision. Since 1.2 |
 | `plugin-manifest` | A plugin's `plugin.json`: the keys the Claude Code manifest reference documents, as of 2026-10-05, plus two CDF extensions (`cdf`, plugin-level `category`) |
 | `plugin-marketplace` | A marketplace's `marketplace.json`: the keys and seven source forms the Claude Code marketplace reference documents, as of 2026-10-05, plus two CDF extensions (`local`, per-entry `cdf`) |
 
@@ -308,7 +309,8 @@ conformance/                the reference runner and the vectors; takes an adapt
   ajv-adapter.mjs           the reference adapter, so the corpus runs here and not only in a product
   run.mjs                   `npm test`
   ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
-  schema-checks.mjs         strict compile, the inlined granted manifest identical to its source, the version
+  schema-checks.mjs         strict compile, every inlined copy identical to its source, the version
+  inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
   layout-check.mjs          this block is current
   lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from

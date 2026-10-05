@@ -1,0 +1,1 @@
+A `refused` record with no `reasons`. SPEC §5.2: every refusal is recorded with the same weight as a grant, and a refusal without a reason is the absence of a fact dressed as one. The conditional requirement on `event: refused` refuses it at the root.

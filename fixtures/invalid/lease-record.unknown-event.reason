@@ -1,0 +1,1 @@
+`event` is `paused`, which the contract does not define. The event set is closed because a reader folds every lease status from these records, and an event with no fold is a status nobody can compute.

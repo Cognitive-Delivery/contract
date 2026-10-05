@@ -19,6 +19,8 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 
+import { INLINED_COPIES, inlinedBodyOf } from './inlined-copies.mjs';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const schemaDir = resolve(root, 'schemas');
@@ -32,25 +34,6 @@ async function loadSchemas() {
   return out;
 }
 
-/** Inline every `$ref` into `#/definitions/<key>` of `source`, dropping `definitions` itself. */
-function dereference(node, source) {
-  if (Array.isArray(node)) {
-    return node.map((item) => dereference(item, source));
-  }
-  if (!node || typeof node !== 'object') {
-    return node;
-  }
-  if (typeof node.$ref === 'string') {
-    const key = node.$ref.replace('#/definitions/', '');
-    if (!source.definitions || !(key in source.definitions)) {
-      throw new Error(`unresolvable $ref ${node.$ref}`);
-    }
-    return dereference(structuredClone(source.definitions[key]), source);
-  }
-  return Object.fromEntries(
-    Object.entries(node).filter(([k]) => k !== 'definitions').map(([k, v]) => [k, dereference(v, source)]),
-  );
-}
 
 export async function runSchemaChecks() {
   const failures = [];
@@ -68,21 +51,23 @@ export async function runSchemaChecks() {
     }
   }
 
-  // 2. The inlined granted manifest is the manifest schema, dereferenced.
-  const manifest = schemas.get('agent-lease-manifest.schema.json');
-  const lease = schemas.get('agent-lease.schema.json');
-  if (manifest && lease) {
-    const expected = dereference(structuredClone(manifest), manifest);
-    const actual = structuredClone(lease.definitions?.grantedManifest ?? {});
-    for (const key of ['$schema', '$id', 'title', 'description']) {
-      delete expected[key];
-      delete actual[key];
+  // 2. Every inlined copy is its source, dereferenced (`conformance/inlined-copies.mjs`): the
+  //    granted manifest in the lease, and the manifest and the lease in the record.
+  for (const { file, pointer, source } of INLINED_COPIES) {
+    const sourceSchema = schemas.get(source);
+    const holder = schemas.get(file);
+    if (!sourceSchema || !holder) {
+      failures.push(`identity: ${source} or ${file} is missing.`);
+      continue;
     }
+    const expected = inlinedBodyOf(sourceSchema);
+    let actual = holder;
+    for (const key of pointer) actual = actual?.[key];
+    actual = structuredClone(actual ?? {});
+    delete actual.description;
     if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-      failures.push('identity/agent-lease.schema.json#/definitions/grantedManifest has drifted from agent-lease-manifest.schema.json. Regenerate the inlined copy from the source.');
+      failures.push(`identity/${file}#/${pointer.join('/')} has drifted from ${source}. Run \`node tooling/inline-granted-manifest.mjs\`.`);
     }
-  } else {
-    failures.push('identity: agent-lease-manifest.schema.json or agent-lease.schema.json is missing.');
   }
 
   // 3. The package's own statement of the schema-set version.
