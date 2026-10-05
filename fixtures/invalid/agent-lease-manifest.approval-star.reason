@@ -1,0 +1,1 @@
+`approvals` contains `*`. Approvals use the tool identifier rule; "a human before everything" is a mode, not an action name, and it would make every gate verdict wait on a person without saying which.

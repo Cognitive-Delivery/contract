@@ -1,0 +1,1 @@
+`allow.hosts` contains `api.example.com/v1`. A path is not part of a host; a host rule cannot scope a URL path, and pretending it can is how a rule gets wider than it reads. SPEC §4.4: a host is a lower-case DNS name, an IPv4 literal or `localhost`, with an optional single leading `*.` label, or the bare `*`; two implementations must not disagree about what a host entry names.

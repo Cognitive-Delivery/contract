@@ -1,0 +1,1 @@
+`allow.commands` contains `/usr/bin/git`. A path is not an identity: the same executable found at another path would escape the rule, and an identity that depends on where a binary was found is not one. SPEC §4.4: a command is the basename of the executable.

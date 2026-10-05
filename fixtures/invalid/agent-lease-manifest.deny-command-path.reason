@@ -1,0 +1,1 @@
+`deny.commands` contains `/usr/bin/sudo`. A denial by path refuses only that path; `sudo` found anywhere else would run. Deny entries are basenames for the same reason allow entries are.

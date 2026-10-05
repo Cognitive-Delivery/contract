@@ -26,7 +26,7 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `cdi-signal` | One line of the Index signal log |
 | `cdi-assessment` | A recorded human assessment against the six dimensions |
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
-| `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) |
+| `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md); since 1.2 hosts, commands, tools and approvals each have one identity rule (§4.4), so two implementations cannot disagree about what an entry names |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
 | `plugin-manifest` | A plugin's `plugin.json`: the keys the Claude Code manifest reference documents, as of 2026-10-05, plus two CDF extensions (`cdf`, plugin-level `category`) |
 | `plugin-marketplace` | A marketplace's `marketplace.json`: the keys and seven source forms the Claude Code marketplace reference documents, as of 2026-10-05, plus two CDF extensions (`local`, per-entry `cdf`) |
@@ -291,6 +291,7 @@ fixtures/                   the corpus
   valid/                    minimal and fully populated, per shape; every one must validate
   invalid/                  each beside a .reason saying why, and an .expect.json naming where
   SOURCES.md                where the vendor-format fixtures were transcribed from
+  evidence/                 recorded checks of real artefacts that allow-list entries cite when no fixture can
 conformance/                the reference runner and the vectors; takes an adapter, imports no product
   runner.mjs                the corpus, run against whatever adapter you pass it
   ajv-adapter.mjs           the reference adapter, so the corpus runs here and not only in a product
@@ -313,6 +314,7 @@ generate-contract-types.mjs writes a consumer's TypeScript types from schemas/; 
 tooling/                    repository tooling; not in the package
   sync-version.mjs          one version, stated in package.json, written everywhere else from it
   changelog-section.mjs     prints one release's CHANGELOG section; the release workflow's notes
+  inline-granted-manifest.mjs rewrites every inlined copy of the manifest schema from its source
   regex-portability/        the Go program CI runs to compile every pattern under RE2
 SPEC-agent-lease-manifest.md the normative specification
 README.md                   this file

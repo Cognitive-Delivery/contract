@@ -42,7 +42,8 @@
       "#agent.name": {
         "required": true,
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "maxLength": 120
       },
       "#agent.provider": {
         "required": false,
@@ -72,6 +73,7 @@
       "#allow.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#allow.hosts": {
@@ -81,7 +83,9 @@
       "#allow.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#allow.read_paths": {
         "required": true,
@@ -106,6 +110,7 @@
       "#allow.tools[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "#allow.write_paths": {
@@ -201,6 +206,7 @@
       "#deny.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#deny.hosts": {
@@ -210,7 +216,9 @@
       "#deny.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#deny.paths": {
         "required": true,
@@ -234,7 +242,8 @@
       "#intent.purpose": {
         "required": true,
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "maxLength": 500
       },
       "#intent.spec_slug": {
         "required": false,
@@ -278,6 +287,7 @@
       "approvals[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "attestation": {
@@ -356,7 +366,8 @@
       "#grantedManifest.agent.name": {
         "required": true,
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "maxLength": 120
       },
       "#grantedManifest.agent.provider": {
         "required": false,
@@ -386,6 +397,7 @@
       "#grantedManifest.allow.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#grantedManifest.allow.hosts": {
@@ -395,7 +407,9 @@
       "#grantedManifest.allow.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#grantedManifest.allow.read_paths": {
         "required": true,
@@ -420,6 +434,7 @@
       "#grantedManifest.allow.tools[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "#grantedManifest.allow.write_paths": {
@@ -445,6 +460,7 @@
       "#grantedManifest.approvals[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "#grantedManifest.attestation": {
@@ -524,6 +540,7 @@
       "#grantedManifest.deny.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#grantedManifest.deny.hosts": {
@@ -533,7 +550,9 @@
       "#grantedManifest.deny.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#grantedManifest.deny.paths": {
         "required": true,
@@ -557,7 +576,8 @@
       "#grantedManifest.intent.purpose": {
         "required": true,
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "maxLength": 500
       },
       "#grantedManifest.intent.spec_slug": {
         "required": false,
@@ -1272,6 +1292,7 @@
       "#capabilities.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#capabilities.hosts": {
@@ -1281,7 +1302,9 @@
       "#capabilities.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#capabilities.read_paths": {
         "required": false,
@@ -1306,6 +1329,7 @@
       "#capabilities.tools[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "#capabilities.write_paths": {
@@ -2090,6 +2114,7 @@
       "#capabilities.commands[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
         "minLength": 1
       },
       "#capabilities.hosts": {
@@ -2099,7 +2124,9 @@
       "#capabilities.hosts[]": {
         "required": false,
         "type": "string",
-        "minLength": 1
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
       },
       "#capabilities.read_paths": {
         "required": false,
@@ -2124,6 +2151,7 @@
       "#capabilities.tools[]": {
         "required": false,
         "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
         "minLength": 1
       },
       "#capabilities.write_paths": {

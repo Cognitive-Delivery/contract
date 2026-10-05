@@ -97,13 +97,18 @@ a guess — but it is not universally acceptable:
 `agent.model`, when present, **MUST** carry `vendor` and `family`. It **MUST NOT** carry a prompt, a
 key, or any credential. An implementation **MUST NOT** place model input or output in a manifest.
 
+`agent.name` is a display label of at most 120 characters (schema set 1.2): the worker role, the
+session, the plugin. It is not an identity and **MUST NOT** be a person's name, email address or git
+identity, because a lease is recorded in an audit journal that is retained indefinitely.
+
 ### 4.3 Intent
 
 `intent.purpose` **MUST** be present and non-empty. A manifest without a stated purpose **MUST** be
 refused.
 
 `purpose` is recorded in an audit trail, so it **MUST NOT** contain prompt text, file content, or
-personal data. It is one sentence of intent, not a transcript.
+personal data. It is one sentence of intent, not a transcript, and the schemas cap it at 500
+characters (schema set 1.2): a long purpose is where a prompt would be smuggled.
 
 ### 4.4 Scope
 
@@ -138,9 +143,25 @@ An implementation **MUST** also re-check the resolved path against the workspace
 rather than relying on the pattern alone. Rejecting the pattern is not sufficient: a symbolic link
 can carry a conforming relative path outside the root.
 
-Hosts are hostnames, optionally with a single leading wildcard label. `*.example.com` **MUST** match
-`api.example.com` and **MUST NOT** match `example.com`; matching a bare parent domain requires
-listing it.
+**Identity of a host, a command and a tool** (schema set 1.2). Two conforming implementations
+**MUST NOT** disagree about what an entry names, so each list has one identity rule, enforced by
+the schemas as a pattern in the I-Regexp subset:
+
+| List | An entry is | Refused |
+|---|---|---|
+| `allow.hosts`, `deny.hosts` | a lower-case DNS name of one or more labels, which includes an IPv4 literal and `localhost`; optionally a single leading `*.` label; or the bare `*` | a scheme, a port, a path, whitespace, upper case, a trailing dot, a wildcard anywhere but the first label; more than 253 characters |
+| `allow.commands`, `deny.commands` | the basename of the executable: letters, digits, `.`, `_`, `+`, `-`, at most 128 characters | a path separator, whitespace, a shell operator |
+| `allow.tools`, `approvals` | an identifier of letters, digits, `_`, `.`, `:`, `/`, `-`, at most 128 characters, so a `cdf_` name and a `<server>/<tool>` pair both fit | `*`, whitespace |
+
+A host entry **MUST** be compared lower-case and **MUST NOT** carry a port: the egress proxy
+matches hostnames, and a `host:port` form is reserved for a version in which something enforces
+it. IPv4 literals are admitted because a local model provider lives at `127.0.0.1` and a root
+policy derives its hosts from provider URLs. `*.example.com` **MUST** match `api.example.com` and
+**MUST NOT** match `example.com`; matching a bare parent domain requires listing it. A command's
+identity is the basename of the resolved executable, so `/usr/bin/git` and `git status` are
+refused: the first would let the same program at another path escape the rule, and the second
+authorises an invocation rather than a program. `*` is refused as a tool name because a lease that
+names every tool has named none, which §5.2 R2 already refuses from the other side.
 
 ### 4.5 Budget
 
@@ -455,6 +476,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-05 | §4.4 gives hosts, commands, tools and approvals one identity rule each, enforced by the schemas: hosts are lower-case DNS names (IPv4 literals and `localhost` included) with at most a single leading wildcard label and never a scheme, port or path; commands are executable basenames; tools and approvals are identifiers that are never `*`. §4.2 caps `agent.name` at 120 characters and says it is never a person's name; §4.3 caps `purpose` at 500. Every real lease in the reference deployment still validates |
 | 1.1 | 2026-10-05 | §7 publishes a test key and signed fixtures so verification is checked across implementations; §9 requires a rejection to be reported at the place each invalid fixture's `.expect.json` names, and extends the round trip to a nested unknown field |
 | 1.1 | 2026-10-05 | §5.2 gives the six refusal conditions stable identifiers R1 to R6; §9 adds the narrowing vectors to the corpus, so the third half of conformance is checked by the corpus rather than left to each implementation's own tests |
 | 1.1 | 2026-10-05 | §7 states normatively that canonical bytes are RFC 8785 after undefined-removal, so existing JCS libraries and RFC 8785's own test vectors (now in the corpus) apply; the field-by-field rules become an informative restatement. Every integer field is bounded at 2^53 − 1 for I-JSON. No byte of any existing hash changes: the restatement was already RFC 8785, which is the point of saying so |

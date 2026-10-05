@@ -1,0 +1,1 @@
+`allow.tools` contains a single space. It passes `minLength: 1` and names no tool; the identifier rule refuses whitespace anywhere.
