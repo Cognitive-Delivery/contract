@@ -1,0 +1,1 @@
+`deny` has no `hosts` list. SPEC §4.4: `commands`, `paths` and `hosts` are present and may be empty.

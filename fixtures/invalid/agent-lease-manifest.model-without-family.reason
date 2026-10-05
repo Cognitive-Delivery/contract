@@ -1,0 +1,1 @@
+`agent.model` carries `vendor` and no `family`. SPEC §4.2: a model, when present, names both; a vendor alone is not an attribution.

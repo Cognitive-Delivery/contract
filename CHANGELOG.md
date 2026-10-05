@@ -89,6 +89,13 @@ deployment validates with zero rejections.
   a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it.
   `x-stability` is the contract's own annotation, registered with the strict compile; every
   property gains one in a later change of this release.
+- **Every normative clause of the SPEC has a named test** (`conformance/traceability.json`,
+  checked by `npm test`). `conformance/spec-clauses.mjs` extracts the 87 clauses with stable ids
+  and a drift key; each is mapped to the fixtures, vectors, checks or rules that test it, or
+  excluded with a reason (16 are: runtime behaviour, SHOULDs, definitions). Seven fixtures were
+  added where a clause had nothing to point at: a manifest with a bare-major `schema_version`, a
+  `runtime_agent` outside the vocabulary, a model without `family`, an `allow` or `deny` missing a
+  list, an attestation with an unknown issuer, and a valid home-relative deny path.
 
 ## [1.1.0] — 2026-10-05
 

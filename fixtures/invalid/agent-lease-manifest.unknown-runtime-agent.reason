@@ -1,0 +1,1 @@
+`agent.runtime_agent` is `copilot`, outside the closed vocabulary (`github-copilot` is in it). SPEC §4.2: the vocabulary is closed so a lease keys to the same identity every audit event carries.
