@@ -1,8 +1,0 @@
-fixtures/valid/plugin-marketplace.claude-code.json is .claude-plugin/marketplace.json from
-https://github.com/anthropics/claude-code at commit 2bfb629dfaff0c8318047a4beb93cf1dc5b58b18
-(main, read 2026-10-05): the marketplace Anthropic ships its own plugins from, which is the
-strongest available evidence that the contract reads what Claude Code writes.
-
-One change from the upstream file: the `email` field is removed from each plugin entry's
-`author` object. This corpus carries no personal data (SECURITY.md), and the shape is unchanged
-by the removal because `email` is optional.
