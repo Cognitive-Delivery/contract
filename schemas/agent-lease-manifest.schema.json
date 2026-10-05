@@ -267,17 +267,20 @@
         "steps": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum tool calls or turns."
+          "description": "Maximum tool calls or turns.",
+          "maximum": 9007199254740991
         },
         "wall_clock_ms": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum lifetime in milliseconds; the lease expires when it is spent."
+          "description": "Maximum lifetime in milliseconds; the lease expires when it is spent.",
+          "maximum": 9007199254740991
         },
         "tokens": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum model tokens, input plus output."
+          "description": "Maximum model tokens, input plus output.",
+          "maximum": 9007199254740991
         },
         "cost_usd": {
           "type": "number",
@@ -287,12 +290,14 @@
         "depth": {
           "type": "integer",
           "minimum": 0,
-          "description": "How many generations of child lease may be issued beneath this one. Zero means no children."
+          "description": "How many generations of child lease may be issued beneath this one. Zero means no children.",
+          "maximum": 9007199254740991
         },
         "fan_out": {
           "type": "integer",
           "minimum": 0,
-          "description": "How many child leases may be live under this one at once."
+          "description": "How many child leases may be live under this one at once.",
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": true

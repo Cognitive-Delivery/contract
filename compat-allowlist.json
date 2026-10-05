@@ -193,6 +193,142 @@
       "reason": "steering_hash is a SHA-256, or 64 zeros when the writer cannot compute it; all 4,535 real records are 64-char hex.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.depth",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.fan_out",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.steps",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.tokens",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.wall_clock_ms",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.depth",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.fan_out",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.steps",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.tokens",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.wall_clock_ms",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "break_glass.timeout_minutes",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "review_policy.required_reviewers",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceCommand.timeout",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.implemented_symbols[].line",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
     }
   ]
 }

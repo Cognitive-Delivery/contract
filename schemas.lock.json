@@ -162,27 +162,32 @@
       "#budget.depth": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#budget.fan_out": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#budget.steps": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#budget.tokens": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#budget.wall_clock_ms": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#deny": {
         "required": false,
@@ -480,27 +485,32 @@
       "#grantedManifest.budget.depth": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#grantedManifest.budget.fan_out": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#grantedManifest.budget.steps": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#grantedManifest.budget.tokens": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#grantedManifest.budget.wall_clock_ms": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#grantedManifest.deny": {
         "required": true,
@@ -881,7 +891,8 @@
           2,
           3,
           4
-        ]
+        ],
+        "maximum": 9007199254740991
       },
       "details": {
         "required": false,
@@ -1100,7 +1111,8 @@
           2,
           3,
           4
-        ]
+        ],
+        "maximum": 9007199254740991
       },
       "break_glass": {
         "required": false,
@@ -1119,7 +1131,8 @@
       "break_glass.timeout_minutes": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "cdi": {
         "required": false,
@@ -1184,7 +1197,8 @@
       "review_policy.required_reviewers": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "review_policy.reviewer_cannot_be_implementer": {
         "required": false,
@@ -1945,7 +1959,8 @@
       "#sourceCommand.timeout": {
         "required": false,
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "maximum": 9007199254740991
       },
       "#sourceGitSubdir": {
         "required": false,
@@ -2173,7 +2188,8 @@
           2,
           3,
           4
-        ]
+        ],
+        "maximum": 9007199254740991
       },
       "#record.author": {
         "required": true,
@@ -2199,7 +2215,8 @@
       },
       "#record.implemented_symbols[].line": {
         "required": false,
-        "type": "integer"
+        "type": "integer",
+        "maximum": 9007199254740991
       },
       "#record.implemented_symbols[].path": {
         "required": false,

@@ -1,0 +1,15 @@
+These vectors are the `testdata/input` and `testdata/outhex` directories of
+https://github.com/cyberphone/json-canonicalization at commit
+19d51d7fe467d4706a3ff08adf8a748f29fc21e0 (2024-12-13), the reference test suite for
+RFC 8785 (JSON Canonicalization Scheme), copyright 2018 Anders Rundgren, Apache License 2.0
+(see LICENSE beside this file). Copied unchanged.
+
+`input/<name>.json` is a JSON document; `outhex/<name>.txt` is the expected canonical
+serialisation as space-separated hexadecimal UTF-8 bytes. The runner feeds each input to the
+adapter's `canonicalise` and compares the bytes.
+
+Not vendored: `testdata/output` (the same expectation as text, which editors and transfers can
+mangle) and the 100-million-number file `es6testfile100m.txt.gz`, which is generated
+deterministically by `testdata/numgen.go` or `numgen.js` in the upstream repository and is the
+right thing to run once when porting the number formatter to a language whose float printing is
+not ECMAScript's.

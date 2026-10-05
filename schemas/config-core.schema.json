@@ -13,7 +13,8 @@
         3,
         4
       ],
-      "description": "How much governance this workspace has adopted. Read by the Index, so it must mean the same thing everywhere."
+      "description": "How much governance this workspace has adopted. Read by the Index, so it must mean the same thing everywhere.",
+      "maximum": 9007199254740991
     },
     "governance": {
       "type": "object",
@@ -47,7 +48,8 @@
         },
         "required_reviewers": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": true
@@ -94,7 +96,8 @@
         },
         "timeout_minutes": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": true

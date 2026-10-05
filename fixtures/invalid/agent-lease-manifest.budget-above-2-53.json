@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "agent": {
+    "name": "implementer",
+    "kind": "delegated-cli",
+    "runtime_agent": "claude-code"
+  },
+  "intent": {
+    "purpose": "Implement task 1.1 within its file scope."
+  },
+  "allow": {
+    "tools": ["cdf_write_artefact"],
+    "read_paths": ["src/**"],
+    "write_paths": ["src/**"],
+    "hosts": [],
+    "commands": []
+  },
+  "deny": {
+    "commands": [],
+    "paths": [],
+    "hosts": []
+  },
+  "budget": {
+    "tokens": 9007199254740993
+  },
+  "approvals": []
+}

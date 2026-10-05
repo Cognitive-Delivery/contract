@@ -250,7 +250,21 @@ recorded status.
 ## 7. Canonical bytes
 
 Normative, and the part on which interoperability depends. `declared_hash` and every signature are
-computed over **canonical bytes**, defined as follows.
+computed over **canonical bytes**.
+
+**Canonical bytes are the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) (JSON Canonicalization
+Scheme) serialisation of the value, after removing every member whose value is absent.** The
+removal is the one step outside RFC 8785, because JSON has no absent value and RFC 8785 therefore
+has nothing to say about one; an implementation whose data model has `undefined`, `None` or `nil`
+drops those members first and then canonicalises. An implementation **MAY** use any RFC 8785
+library for the second step, and the contract's corpus carries RFC 8785's own reference vectors
+(`conformance/jcs/`) beside its nine, so a library's conformance is checked rather than assumed.
+RFC 8785 presumes I-JSON (RFC 7493): every integer field in the schema set is bounded at
+2^53 − 1 so that a number can never canonicalise differently in two correct parsers.
+
+The rules below restate RFC 8785 for the reader who implements by hand, and name the two places
+implementations are known to diverge. Where this restatement and RFC 8785 could be read to differ,
+RFC 8785 governs.
 
 A value is serialised to UTF-8 with no insignificant whitespace, by these rules:
 
@@ -298,7 +312,9 @@ The reference implementation uses HMAC-SHA256 with a per-deployment key. This sp
 
 ### 7.1 Test vectors
 
-Everything above is executable. `conformance/canonical-vectors.json` carries nine vectors — member
+Everything above is executable. `conformance/jcs/` carries RFC 8785's own six reference vectors
+(input and expected bytes, from the specification author's test suite at a pinned commit), and
+`conformance/canonical-vectors.json` carries nine vectors — member
 ordering, recursion, absent versus null, empty containers, the escape set, the literal set,
 unpaired surrogates, number forms, and UTF-16 versus code-point key order — each with its expected
 byte string and the SHA-256 of those bytes, plus two cases that **MUST** fail to serialise. An
@@ -419,5 +435,6 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.0 | 2026-10-05 | §7 states normatively that canonical bytes are RFC 8785 after undefined-removal, so existing JCS libraries and RFC 8785's own test vectors (now in the corpus) apply; the field-by-field rules become an informative restatement. Every integer field is bounded at 2^53 − 1 for I-JSON. No byte of any existing hash changes: the restatement was already RFC 8785, which is the point of saying so |
 | 1.0 | 2026-10-05 | §4.4 names the five refused `allow` path forms (adding a leading `~`, a drive-letter prefix and any backslash to the absolute and `..` forms) and permits a home-relative `deny` path; the schemas express the rule without lookahead so RE2 validators can load it. The reference implementation already refused all five; the schema and the text now agree with it |
 | 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time — the schemas had referred to "canonical bytes" in six descriptions without defining them anywhere — down to the closed escape set and UTF-16 key ordering, with executable test vectors at §7.1 |
