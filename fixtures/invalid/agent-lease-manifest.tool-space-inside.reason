@@ -1,0 +1,1 @@
+`allow.tools` contains `cdf read`. A tool name carries no whitespace; this is two names or a typo, and either way it matches nothing a gate would check.

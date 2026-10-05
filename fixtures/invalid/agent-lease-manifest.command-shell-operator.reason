@@ -1,0 +1,1 @@
+`allow.commands` contains `git;rm`. A shell operator in a command name is an injection, not a name. SPEC §4.4: a command is the basename of the executable.

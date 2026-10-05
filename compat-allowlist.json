@@ -6,7 +6,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -14,7 +14,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -30,7 +30,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -38,7 +38,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -54,7 +54,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -62,7 +62,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -70,7 +70,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#check.worker",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -78,7 +78,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#contributes.docPacks[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -86,7 +86,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -94,7 +94,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -102,7 +102,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#sourceGitSubdir.path",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
     },
@@ -369,6 +369,230 @@
       "reason": "Claude Code accepts only copy and link for a command source's mode; a third value never loaded a plugin on any host, and the harness does not fetch command sources at all, so no real artefact is affected.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/plugin-marketplace.command-mode-unknown.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#agent.name",
+      "reason": "SPEC 4.2 (1.2): agent.name is a display label of at most 120 characters. The longest real label is 22 characters; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.name-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.tools[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.tool-star.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#deny.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#deny.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#deny.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#intent.purpose",
+      "reason": "SPEC 4.3 (1.2): purpose is one sentence of at most 500 characters. The longest real purpose is 79 characters; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.purpose-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "approvals[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.approval-star.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.agent.name",
+      "reason": "SPEC 4.2 (1.2): agent.name is a display label of at most 120 characters. The longest real label is 22 characters; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.name-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.tools[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.tool-star.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.approvals[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.approval-star.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.deny.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.deny.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.deny.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.deny-host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.intent.purpose",
+      "reason": "SPEC 4.3 (1.2): purpose is one sentence of at most 500 characters. The longest real purpose is 79 characters; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.purpose-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.tools[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.tool-star.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.commands[]",
+      "reason": "SPEC 4.4 (1.2): a command is the executable basename, no path, arguments or shell operator. Every real command (the default deny list of eight names, the vectors, the fixtures) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.command-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.hosts[]",
+      "reason": "SPEC 4.4 (1.2) gives hosts one identity rule: lower-case DNS name, IPv4 literal or localhost, optional single leading wildcard label, or *; no scheme, port, path, whitespace, upper case, trailing dot or interior wildcard. Every real host (six lease records, the ten built-in provider hosts, 27 vectors, every fixture) matches; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.hosts[]",
+      "reason": "A host is at most 253 characters (DNS). Every host in the reference deployment, its root policy, the vectors and the fixtures is under 40; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.host-scheme.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.tools[]",
+      "reason": "SPEC 4.4 (1.2): a tool or approval is an identifier of at most 128 characters, never *, no whitespace. Every real value is a cdf_ tool name or a dotted action; see fixtures/evidence/2026-10-05-lease-identity.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.tool-star.json"
     }
   ]
 }

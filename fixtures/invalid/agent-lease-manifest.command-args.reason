@@ -1,0 +1,1 @@
+`allow.commands` contains `git status`. Arguments are not part of the executable name; a command entry authorises a program, not an invocation. SPEC §4.4: a command is the basename of the executable.

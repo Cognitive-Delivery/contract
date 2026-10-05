@@ -1,0 +1,1 @@
+`deny.hosts` contains `http://evil.example`. The host rule of SPEC §4.4 applies to deny entries too: a denial spelled as a URL would match nothing and refuse nothing, which is the worst kind of deny.

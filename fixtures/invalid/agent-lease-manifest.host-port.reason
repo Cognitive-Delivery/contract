@@ -1,0 +1,1 @@
+`allow.hosts` contains `api.example.com:443`. A port is not part of a host. No port form exists in 1.x because nothing enforces one; `host:port` is reserved. SPEC §4.4: a host is a lower-case DNS name, an IPv4 literal or `localhost`, with an optional single leading `*.` label, or the bare `*`; two implementations must not disagree about what a host entry names.

@@ -15,7 +15,24 @@ tooling in this repository.
 
 ## [Unreleased]
 
-Nothing yet.
+Schema set 1.2, in progress (CDF spec `contract-batch-two-implement-all`, DR-183): the second
+review's fourteen improvements. Every tightening below is allow-listed with the evidence that no
+conformant writer ever produced what it now refuses, and every real journal in the reference
+deployment validates with zero rejections.
+
+### Changed
+
+- **Hosts, commands, tools and approvals have one identity rule each**, enforced by the schemas
+  (SPEC §4.4). A host is a lower-case DNS name (IPv4 literals and `localhost` included), with at most
+  a single leading `*.` label, or `*`; a scheme, a port, a path, whitespace, upper case, a trailing
+  dot and an interior wildcard are refused. A command is the executable's basename: no path, no
+  arguments, no shell operator. A tool or approval is an identifier of at most 128 characters that
+  is never `*` and carries no whitespace. The same rules apply to the plugin schemas' `capabilities`,
+  which is the lease `allow` shape. Eighteen invalid fixtures, one per refused form, and one valid
+  fixture carrying every admitted form. `agent.name` is capped at 120 characters and described as
+  never a person's name; `intent.purpose` at 500. `tooling/inline-granted-manifest.mjs` rewrites the
+  inlined copy in `agent-lease.schema.json` from its source, so the identity check has a tool to
+  satisfy it.
 
 ## [1.1.0] — 2026-10-05
 

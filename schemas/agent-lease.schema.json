@@ -36,7 +36,8 @@
             "name": {
               "type": "string",
               "minLength": 1,
-              "description": "Display label: the worker role, the session, the plugin. Not an identity."
+              "description": "Display label for the cockpit, at most 120 characters: the worker role, the session, the plugin. Not an identity, and never a person's name, email address or git identity; this value is recorded in an audit journal that is retained indefinitely.",
+              "maxLength": 120
             },
             "kind": {
               "type": "string",
@@ -116,7 +117,8 @@
             "purpose": {
               "type": "string",
               "minLength": 1,
-              "description": "One sentence of intent. Recorded in the audit journal, so no prompt and no content."
+              "description": "One sentence of intent, at most 500 characters. Recorded in the audit journal, so no prompt and no content.",
+              "maxLength": 500
             }
           },
           "additionalProperties": true
@@ -134,10 +136,12 @@
           "properties": {
             "tools": {
               "type": "array",
-              "description": "Governed tool names the agent may call.",
+              "description": "Governed tool names the agent may call. An empty list in a GRANTED manifest is refused (SPEC §5.2 R2).",
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                "description": "A governed tool name the agent may call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
               }
             },
             "read_paths": {
@@ -212,18 +216,23 @@
             },
             "hosts": {
               "type": "array",
-              "description": "Hostnames the agent may reach, with an optional leading wildcard label (`*.example.com`). Enforced by the egress proxy once it keys off the lease.",
+              "description": "Hosts the agent may reach. `*.example.com` matches `api.example.com` and not `example.com`; matching a bare parent domain requires listing it. Enforced by the egress proxy once it keys off the lease.",
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
               }
             },
             "commands": {
               "type": "array",
-              "description": "Executable names the agent may run.",
+              "description": "Executables the agent may run, by basename.",
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable the agent may run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
               }
             }
           },
@@ -243,7 +252,9 @@
               "description": "Executable names refused outright, for example sudo, su, docker, ssh, curl, wget, launchctl, systemctl.",
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable refused outright. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
               }
             },
             "paths": {
@@ -276,7 +287,10 @@
               "description": "Hostnames refused outright.",
               "items": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
               }
             }
           },
@@ -326,10 +340,12 @@
         },
         "approvals": {
           "type": "array",
-          "description": "Action names that need a human before the agent may perform them. Required and may be empty.",
+          "description": "Action names that need a human before the agent may perform them, under the same identifier rule as tool names. Required and may be empty.",
           "items": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+            "description": "An action that needs a human first; the same identifier rule as a tool name. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
           }
         },
         "attestation": {

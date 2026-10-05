@@ -1,0 +1,1 @@
+`allow.hosts` contains `api example.com`. Whitespace inside a host is a typo that would silently match nothing. SPEC §4.4: a host is a lower-case DNS name, an IPv4 literal or `localhost`, with an optional single leading `*.` label, or the bare `*`; two implementations must not disagree about what a host entry names.
