@@ -20,14 +20,14 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { ID_HOST, idFor } from '../conformance/ids.mjs';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 
-export const ID_HOST = 'https://cognitive-delivery.github.io/contract';
-
-export function idFor(major, file) {
-  return `${ID_HOST}/${major}.x/${file}`;
-}
+// Defined in conformance/ids.mjs, which ships in the package; re-exported here so the import
+// path older tooling used keeps working.
+export { ID_HOST, idFor };
 
 export async function syncVersion({ write = true } = {}) {
   const pkgPath = resolve(root, 'package.json');

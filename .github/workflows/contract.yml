@@ -36,6 +36,41 @@ jobs:
       # the version stated consistently, and the guard's own scenarios.
       - run: npm test
 
+  package:
+    name: published package self-test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # The tarball a consumer installs, not the clone. 1.1.0's package could not run its own
+      # `npm test`: two files it imported were not in `files`. Nothing in the clone's test can see
+      # that, because the clone has every file. So: pack, install into an empty directory with the
+      # optional ajv peer, run the INSTALLED package's test, and import a vector through `exports`.
+      - name: Pack, install into an empty directory, run the installed test
+        run: |
+          set -e
+          npm pack --pack-destination "$RUNNER_TEMP/pkg"
+          mkdir "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
+          npm init -y > /dev/null
+          npm install "$RUNNER_TEMP"/pkg/cognitive-delivery-contract-*.tgz ajv@^8
+          npm test --prefix node_modules/@cognitive-delivery/contract
+          node --input-type=module -e "
+            const m = await import('@cognitive-delivery/contract/conformance/narrowing-vectors.json', { with: { type: 'json' } });
+            const lock = await import('@cognitive-delivery/contract/schemas.lock.json', { with: { type: 'json' } });
+            console.log('exports: narrowing vectors', m.default.vectors.length, '; lock format', lock.default.lockFormat);
+          "
+
   compatibility:
     name: additive-only guard
     runs-on: ubuntu-latest

@@ -206,6 +206,14 @@ Both run in CI on every push and pull request, against Node 20 and 22, beside a 
 every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
 check has to be runnable by someone who has never seen the product.
 
+The same `npm test` runs from the **installed package**, not only from a clone: CI packs the
+tarball, installs it into an empty directory with `ajv`, and runs the installed package's own test.
+1.1.0's package could not, because two files it imported were not in the tarball, and no check in
+the clone could see that. Every file under `conformance/` and `schemas.lock.json` are importable
+through `exports`, so `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves.
+From the tarball the additive guard's scenarios are reported as not present rather than passed,
+because the guard ships with the repository.
+
 ### Signature vectors and rejection places
 
 `conformance/signature-vectors.json` names lease fixtures signed with the published **test key**
@@ -270,17 +278,44 @@ anything that reaches it is effectively permanent.
 
 ## Layout
 
+Every entry at the top level and one level down in `conformance/`, `fixtures/` and `tooling/`
+is named here, and `npm test` fails when one is added without a line or a line outlives its
+file (`conformance/layout-check.mjs`).
+
 ```
-schemas/           the JSON Schemas, one file per shape, each self-contained
-fixtures/valid/    minimal and fully populated, per shape
-fixtures/invalid/  each beside a .reason file saying why it must be rejected
-conformance/       the reference runner; takes an adapter, imports no product
-  runner.mjs       the corpus, run against whatever adapter you pass it
-  ajv-adapter.mjs  the reference adapter, so the corpus runs here and not only in a product
-  canonical-vectors.json  the canonical-bytes vectors of SPEC section 7, in pure ASCII
-  run.mjs          `npm test`
-schemas.lock.json  the recorded shape, and what the additive-only guard compares against
-check-additive.mjs that guard
+schemas/                    the JSON Schemas, one file per shape, each self-contained
+fixtures/                   the corpus
+  valid/                    minimal and fully populated, per shape; every one must validate
+  invalid/                  each beside a .reason saying why, and an .expect.json naming where
+  SOURCES.md                where the vendor-format fixtures were transcribed from
+conformance/                the reference runner and the vectors; takes an adapter, imports no product
+  runner.mjs                the corpus, run against whatever adapter you pass it
+  ajv-adapter.mjs           the reference adapter, so the corpus runs here and not only in a product
+  run.mjs                   `npm test`
+  ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
+  schema-checks.mjs         strict compile, the inlined granted manifest identical to its source, the version
+  layout-check.mjs          this block is current
+  guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
+  canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII
+  jcs/                      RFC 8785's own reference vectors, vendored with their licence
+  narrowing-vectors.json    declared and parent, with the grant or the refusal codes narrowing must produce
+  signature-vectors.json    lease fixtures signed with the test key, and what must stop verifying
+  test-key.txt              the published test key; signs fixtures and nothing else (SECURITY.md)
+schemas.lock.json           the recorded shape, and what the additive-only guard compares against
+check-additive.mjs          that guard
+compat-allowlist.json       the tightenings the guard lets through within 1.x, each with its evidence
+generate-schemas-lock.mjs   writes schemas.lock.json from schemas/
+generate-contract-types.mjs writes a consumer's TypeScript types from schemas/; `--check` for currency
+tooling/                    repository tooling; not in the package
+  sync-version.mjs          one version, stated in package.json, written everywhere else from it
+  regex-portability/        the Go program CI runs to compile every pattern under RE2
+SPEC-agent-lease-manifest.md the normative specification
+README.md                   this file
+CHANGELOG.md                what changed, per release
+CONTRIBUTING.md             how to run the checks and tighten a schema within 1.x
+SECURITY.md                 what counts as a vulnerability here, and where to report one
+LICENSE                     Apache-2.0
+package.json                the npm package; `files` is the tarball's allow-list
 ```
 
 ## Licence

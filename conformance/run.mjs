@@ -14,6 +14,8 @@ import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
 import { runGuardTests } from './guard-tests.mjs';
 import { runSchemaChecks } from './schema-checks.mjs';
+import { runLayoutCheck } from './layout-check.mjs';
+import { idFor } from './ids.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -55,9 +57,10 @@ async function checkVersionCurrency() {
   }
   // Every `$id` names this major, at the host that serves it. `tooling/sync-version.mjs` writes
   // them; this is the check that nobody edited one by hand or forgot the sync on a major bump.
+  // `idFor` comes from ./ids.mjs, which ships in the package: importing it from tooling/ is what
+  // stopped the installed package running this file at all (review of 5 October 2026).
   const major = version.split('.')[0];
   const { readdir } = await import('node:fs/promises');
-  const { idFor } = await import('../tooling/sync-version.mjs');
   for (const file of (await readdir(resolve(root, 'schemas'))).filter((n) => n.endsWith('.schema.json')).sort()) {
     const id = JSON.parse(await readFile(resolve(root, 'schemas', file), 'utf8')).$id;
     if (id !== idFor(major, file)) {
@@ -74,7 +77,9 @@ async function checkVersionCurrency() {
   let stale = '';
   // Built from parts so this file does not match its own check.
   const oldHost = ['cognitivedelivery.co.uk', 'contract/'].join('/');
-  try { stale = execFileSync('git', ['grep', '-l', oldHost, '--', 'schemas', 'fixtures', 'README.md', 'SPEC-agent-lease-manifest.md', 'conformance', ':!conformance/run.mjs'], { cwd: root, encoding: 'utf8' }); } catch { stale = ''; }
+  // stderr ignored: from the installed package there is no repository, and "not a git
+  // repository" is the expected answer there, not a finding.
+  try { stale = execFileSync('git', ['grep', '-l', oldHost, '--', 'schemas', 'fixtures', 'README.md', 'SPEC-agent-lease-manifest.md', 'conformance', ':!conformance/run.mjs'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { stale = ''; }
   if (stale.trim()) {
     problems.push(`these files still reference the old $id host, which never served the schemas: ${stale.trim().split('\n').join(', ')}`);
   }
@@ -98,14 +103,23 @@ console.log(`Version ${currency.version} stated consistently in package.json (tw
 // The guard is a control, so it is tested like one: every finding seen to fire, every
 // additive change seen to pass, the allow-list seen to refuse an entry without evidence.
 const guard = await runGuardTests();
-console.log(`Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`);
+console.log(guard.present
+  ? `Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`
+  : 'Additive guard: NOT PRESENT in this package (check-additive.mjs ships with the repository, not the tarball); its scenarios run from a clone.');
 
 // The schema set itself: strict compile, the inlined granted manifest identical to its
 // source, and the package's own version statement. Held here, not in a consumer.
 const schemaChecks = await runSchemaChecks();
 console.log(`Schema checks: ${schemaChecks.schemaCount} schemas strict-compiled, identity and version checked, ${schemaChecks.failures.length} failure(s).`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures];
+// The README's Layout block names every file, or a reader learns about a file by stumbling on
+// it. Repository only: the tarball is a documented subset.
+const layout = await runLayoutCheck(resolve(here, '..'));
+console.log(layout.checked
+  ? `Layout: README.md names every entry at the top level and under conformance/, fixtures/ and tooling/, ${layout.failures.length} failure(s).`
+  : 'Layout: NOT CHECKED (published package; the repository check runs from a clone).');
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);
