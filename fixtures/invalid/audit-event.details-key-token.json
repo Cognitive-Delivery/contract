@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "event_type": "task.status_updated",
+  "details": {
+    "api_token": "sk-live-not-really",
+    "count": 3
+  }
+}

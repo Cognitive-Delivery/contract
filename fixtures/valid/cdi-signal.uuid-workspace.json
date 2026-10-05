@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "workspace_id": "d772ea72-b61e-484c-814f-3137cb5d188a",
+  "event_type": "session.started",
+  "adoption_tier": 2,
+  "outcome": "success",
+  "details": {
+    "estimated_files_touched": 4,
+    "requests_total": 2
+  }
+}

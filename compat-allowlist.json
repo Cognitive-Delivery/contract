@@ -105,6 +105,94 @@
       "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "details",
+      "reason": "the schema now refuses the keys the reference writer already drops (eleven segment words, snake and camelCase forms); 33,557 real records, 0 refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.details-key-token.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "reasoning",
+      "reason": "the reference writer caps reasoning at 500 characters; no real record is longer.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.summary-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "request_hash",
+      "reason": "request_hash was always specified as SHA-256; all 33,557 real audit records in the reference deployment are 64-char hex. A raw request validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "summary",
+      "reason": "the reference writer caps summary at 300 characters; no real record is longer.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.summary-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "details",
+      "reason": "the same key filter as the audit event; 5,652 real signals, 0 refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.details-key-token.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "prompt_hash",
+      "reason": "prompt_hash was always specified as SHA-256; every real signal carrying one is 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.prompt-hash-not-sha256.json"
+    },
+    {
+      "finding": "UNION_CHANGED",
+      "schema": "cdi-signal.schema.json",
+      "path": "workspace_id",
+      "reason": "workspace_id is a SHA-256 digest or a per-checkout UUID; every one of 5,652 real signals is one of the two (the UUID form is the majority). The remote URL itself validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.workspace-id-not-hash-or-uuid.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "workspace_id",
+      "reason": "workspace_id is a SHA-256 digest or a per-checkout UUID; every one of 5,652 real signals is one of the two (the UUID form is the majority). The remote URL itself validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.workspace-id-not-hash-or-uuid.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.content_hash",
+      "reason": "content_hash was always specified as SHA-256; all real records carrying one are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.prompt_hash",
+      "reason": "prompt_hash was always specified as SHA-256; all 4,535 real provenance records are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.steering_hash",
+      "reason": "steering_hash is a SHA-256, or 64 zeros when the writer cannot compute it; all 4,535 real records are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
     }
   ]
 }

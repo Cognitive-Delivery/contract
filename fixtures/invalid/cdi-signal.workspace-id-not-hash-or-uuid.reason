@@ -1,0 +1,1 @@
+`workspace_id` is the remote URL itself. The field is a SHA-256 of the remote URL, or a per-checkout UUID when there is no remote: two shapes a reader can compare, neither reversible to a repository name or a person. The URL would reach an indefinitely retained record. Every real signal in the reference deployment is one of the two shapes (724 digests, 4,910 UUIDs).

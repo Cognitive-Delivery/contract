@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-function lock(schemas, contentModels = {}, lockFormat = 2) {
+function lock(schemas, contentModels = {}, lockFormat = 3) {
   return { lockFormat, schemaSetVersion: '1.0.0', major: '1', contentModels, schemas };
 }
 
@@ -45,6 +45,7 @@ export async function runGuardTests() {
     after.schemas['x.schema.json'].b.maximum = 20; // maximum raised = loosened
     after.schemas['x.schema.json'].b.minimum = -1; // minimum lowered = loosened
     after.schemas['x.schema.json'].e.notPatterns = []; // refusal removed = loosened
+    after.schemas['x.schema.json'].d.keyNotPatterns = []; // key refusal removed = loosened
     after.schemas['x.schema.json'].g.enum = ['x', 'y', 'z']; // enum widened
     expect('additive-is-silent', codes(compare(base(), after)), []);
   }
@@ -54,6 +55,7 @@ export async function runGuardTests() {
     ['pattern-added', (s) => { s.a.pattern = '^[0-9a-f]{64}$'; }, ['PATTERN_TIGHTENED a']],
     ['pattern-changed', (s) => { s.c.pattern = '^[a-z]{2,}$'; }, ['PATTERN_TIGHTENED c']],
     ['not-pattern-added', (s) => { s.e.notPatterns = ['^/', '^~']; }, ['PATTERN_TIGHTENED e']],
+    ['key-not-pattern-added', (s) => { s.d.keyNotPatterns = ['token']; }, ['PATTERN_TIGHTENED d']],
     ['min-length-added', (s) => { s.a.minLength = 1; }, ['BOUND_TIGHTENED a']],
     ['maximum-lowered', (s) => { s.b.maximum = 5; }, ['BOUND_TIGHTENED b']],
     ['minimum-raised', (s) => { s.b.minimum = 1; }, ['BOUND_TIGHTENED b']],
@@ -81,6 +83,23 @@ export async function runGuardTests() {
     const gone = base();
     delete gone.schemas['x.schema.json'];
     expect('schema-removed', codes(compare(base(), gone)), ['SCHEMA_REMOVED ']);
+  }
+
+  // Union sites (format 3): a lost branch type or a removed union pattern is a narrowing; against
+  // a format-2 baseline the path's own type is not compared on a union site, because format 2
+  // recorded the last branch's type there.
+  {
+    const before = lock({ 'x.schema.json': { u: { required: true, type: 'string', anyOf: 2, anyOfPatterns: ['^a$', '^b$'], anyOfTypes: ['string'] } } });
+    const narrower = lock({ 'x.schema.json': { u: { required: true, type: 'string', anyOf: 1, anyOfPatterns: ['^a$'], anyOfTypes: ['string'] } } });
+    expect('union-pattern-removed', codes(compare(before, narrower)), ['PATTERN_TIGHTENED u', 'UNION_CHANGED u']);
+    const wider = lock({ 'x.schema.json': { u: { required: true, type: 'string', anyOf: 3, anyOfPatterns: ['^a$', '^b$', '^c$'], anyOfTypes: ['string'] } } });
+    expect('union-pattern-added-is-union-changed-only', codes(compare(before, wider)), ['UNION_CHANGED u']);
+    const typeLost = lock({ 'x.schema.json': { v: { required: false, anyOf: 1, anyOfTypes: ['string'] } } });
+    const typeBefore = lock({ 'x.schema.json': { v: { required: false, anyOf: 2, anyOfTypes: ['object', 'string'] } } });
+    expect('union-type-lost', codes(compare(typeBefore, typeLost)), ['TYPE_CHANGED v', 'UNION_CHANGED v']);
+    const f2 = lock({ 'x.schema.json': { w: { required: false, type: 'object', anyOf: 2 } } }, {}, 2);
+    const f3 = lock({ 'x.schema.json': { w: { required: false, anyOf: 2, anyOfTypes: ['object', 'string'] } } });
+    expect('format2-union-type-not-compared', codes(compare(f2, f3)), []);
   }
 
   // Enum values keep their type: [1,2] versus ["1","2"] is a change, not a match.
@@ -132,5 +151,5 @@ export async function runGuardTests() {
     expect('allowlist-entry-kept', missingAllowlistEntries({ entries: [entry] }, { entries: [entry] }).length, 0);
   }
 
-  return { count: cases.length + 12, failures };
+  return { count: cases.length + 16, failures };
 }

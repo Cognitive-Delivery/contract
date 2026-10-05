@@ -1,0 +1,1 @@
+`details` carries `filePath` and `tokenCount`: the camelCase forms of `file`, `path` and `token`. The writer's segment rule catches them because it splits on the case boundary; the schema's second and third clauses catch the interior and leading forms respectively. A rule that only knew snake_case would have let both through.

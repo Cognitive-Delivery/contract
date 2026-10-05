@@ -17,8 +17,9 @@ round trip that must not lose an unknown field, and the canonical-bytes vectors 
 in `package.json` matches the one stated in the README, the CHANGELOG and `schemas.lock.json` —
 added because the lock silently kept the previous version through a release.
 
-`npm run check:additive` compares the schema set against the shape it had before your change; in
-CI the baseline is the branch you are merging into. It reports named findings in the style of
+`npm run check:additive -- --baseline-ref origin/main` compares the schema set against the shape
+it had at that ref, digesting the baseline's schemas with the current generator; in CI the baseline
+is the branch you are merging into, or the pushed-from commit. It reports named findings in the style of
 `buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`,
 `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
 `SCHEMA_REMOVED`. The last four need a baseline in lock format 2 (`lockFormat` in

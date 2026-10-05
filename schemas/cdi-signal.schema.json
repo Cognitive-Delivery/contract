@@ -22,7 +22,15 @@
     },
     "workspace_id": {
       "type": "string",
-      "description": "SHA-256 of the git remote URL. Not a person identifier and not reversible to one."
+      "description": "SHA-256 of the git remote URL, lower-case hex, when the workspace has a remote; otherwise a per-checkout lower-case UUID the collector generates and stores under .cdf/. Never a person identifier and not reversible to one. CORRECTED against real artefacts: the earlier description claimed the hash form only, while 4,910 of 5,634 signals in the reference deployment carry the UUID form.",
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      ]
     },
     "event_type": {
       "type": "string",
@@ -187,7 +195,8 @@
     },
     "prompt_hash": {
       "type": "string",
-      "description": "SHA-256. NEVER the prompt itself."
+      "description": "SHA-256 of the prompt, lower-case hex. NEVER the prompt itself; the pattern refuses anything that is not a 64-character digest.",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "outcome": {
       "type": "string",
@@ -199,12 +208,32 @@
     },
     "details": {
       "type": "object",
-      "description": "Must never contain secrets, personal data or file contents.",
+      "description": "Flat scalars only, and keys are filtered by name exactly as on the audit event: a key whose segment is authorization, content, file, password, path, payload, prompt, request, secret or token is refused. Must never contain secrets, personal data or file contents.",
       "additionalProperties": {
         "type": [
           "string",
           "number",
           "boolean"
+        ]
+      },
+      "propertyNames": {
+        "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of eleven words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",
+        "allOf": [
+          {
+            "not": {
+              "pattern": "(^|[^A-Za-z0-9])(authorization|content|file|password|path|payload|prompt|request|secret|token)([^A-Za-z0-9]|$)"
+            }
+          },
+          {
+            "not": {
+              "pattern": "[a-z0-9](Authorization|Content|File|Password|Path|Payload|Prompt|Request|Secret|Token)([^a-z]|$)"
+            }
+          },
+          {
+            "not": {
+              "pattern": "^(authorization|content|file|password|path|payload|prompt|request|secret|token)[A-Z]"
+            }
+          }
         ]
       }
     }
