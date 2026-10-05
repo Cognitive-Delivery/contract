@@ -157,6 +157,12 @@ nothing else. Each schema is also served at its `$id`
 (`https://cognitive-delivery.github.io/contract/1.x/<file>`), so a validator that resolves
 identifiers finds the current 1.x schema there; the version a document was written against is its
 own `schema_version` field.
+Each release is also served frozen at `https://cognitive-delivery.github.io/contract/<version>/`
+(`/1.1.0/`, `/1.2.0/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
+version can fetch exactly what it shipped; and `schemas/index.json`, served beside both, lists every
+schema with its `$id`, title, dialect and the file patterns it describes (`**/.cdf/config.yaml` for
+`config-core`, the `.claude-plugin/` files for the plugin schemas), which is what a registry such as
+SchemaStore reads.
 
 ## A worked example
 
@@ -367,6 +373,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
   traceability-check.mjs    fails `npm test` on an unmapped, stale or edited clause, or a mapping that names nothing
   suite-export.mjs          builds the corpus in the official JSON-Schema-Test-Suite format, and says when the export is stale
+  schema-index.mjs          builds schemas/index.json (file, $id, title, dialect, fileMatch) and says when it is stale
   suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what six other validators run
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
@@ -384,6 +391,7 @@ tooling/                    repository tooling; not in the package
   sync-version.mjs          one version, stated in package.json, written everywhere else from it
   changelog-section.mjs     prints one release's CHANGELOG section; the release workflow's notes
   export-suite.mjs          writes conformance/suite/ from the schemas and fixtures; run by `npm run lock`
+  generate-index.mjs        writes schemas/index.json; run by `npm run lock`
   inline-granted-manifest.mjs rewrites every inlined copy of the manifest schema from its source
   regex-portability/        the Go program CI runs to compile every pattern under RE2
 SPEC-agent-lease-manifest.md the normative specification

@@ -1,0 +1,75 @@
+{
+  "schema_set": "1.1.0",
+  "generated_from": "schemas/*.schema.json",
+  "schemas": [
+    {
+      "file": "agent-lease-manifest.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease-manifest.schema.json",
+      "title": "Agent Lease Manifest",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "agent-lease.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease.schema.json",
+      "title": "Agent Lease",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "audit-event.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/audit-event.schema.json",
+      "title": "CDF governance audit event",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "cdi-assessment.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/cdi-assessment.schema.json",
+      "title": "CDF CDI assessment record",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "cdi-signal.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/cdi-signal.schema.json",
+      "title": "CDF CDI signal",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "config-core.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/config-core.schema.json",
+      "title": "CDF config, shared core",
+      "dialect": "http://json-schema.org/draft-07/schema#",
+      "fileMatch": [
+        "**/.cdf/config.yaml"
+      ]
+    },
+    {
+      "file": "lease-record.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/lease-record.schema.json",
+      "title": "Agent lease record",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    },
+    {
+      "file": "plugin-manifest.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",
+      "title": "CDF Plugin Manifest",
+      "dialect": "http://json-schema.org/draft-07/schema#",
+      "fileMatch": [
+        "**/.claude-plugin/plugin.json"
+      ]
+    },
+    {
+      "file": "plugin-marketplace.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
+      "title": "CDF Plugin Marketplace",
+      "dialect": "http://json-schema.org/draft-07/schema#",
+      "fileMatch": [
+        "**/.claude-plugin/marketplace.json"
+      ]
+    },
+    {
+      "file": "provenance.schema.json",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/provenance.schema.json",
+      "title": "CDF provenance",
+      "dialect": "http://json-schema.org/draft-07/schema#"
+    }
+  ]
+}

@@ -162,7 +162,8 @@ jobs:
         uses: sourcemeta/jsonschema@v17.1.1
 
       # Every schema is valid against its own meta-schema (draft-07), by a validator that is not Ajv.
-      - run: jsonschema metaschema schemas/
+      # schemas/index.json is the index of the schemas, not one of them.
+      - run: jsonschema metaschema schemas/ --ignore schemas/index.json
 
       # Lint, with six of Sourcemeta's rules excluded by name and for a reason each:
       #   description_trailing_period   descriptions here are sentences; they end with a full stop
@@ -174,6 +175,7 @@ jobs:
       #   simple_properties_identifiers `$schema` is a key Claude Code manifests carry; it is modelled as is
       - run: >
           jsonschema lint schemas/
+          --ignore schemas/index.json
           --exclude description_trailing_period
           --exclude enum_with_type
           --exclude enum_to_const

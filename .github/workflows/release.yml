@@ -120,3 +120,33 @@ jobs:
             fi
           done
           exit $status
+
+      # The frozen copy, /<version>/, is laid out by pages.yml on the tag push and takes a minute
+      # or two to deploy. Checked with patience and reported, not failed, when still absent after
+      # that: the release has already happened, and the daily $id watch covers what follows. Bytes
+      # that differ from the tag ARE a failure, because a frozen copy that is not the tag's bytes is
+      # the one thing the directory promises not to be.
+      - name: The frozen copy serves the tagged schemas
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          status=0
+          for f in schemas/*.schema.json; do
+            name="$(basename "$f")"
+            url="https://cognitive-delivery.github.io/contract/${VERSION}/${name}"
+            code=404
+            for attempt in $(seq 1 12); do
+              code="$(curl -s -o /tmp/frozen.json -w '%{http_code}' "$url")"
+              [ "$code" = "200" ] && break
+              sleep 20
+            done
+            if [ "$code" != "200" ]; then
+              echo "::warning::${url} is not served yet (${code} after four minutes); pages.yml deploys it from the tag."
+              continue
+            fi
+            if ! cmp -s /tmp/frozen.json "$f"; then
+              echo "::error::${url} serves different bytes from ${f} at this tag"; status=1
+            else
+              echo "${url}: 200, bytes identical to the tag"
+            fi
+          done
+          exit $status

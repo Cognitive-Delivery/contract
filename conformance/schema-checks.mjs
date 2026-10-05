@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 
 import { INLINED_COPIES, inlinedBodyOf } from './inlined-copies.mjs';
+import { INDEX_SCHEMA, indexStaleness } from './schema-index.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -83,6 +84,21 @@ export async function runSchemaChecks() {
       failures.push(`conventions/${file}: ${first}${conventions.errors.length > 3 ? ` (+${conventions.errors.length - 3} more)` : ''}`);
     }
   }
+
+  // 2d. The schema index (schemas/index.json) is valid against its own schema and current with
+  //     the schemas: a registry entry that points at a file the index does not know is a registry
+  //     entry nobody checked.
+  try {
+    const index = JSON.parse(await readFile(resolve(root, 'schemas', 'index.json'), 'utf8'));
+    const validIndex = new Ajv({ strict: true, allErrors: true }).compile(INDEX_SCHEMA);
+    if (!validIndex(index)) {
+      failures.push(`index/schemas/index.json: ${validIndex.errors.slice(0, 3).map((e) => `${e.instancePath || '/'} ${e.message}`).join('; ')}`);
+    }
+  } catch (error) {
+    failures.push(`index/schemas/index.json: ${error.message}`);
+  }
+  const indexStale = await indexStaleness();
+  if (indexStale) failures.push(`index/${indexStale} — run \`npm run lock\` and commit it.`);
 
   // 3. The package's own statement of the schema-set version.
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
