@@ -1,0 +1,1 @@
+`expires_at` equals `issued_at`. SPEC §6 rule L1 requires strictly after: a lease valid for zero milliseconds is a lease that was never valid. Named after the UCAN 1.0 fixture error `TooEarly`, which refuses a proof whose validity has not begun.

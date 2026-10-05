@@ -35,11 +35,15 @@ sentence in a README.
 Sometimes a schema must refuse what it used to accept: a hash field that was always meant to be
 SHA-256 gains a pattern, or a path rule gains a form it should never have allowed. The guard
 reports each of these as breaking, and it is right to. The way through is
-`compat-allowlist.json`: one entry per finding, naming `finding`, `schema`, `path`, a `reason`,
-a `date`, and an `evidence` file (normally the invalid fixture that proves the refused form, or a
-recorded check of real artefacts showing no conformant writer ever produced it). The guard refuses
-an entry whose evidence file does not exist, and refuses a change that drops an entry the baseline
-had: the list is history, never configuration. An entry is a claim that no reader in a customer's
+`compat-allowlist.json`: one entry per finding, naming `finding`, `schema`, `path`, `after` (the
+exact value admitted, as the guard prints it: `pattern=^[0-9a-f]{64}$`, `maximum=16`,
+`enum=[...]`), a `reason`, a `date`, and an `evidence` file (normally the invalid fixture that
+proves the refused form, or a recorded check of real artefacts under `fixtures/evidence/` showing no
+conformant writer ever produced it). `after` is what stops an entry outliving its tightening: the
+same finding at the same path with a different value is a new tightening and needs its own entry,
+so the entry that admitted a `maximum` of 2^53 does not quietly admit lowering it to 16. The guard
+refuses an entry whose evidence file does not exist, and refuses a change that drops an entry the
+baseline had: the list is history, never configuration. An entry is a claim that no reader in a customer's
 repository loses a record it depends on, and it is reviewed like a schema change.
 
 ## Changing the specification

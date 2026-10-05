@@ -33,6 +33,19 @@ deployment validates with zero rejections.
   never a person's name; `intent.purpose` at 500. `tooling/inline-granted-manifest.mjs` rewrites the
   inlined copy in `agent-lease.schema.json` from its source, so the identity check has a tool to
   satisfy it.
+- **Lease rules L1 and L2, and one timestamp form inside the signed bytes** (SPEC §6). A schema
+  cannot say "`expires_at` is after `issued_at`" or "not its own parent", so `conformance/lease-rules.mjs`
+  does, the runner applies it to every valid lease and to `fixtures/invalid-by-rule/` (`Expired`,
+  `TooEarly`, `SelfParent`, named after the UCAN 1.0 fixture errors where one exists), and an
+  adapter proves its own rules through a `rules` hook, reported unchecked when absent.
+  `issued_at` and `expires_at` admit only UTC with milliseconds and `Z`, because an offset form
+  hashes the same instant to different bytes; every real lease already uses it. `attestation.signature`
+  is 64 hex like the lease's own; `budget.depth` ≤ 16 and `budget.fan_out` ≤ 256.
+- **An allow-list entry admits one tightening, not every later one at the same path.** Every guard
+  finding now carries `after`, the exact value it admits (`pattern=…`, `maximum=16`, `enum=[…]`),
+  and an entry must name it. Found while lowering `depth`'s ceiling: batch one's entry for the
+  2^53 `maximum` would have covered it silently. Every existing entry gained its `after`; three
+  guard scenarios prove the match is exact.
 
 ## [1.1.0] — 2026-10-05
 

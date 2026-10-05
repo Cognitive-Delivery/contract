@@ -74,9 +74,9 @@ async function loadFixtures(kind) {
   return loaded;
 }
 
-async function reasonFor(file) {
+async function reasonFor(file, kind = 'invalid') {
   try {
-    const text = await readFile(join(fixturesDir, 'invalid', file.replace(/\.json$/, '.reason')), 'utf8');
+    const text = await readFile(join(fixturesDir, kind, file.replace(/\.json$/, '.reason')), 'utf8');
     return text.trim();
   } catch {
     return null;
@@ -91,12 +91,61 @@ async function reasonFor(file) {
  * (`[{ instancePath, keyword }]`, Ajv's shape) when it can; one that cannot is checked for
  * rejection only and the run says so.
  */
-async function expectFor(file) {
+async function expectFor(file, kind = 'invalid') {
   try {
-    return JSON.parse(await readFile(join(fixturesDir, 'invalid', file.replace(/\.json$/, '.expect.json')), 'utf8'));
+    return JSON.parse(await readFile(join(fixturesDir, kind, file.replace(/\.json$/, '.expect.json')), 'utf8'));
   } catch {
     return null;
   }
+}
+
+/**
+ * SPEC §6 rules L1 to L3, which a schema cannot state because draft-07 compares no field with
+ * another. Every valid lease fixture must pass every rule; every fixture under
+ * `fixtures/invalid-by-rule/` must be schema-VALID (the schema is not what refuses it) and must
+ * fail exactly the rule its `.expect.json` names, at the path it names. An adapter proves its
+ * own rules by supplying `rules(lease) => [{ rule, path }]`; one that does not is reported as
+ * not checked, never as passing.
+ */
+async function checkLeaseRules(adapter, valid, failures) {
+  const byRule = await loadFixtures('invalid-by-rule');
+  for (const fixture of byRule) {
+    const reason = await reasonFor(fixture.file, 'invalid-by-rule');
+    const expected = await expectFor(fixture.file, 'invalid-by-rule');
+    if (!reason) {
+      failures.push(`invalid-by-rule/${fixture.file}: no .reason file.`);
+    }
+    if (!expected || typeof expected.rule !== 'string' || typeof expected.path !== 'string') {
+      failures.push(`invalid-by-rule/${fixture.file}: no .expect.json with "rule" and "path". A rule rejection with no stated rule can be a rejection for the wrong reason.`);
+    }
+    if (!adapter.validate(fixture.shape, fixture.data)) {
+      failures.push(`invalid-by-rule/${fixture.file}: rejected by the SCHEMA. A by-rule fixture must validate, or it is testing the schema and not the rule.`);
+    }
+  }
+  if (typeof adapter.rules !== 'function') {
+    return false;
+  }
+  for (const fixture of valid.filter((f) => f.shape === 'agent-lease')) {
+    const findings = adapter.rules(fixture.data) ?? [];
+    if (findings.length > 0) {
+      failures.push(`valid/${fixture.file}: fails rule(s) ${findings.map((f) => f.rule).join(', ')}, but it is a legitimate lease.`);
+    }
+  }
+  for (const fixture of byRule) {
+    const expected = await expectFor(fixture.file, 'invalid-by-rule');
+    if (!expected || typeof expected.rule !== 'string') continue;
+    const findings = adapter.rules(fixture.data) ?? [];
+    const rules = [...new Set(findings.map((f) => f.rule))];
+    if (!rules.includes(expected.rule)) {
+      failures.push(`invalid-by-rule/${fixture.file}: must fail rule ${expected.rule}, but the implementation reported ${JSON.stringify(rules)}.`);
+      continue;
+    }
+    const paths = findings.filter((f) => f.rule === expected.rule).map((f) => f.path);
+    if (typeof expected.path === 'string' && !paths.includes(expected.path)) {
+      failures.push(`invalid-by-rule/${fixture.file}: rule ${expected.rule} reported at ${JSON.stringify(paths)}, not at ${expected.path}.`);
+    }
+  }
+  return true;
 }
 
 /**
@@ -314,6 +363,7 @@ async function checkSignatures(adapter, failures) {
  *                   canonicalise?(value: unknown): string,
  *                   narrow?(declared: unknown, parent: unknown): { granted: unknown } | { refusals: string[] },
  *                   hash?(value: unknown): string, verify?(lease: unknown, keyHex: string): boolean,
+ *                   rules?(lease: unknown): Array<{ rule: string, path: string }>,
  *                   lastErrors?: Array<{ instancePath: string, keyword: string }> }}
  * @returns a report; `failures` empty means conformant.
  */
@@ -389,12 +439,17 @@ export async function runConformance(adapter) {
   // 6. Signatures: the fixtures verify under the published test key, for an adapter that verifies.
   const signaturesChecked = await checkSignatures(adapter, failures);
 
+  // 7. Lease rules L1 to L3: by-rule fixtures are schema-valid for everyone, and fail the named
+  //    rule for an adapter that offers `rules`.
+  const rulesChecked = await checkLeaseRules(adapter, valid, failures);
+
   return {
     validCount: valid.length,
     invalidCount: invalid.length,
     canonicalChecked,
     narrowingChecked,
     signaturesChecked,
+    rulesChecked,
     errorPathsChecked,
     failures,
   };

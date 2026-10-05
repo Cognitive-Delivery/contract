@@ -101,6 +101,7 @@ console.log(
   + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}, `
   + `narrowing ${report.narrowingChecked ? 'checked' : 'vectors well-formed, behaviour NOT CHECKED (the reference adapter validates only; the reference implementation runs them in its own suite)'}, `
   + `signatures ${report.signaturesChecked ? 'checked' : 'NOT CHECKED (adapter offers no hash/verify)'}, `
+  + `lease rules ${report.rulesChecked ? 'checked' : 'by-rule fixtures schema-valid, rules NOT CHECKED (adapter offers no rules)'}, `
   + `rejection paths ${report.errorPathsChecked ? 'checked' : 'NOT CHECKED (adapter reports no errors)'}.`,
 );
 

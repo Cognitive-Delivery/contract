@@ -176,6 +176,10 @@ unbounded.
 `depth` is how many further generations of lease may be issued beneath this one. `fan_out` is how
 many children may be live at once.
 
+`budget.depth` **MUST NOT** exceed 16 and `budget.fan_out` **MUST NOT** exceed 256 (schema set 1.2).
+The reference root policy allows 4 and 8; a declaration above the ceiling is refused by the schema
+rather than clamped, because it is not a request the narrowing algebra has a meaning for.
+
 ### 4.6 Attestation
 
 `attestation` is **OPTIONAL**, because an agent presenting its own manifest may have nothing to sign
@@ -183,6 +187,9 @@ with. When present, `issuer` **MUST** name which party produced the declaration.
 
 `key_fingerprint`, when present, **MUST** identify the key without revealing it. An implementation
 **MUST NOT** place key material in a manifest or a lease.
+
+When `attestation.signature` is present it **MUST** be 64 lower-case hexadecimal characters (schema
+set 1.2): HMAC-SHA256 over the canonical bytes of the manifest, like the lease's own signature.
 
 ## 5. Narrowing
 
@@ -268,6 +275,19 @@ the pair without storing the declaration twice.
 
 `expires_at` **MUST** be honoured. After that instant the lease **MUST** open nothing, whatever its
 recorded status.
+
+Two rules a schema cannot state (schema set 1.2), checked by the conformance runner and by every
+conforming issuer. Each carries a stable identifier, as the refusals of §5.2 do:
+
+1. **L1.** `expires_at` **MUST** be after `issued_at`. Equal is refused: a lease valid for zero
+   milliseconds was never valid.
+2. **L2.** `parent_lease_id`, when present, **MUST NOT** equal `lease_id`.
+
+`issued_at` and `expires_at` are inside the signed bytes, so they **MUST** be written in one form:
+UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`). An offset form names
+the same instant in different bytes, and two implementations would then disagree about one
+signature. The evidence schemas (audit, signal, provenance, assessment) keep their offset-tolerant
+form; nothing there is signed.
 
 ## 7. Canonical bytes
 
@@ -404,6 +424,10 @@ An implementation claiming conformance with schema set 1.0 **MUST**:
    somewhere else has rejected it for the wrong reason, which is not conformance. The runner checks
    the path when the adapter reports its errors, and says so when it cannot.
 6. State which signature algorithm it uses.
+7. Apply the lease rules of §6 (L1, L2) and pass every fixture under `fixtures/invalid-by-rule/` by
+   supplying `rules(lease)` on its adapter: each such fixture is schema-valid and **MUST** be refused
+   at the rule its `.expect.json` names. An implementation that supplies no `rules` is reported as
+   unchecked, not as passing.
 
 An implementation **SHOULD** publish the result of running the corpus, so that the claim is evidence
 rather than assertion.
@@ -476,6 +500,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-05 | §6 states rules L1 (`expires_at` after `issued_at`) and L2 (no self-parent) with stable identifiers and one timestamp form inside the signed bytes; §4.5 caps `depth` at 16 and `fan_out` at 256; §4.6 fixes `attestation.signature` at 64 hex; §9 adds the by-rule fixtures and the `rules` adapter hook, reported unchecked when absent |
 | 1.2 | 2026-10-05 | §4.4 gives hosts, commands, tools and approvals one identity rule each, enforced by the schemas: hosts are lower-case DNS names (IPv4 literals and `localhost` included) with at most a single leading wildcard label and never a scheme, port or path; commands are executable basenames; tools and approvals are identifiers that are never `*`. §4.2 caps `agent.name` at 120 characters and says it is never a person's name; §4.3 caps `purpose` at 500. Every real lease in the reference deployment still validates |
 | 1.1 | 2026-10-05 | §7 publishes a test key and signed fixtures so verification is checked across implementations; §9 requires a rejection to be reported at the place each invalid fixture's `.expect.json` names, and extends the round trip to a nested unknown field |
 | 1.1 | 2026-10-05 | §5.2 gives the six refusal conditions stable identifiers R1 to R6; §9 adds the narrowing vectors to the corpus, so the third half of conformance is checked by the corpus rather than left to each implementation's own tests |

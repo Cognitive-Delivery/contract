@@ -59,8 +59,13 @@ function arg(name) {
   return index === -1 ? null : process.argv[index + 1] ?? null;
 }
 
-function finding(code, file, path, message) {
-  return { code, file, path, message };
+/**
+ * `after` names the exact value the finding admits (the new pattern, `maximum=16`, the enum), so
+ * an allow-list entry waves through one tightening and not every later tightening at the same
+ * path: batch one's entry for a 2^53 `maximum` would otherwise have covered lowering it to 16.
+ */
+function finding(code, file, path, message, after) {
+  return { code, file, path, message, after: String(after) };
 }
 
 function parentPath(path) {
@@ -71,12 +76,12 @@ function parentPath(path) {
 /** Everything one side says about a property path, compared with the other. */
 export function compareEntry(file, path, before, after, extended, out, baselineFormat = 3) {
   if (!after) {
-    out.push(finding('FIELD_REMOVED', file, path, 'removed. An older reader loses a field it depends on.'));
+    out.push(finding('FIELD_REMOVED', file, path, 'removed. An older reader loses a field it depends on.', 'removed'));
     return;
   }
 
   if (!before.required && after.required) {
-    out.push(finding('FIELD_NOW_REQUIRED', file, path, 'became required. Records an older writer already wrote stop validating.'));
+    out.push(finding('FIELD_NOW_REQUIRED', file, path, 'became required. Records an older writer already wrote stop validating.', 'required'));
   }
 
   // Format 2 let a union's last branch overwrite the path's own type, so a type comparison on a
@@ -90,7 +95,7 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
   const beforeType = JSON.stringify(before.type ?? null);
   const afterType = JSON.stringify(after.type ?? null);
   if (typeComparable && beforeType !== afterType) {
-    out.push(finding('TYPE_CHANGED', file, path, `type changed from ${beforeType} to ${afterType}. Both sides now disagree about what they are reading.`));
+    out.push(finding('TYPE_CHANGED', file, path, `type changed from ${beforeType} to ${afterType}. Both sides now disagree about what they are reading.`, `type=${afterType}`));
   }
 
   // A format-1 baseline stringified its enum values, so against one the comparison is by
@@ -101,12 +106,12 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
       const kept = new Set(after.enum.map(enumKey));
       const lost = before.enum.filter((value) => !kept.has(enumKey(value)));
       if (lost.length > 0) {
-        out.push(finding('ENUM_NARROWED', file, path, `enum lost ${lost.map((v) => JSON.stringify(v)).join(', ')}. A value that was legal is now rejected.`));
+        out.push(finding('ENUM_NARROWED', file, path, `enum lost ${lost.map((v) => JSON.stringify(v)).join(', ')}. A value that was legal is now rejected.`, `enum=${JSON.stringify(after.enum)}`));
       }
     }
     // An enum that disappeared is a widening, which is additive. Nothing to report.
   } else if (Array.isArray(after.enum)) {
-    out.push(finding('ENUM_NARROWED', file, path, `became a closed enum of ${after.enum.length} value(s). Anything outside the list is now rejected.`));
+    out.push(finding('ENUM_NARROWED', file, path, `became a closed enum of ${after.enum.length} value(s). Anything outside the list is now rejected.`, `enum=${JSON.stringify(after.enum)}`));
   }
 
   if (!extended) {
@@ -116,40 +121,40 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
   if (after.pattern !== undefined && before.pattern !== after.pattern) {
     out.push(finding('PATTERN_TIGHTENED', file, path, before.pattern === undefined
       ? `gained pattern ${JSON.stringify(after.pattern)}. A value that was legal may now be rejected.`
-      : `pattern changed from ${JSON.stringify(before.pattern)} to ${JSON.stringify(after.pattern)}. A value that was legal may now be rejected.`));
+      : `pattern changed from ${JSON.stringify(before.pattern)} to ${JSON.stringify(after.pattern)}. A value that was legal may now be rejected.`, `pattern=${after.pattern}`));
   }
   const beforeNots = new Set(before.notPatterns ?? []);
   const addedNots = (after.notPatterns ?? []).filter((p) => !beforeNots.has(p));
   if (addedNots.length > 0) {
-    out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses ${addedNots.map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`));
+    out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses ${addedNots.map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`, `not=${JSON.stringify(addedNots)}`));
   }
 
   const beforeKeyNots = new Set(before.keyNotPatterns ?? []);
   const addedKeyNots = (after.keyNotPatterns ?? []).filter((p) => !beforeKeyNots.has(p));
   if (addedKeyNots.length > 0) {
-    out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses member names matching ${addedKeyNots.map((p) => JSON.stringify(p)).join(', ')}. A key that was carried may now be rejected.`));
+    out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses member names matching ${addedKeyNots.map((p) => JSON.stringify(p)).join(', ')}. A key that was carried may now be rejected.`, `keyNot=${JSON.stringify(addedKeyNots)}`));
   }
 
   for (const lower of ['minLength', 'minimum']) {
     if (after[lower] !== undefined && (before[lower] === undefined || after[lower] > before[lower])) {
-      out.push(finding('BOUND_TIGHTENED', file, path, `${lower} ${before[lower] === undefined ? 'added' : 'raised'} to ${after[lower]}.`));
+      out.push(finding('BOUND_TIGHTENED', file, path, `${lower} ${before[lower] === undefined ? 'added' : 'raised'} to ${after[lower]}.`, `${lower}=${after[lower]}`));
     }
   }
   for (const upper of ['maxLength', 'maximum']) {
     if (after[upper] !== undefined && (before[upper] === undefined || after[upper] < before[upper])) {
-      out.push(finding('BOUND_TIGHTENED', file, path, `${upper} ${before[upper] === undefined ? 'added' : 'lowered'} to ${after[upper]}.`));
+      out.push(finding('BOUND_TIGHTENED', file, path, `${upper} ${before[upper] === undefined ? 'added' : 'lowered'} to ${after[upper]}.`, `${upper}=${after[upper]}`));
     }
   }
 
   const beforeOpen = before.additionalProperties === undefined || before.additionalProperties === true;
   const afterOpen = after.additionalProperties === undefined || after.additionalProperties === true;
   if (beforeOpen && !afterOpen) {
-    out.push(finding('CONTENT_MODEL_CLOSED', file, path, 'no longer carries unknown members. A newer writer\'s field is now refused.'));
+    out.push(finding('CONTENT_MODEL_CLOSED', file, path, 'no longer carries unknown members. A newer writer\'s field is now refused.', `additionalProperties=${after.additionalProperties}`));
   }
 
   // A union that gains a branch accepts more; one that loses a branch, or disappears, accepts less.
   if (before.anyOf !== undefined && (after.anyOf === undefined || after.anyOf < before.anyOf)) {
-    out.push(finding('UNION_CHANGED', file, path, `anyOf went from ${before.anyOf} to ${after.anyOf ?? 'none'} branch(es). A form that validated may no longer.`));
+    out.push(finding('UNION_CHANGED', file, path, `anyOf went from ${before.anyOf} to ${after.anyOf ?? 'none'} branch(es). A form that validated may no longer.`, `anyOf=${after.anyOf ?? 'none'}`));
   }
   if (baselineFormat >= 3) {
     // A union that gains a pattern branch widens; one that loses a pattern branch narrows; a
@@ -157,15 +162,15 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
     const afterUnionPatterns = new Set(after.anyOfPatterns ?? []);
     const lostUnionPatterns = (before.anyOfPatterns ?? []).filter((p) => !afterUnionPatterns.has(p));
     if (lostUnionPatterns.length > 0) {
-      out.push(finding('PATTERN_TIGHTENED', file, path, `union pattern ${lostUnionPatterns.map((p) => JSON.stringify(p)).join(', ')} removed. A value that was legal may now be rejected.`));
+      out.push(finding('PATTERN_TIGHTENED', file, path, `union pattern ${lostUnionPatterns.map((p) => JSON.stringify(p)).join(', ')} removed. A value that was legal may now be rejected.`, `anyOfPatterns=${JSON.stringify([...afterUnionPatterns].sort())}`));
     }
     if ((before.anyOfPatterns ?? []).length === 0 && before.pattern === undefined && afterUnionPatterns.size > 0) {
-      out.push(finding('PATTERN_TIGHTENED', file, path, `now must match one of ${[...afterUnionPatterns].map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`));
+      out.push(finding('PATTERN_TIGHTENED', file, path, `now must match one of ${[...afterUnionPatterns].map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`, `anyOfPatterns=${JSON.stringify([...afterUnionPatterns].sort())}`));
     }
     const beforeUnionTypes = before.anyOfTypes ?? [];
     const afterUnionTypes = new Set(after.anyOfTypes ?? []);
     const lostTypes = beforeUnionTypes.filter((t) => !afterUnionTypes.has(t));
-    if (lostTypes.length > 0) out.push(finding('TYPE_CHANGED', file, path, `union lost type(s) ${lostTypes.join(', ')}. A form that validated no longer does.`));
+    if (lostTypes.length > 0) out.push(finding('TYPE_CHANGED', file, path, `union lost type(s) ${lostTypes.join(', ')}. A form that validated no longer does.`, `anyOfTypes=${JSON.stringify(after.anyOfTypes ?? [])}`));
   }
 }
 
@@ -180,7 +185,7 @@ export function compare(baseline, current) {
   for (const [file, before] of Object.entries(baseline.schemas ?? {})) {
     const after = current.schemas[file];
     if (!after) {
-      findings.push(finding('SCHEMA_REMOVED', file, '', 'schema removed from the set.'));
+      findings.push(finding('SCHEMA_REMOVED', file, '', 'schema removed from the set.', 'removed'));
       continue;
     }
     for (const [path, entry] of Object.entries(before)) {
@@ -190,14 +195,14 @@ export function compare(baseline, current) {
     // its parent already existed (a required member of a brand-new optional object is fine).
     for (const [path, entry] of Object.entries(after)) {
       if (!before[path] && entry.required && (parentPath(path) === '' || before[parentPath(path)])) {
-        findings.push(finding('FIELD_NOW_REQUIRED', file, path, 'added as required. Records an older writer already wrote stop validating.'));
+        findings.push(finding('FIELD_NOW_REQUIRED', file, path, 'added as required. Records an older writer already wrote stop validating.', 'required'));
       }
     }
     if (extended) {
       const beforeModel = baseline.contentModels?.[file] ?? 'open';
       const afterModel = current.contentModels?.[file] ?? 'open';
       if (beforeModel === 'open' && afterModel === 'closed') {
-        findings.push(finding('CONTENT_MODEL_CLOSED', file, '', 'root content model closed. Product-specific sections are now refused.'));
+        findings.push(finding('CONTENT_MODEL_CLOSED', file, '', 'root content model closed. Product-specific sections are now refused.', 'additionalProperties=false'));
       }
     }
   }
@@ -205,7 +210,7 @@ export function compare(baseline, current) {
   return { findings, extended };
 }
 
-const ALLOWLIST_FIELDS = ['finding', 'schema', 'path', 'reason', 'date', 'evidence'];
+const ALLOWLIST_FIELDS = ['finding', 'schema', 'path', 'after', 'reason', 'date', 'evidence'];
 
 /** Validate the allow-list's shape and that every evidence file exists. Returns problems. */
 export async function validateAllowlist(allowlist, root = here) {
@@ -236,7 +241,7 @@ export async function validateAllowlist(allowlist, root = here) {
 
 /** Entries present in the baseline allow-list that are missing now. The list is history. */
 export function missingAllowlistEntries(baseline, current) {
-  const key = (e) => `${e.finding}|${e.schema}|${e.path}`;
+  const key = (e) => `${e.finding}|${e.schema}|${e.path}|${e.after}`;
   const now = new Set((current?.entries ?? []).map(key));
   return (baseline?.entries ?? []).filter((e) => !now.has(key(e)));
 }
@@ -247,7 +252,8 @@ export function applyAllowlist(findings, allowlist) {
   const unlisted = [];
   const entries = allowlist?.entries ?? [];
   for (const f of findings) {
-    const entry = entries.find((e) => e.finding === f.code && e.schema === f.file && e.path === f.path);
+    // `after` must match too: an entry admits one specific tightening, not every later one.
+    const entry = entries.find((e) => e.finding === f.code && e.schema === f.file && e.path === f.path && e.after === f.after);
     (entry ? accepted : unlisted).push(entry ? { ...f, entry } : f);
   }
   return { accepted, unlisted };
@@ -348,7 +354,7 @@ async function main() {
   }
 
   const majorChanged = baseline.major !== current.major;
-  const problems = [...unlisted.map(describe), ...dropped.map((e) => `allow-list entry removed: ${e.finding} ${e.schema} ${e.path}. The list is history; entries are never deleted within a major.`)];
+  const problems = [...unlisted.map(describe), ...dropped.map((e) => `allow-list entry removed: ${e.finding} ${e.schema} ${e.path} (${e.after}). The list is history; entries are never deleted within a major.`)];
 
   if (problems.length === 0) {
     console.log(`Additive only against baseline ${baseline.schemaSetVersion}. ${Object.keys(current.schemas).length} schemas checked, ${accepted.length} allow-listed tightening(s).`);

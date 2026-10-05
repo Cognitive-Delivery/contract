@@ -1,0 +1,1 @@
+`attestation.signature` is eleven hex characters. SPEC §4.6 (1.2): a signature is 64 lower-case hex, HMAC-SHA256 like the lease's own; an odd-length value cannot even be decoded as bytes.

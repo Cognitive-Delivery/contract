@@ -1,0 +1,1 @@
+`parent_lease_id` is the lease's own `lease_id`. SPEC §6 rule L2: a lease cannot be narrowed against its own grant; the chain would have no root and depth would never decrement. Schema-valid, refused by rule.
