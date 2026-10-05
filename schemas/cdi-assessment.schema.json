@@ -18,7 +18,9 @@
   ],
   "properties": {
     "schema_version": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
     },
     "assessment_id": {
       "type": "string"
@@ -39,7 +41,7 @@
     },
     "dimensions": {
       "type": "array",
-      "description": "One entry per dimension. The dimension set is closed because it is the instrument.",
+      "description": "One entry per dimension, each of the six exactly once (schema set 1.2: `minItems`, `maxItems` and one `contains` per id). The dimension set is closed because it is the instrument; an assessment of five dimensions is not an assessment.",
       "items": {
         "type": "object",
         "required": [
@@ -54,10 +56,10 @@
             "$ref": "#/definitions/dimensionId"
           },
           "score": {
-            "type": "number",
+            "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "1 Absent, 2 Informal, 3 Documented, 4 Complete, 5 Substantive. The four-to-five step is the distinction between a control that exists and a control that changes what someone does."
+            "description": "1 Absent, 2 Informal, 3 Documented, 4 Complete, 5 Substantive. The four-to-five step is the distinction between a control that exists and a control that changes what someone does. A whole number: the levels are discrete and a 3.7 is a score nobody can act on."
           },
           "evidence": {
             "type": "string",
@@ -71,7 +73,101 @@
           }
         },
         "additionalProperties": true
-      }
+      },
+      "minItems": 6,
+      "maxItems": 6,
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "provenance-integrity"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "supervisory-clarity"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "scope-definition"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "review-substance"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "constraint-fidelity"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "capability-calibration"
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "summary": {
       "type": "object",

@@ -1,0 +1,1 @@
+A `details` value of 201 characters. Details reach a permanent record and the reference writer drops any string longer than 200; a value past the cap is where content would be smuggled.

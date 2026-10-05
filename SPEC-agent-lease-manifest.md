@@ -325,6 +325,23 @@ lease, or `issuer`. From the record's `at` the lease **MUST** open nothing. A re
 that is neither **MUST** treat the record as invalid; this is rule **L3**, and it needs the journal
 to check, so a reader with one record and no journal cannot check it and **MUST NOT** claim to have.
 
+### 6.2 Reading evidence
+
+Every schema in the set carries `schema_version` as `major.minor` (schema set 1.2). A reader
+**MUST** compare the major only: within a major every change is additive, so a minor the reader has
+not met is a record with fields it may ignore, never one it may refuse.
+
+An audit event's `event_type` is two or more lower-case dotted segments. The reference writer's
+first segments are reserved for its vocabulary (`agent`, `architecture`, `artefact`, `audit`,
+`break_glass`, `cdi`, `chat`, `codex`, `config`, `decision`, `deploy`, `enforcement`, `evidence`,
+`execution`, `fg`, `governance`, `integration`, `lease`, `memory`, `mode`, `phase`, `provenance`,
+`report`, `responsible_ai`, `review`, `roadmap`, `security`, `session`, `spec`, `steering`, `task`,
+`tool`, `ux`, `work`, `workbench`, `workspace`); any other writer **MUST** use its vendor name as the
+first segment, so two writers in one journal cannot collide. An audit event **MAY** carry
+`actor.runtime_agent` from the closed vocabulary of §4.2; `actor.runtime` is a label and stays open,
+because the real journal carries eleven spellings of it and a reader keys identity on
+`runtime_agent`.
+
 
 ## 7. Canonical bytes
 
@@ -537,6 +554,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-05 | §6.2 states that `schema_version` is `major.minor` everywhere and compared on the major only; reserves the reference writer's audit `event_type` first segments and gives other writers the vendor-name rule; adds `actor.runtime_agent` to the audit event while `actor.runtime` stays open |
 | 1.2 | 2026-10-05 | §6.1 specifies the lease record: nine events with what each carries, `declared_hash` and `granted_hash` as the two identities of a decision, revocation by an ancestor or the issuer (rule L3), and §5.2 the three reserved forms a refusal reason takes |
 | 1.2 | 2026-10-05 | §6 states rules L1 (`expires_at` after `issued_at`) and L2 (no self-parent) with stable identifiers and one timestamp form inside the signed bytes; §4.5 caps `depth` at 16 and `fan_out` at 256; §4.6 fixes `attestation.signature` at 64 hex; §9 adds the by-rule fixtures and the `rules` adapter hook, reported unchecked when absent |
 | 1.2 | 2026-10-05 | §4.4 gives hosts, commands, tools and approvals one identity rule each, enforced by the schemas: hosts are lower-case DNS names (IPv4 literals and `localhost` included) with at most a single leading wildcard label and never a scheme, port or path; commands are executable basenames; tools and approvals are identifiers that are never `*`. §4.2 caps `agent.name` at 120 characters and says it is never a person's name; §4.3 caps `purpose` at 500. Every real lease in the reference deployment still validates |

@@ -409,6 +409,21 @@ export async function runConformance(adapter) {
     }
   }
 
+  // 2b. A sealed config path names something: every entry of `sealed` in a valid config fixture
+  //     resolves, segment by segment, to a key the fixture carries. The pattern refuses a
+  //     malformed path; this refuses a well-formed one that seals nothing, which no schema can.
+  for (const fixture of valid.filter((f) => f.shape === 'config-core')) {
+    for (const sealed of Array.isArray(fixture.data.sealed) ? fixture.data.sealed : []) {
+      let node = fixture.data;
+      for (const segment of String(sealed).split('.')) {
+        node = node && typeof node === 'object' ? node[segment] : undefined;
+      }
+      if (node === undefined) {
+        failures.push(`valid/${fixture.file}: sealed path ${JSON.stringify(sealed)} names nothing in the file. A seal on a field that is not there seals nothing.`);
+      }
+    }
+  }
+
   // 3. Unknown-but-valid fields survive a round trip.
   for (const fixture of valid) {
     const marked = withUnknownField(fixture.data);

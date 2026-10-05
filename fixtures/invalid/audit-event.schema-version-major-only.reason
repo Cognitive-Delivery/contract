@@ -1,0 +1,1 @@
+`schema_version` is `1`. One rule across every schema: `major.minor`, so a reader can compare the major and learn the minor it was written against.

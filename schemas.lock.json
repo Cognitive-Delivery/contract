@@ -613,9 +613,7 @@
       "schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       }
     },
     "agent-lease.schema.json": {
@@ -894,9 +892,7 @@
       "#grantedManifest.schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "declared_hash": {
         "required": true,
@@ -1252,9 +1248,7 @@
         "required": true,
         "via": "#grantedManifest.schema_version",
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "parent_lease_id": {
         "required": false,
@@ -1264,9 +1258,7 @@
       "schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "signature": {
         "required": true,
@@ -1305,6 +1297,18 @@
         "required": false,
         "type": "string"
       },
+      "actor.runtime_agent": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "cdf-native",
+          "claude-code",
+          "codex-cli",
+          "gemini-code-assist",
+          "github-copilot",
+          "unknown"
+        ]
+      },
       "details": {
         "required": false,
         "type": "object",
@@ -1321,7 +1325,8 @@
           "boolean",
           "number",
           "string"
-        ]
+        ],
+        "maxLength": 200
       },
       "event_id": {
         "required": false,
@@ -1329,7 +1334,9 @@
       },
       "event_type": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+        "maxLength": 120
       },
       "outcome": {
         "required": false,
@@ -1347,6 +1354,9 @@
       "reasoning": {
         "required": false,
         "type": "string",
+        "notPatterns": [
+          "\\p{Cc}"
+        ],
         "maxLength": 500
       },
       "request_hash": {
@@ -1360,7 +1370,8 @@
       },
       "schema_version": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "session_id": {
         "required": false,
@@ -1373,6 +1384,9 @@
       "summary": {
         "required": false,
         "type": "string",
+        "notPatterns": [
+          "\\p{Cc}"
+        ],
         "maxLength": 300
       },
       "task_id": {
@@ -1448,7 +1462,7 @@
       },
       "dimensions[].score": {
         "required": true,
-        "type": "number",
+        "type": "integer",
         "minimum": 1,
         "maximum": 5
       },
@@ -1497,7 +1511,8 @@
       },
       "schema_version": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "source": {
         "required": true,
@@ -1754,7 +1769,8 @@
       },
       "schema_version": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "spec_slug": {
         "required": false,
@@ -1883,7 +1899,8 @@
       },
       "sealed[]": {
         "required": false,
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
       }
     },
     "lease-record.schema.json": {
@@ -2197,9 +2214,7 @@
       "#lease.manifest.schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#lease.parent_lease_id": {
         "required": false,
@@ -2209,9 +2224,7 @@
       "#lease.schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#lease.signature": {
         "required": true,
@@ -2493,9 +2506,7 @@
       "#manifest.schema_version": {
         "required": true,
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#reasonCode": {
         "required": false,
@@ -2880,9 +2891,7 @@
         "required": true,
         "via": "#manifest.schema_version",
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "declared_hash": {
         "required": false,
@@ -3279,9 +3288,7 @@
         "required": true,
         "via": "#lease.manifest.schema_version",
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "lease.parent_lease_id": {
         "required": false,
@@ -3293,9 +3300,7 @@
         "required": true,
         "via": "#lease.schema_version",
         "type": "string",
-        "enum": [
-          "1.0"
-        ]
+        "pattern": "^\\d+\\.\\d+$"
       },
       "lease.signature": {
         "required": true,
@@ -13998,12 +14003,14 @@
       "#frontMatter.cdf.schema_version": {
         "required": true,
         "via": "#record.schema_version",
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#frontMatter.cdf.spec": {
         "required": true,
         "via": "#record.spec",
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
       },
       "#frontMatter.cdf.steering_hash": {
         "required": true,
@@ -14148,12 +14155,14 @@
       "#journalEntry.cdf.schema_version": {
         "required": true,
         "via": "#record.schema_version",
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#journalEntry.cdf.spec": {
         "required": true,
         "via": "#record.spec",
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
       },
       "#journalEntry.cdf.steering_hash": {
         "required": true,
@@ -14267,11 +14276,13 @@
       },
       "#record.schema_version": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "#record.spec": {
         "required": true,
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
       },
       "#record.steering_hash": {
         "required": true,
@@ -14410,12 +14421,14 @@
       "cdf.schema_version": {
         "required": true,
         "via": "#record.schema_version",
-        "type": "string"
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
       },
       "cdf.spec": {
         "required": true,
         "via": "#record.spec",
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
       },
       "cdf.steering_hash": {
         "required": true,

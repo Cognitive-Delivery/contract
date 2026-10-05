@@ -300,6 +300,16 @@ anything that reaches it is effectively permanent.
   flat scalars. `summary` is capped at 300 characters and `reasoning` at 500. Renaming a sensitive
   field to evade the list defeats the control.
 
+Since 1.2 the evidence schemas also hold the hygiene the reference writer already kept: an audit
+`event_type` is lower-case dotted segments with the writer's first segments reserved and a vendor
+name for anyone else; `summary` and `reasoning` carry no control character; a `details` value is at
+most 200 characters; `schema_version` is `major.minor` everywhere and compared on the major; a
+provenance `spec` is a slug; an assessment has exactly six integer-scored dimensions; a sealed config
+path is well-formed and names a field the file carries. `actor.runtime` stays open, because the real
+journal spells it eleven ways, and `actor.runtime_agent` carries the closed identity. Every one of
+the reference deployment's 33,608 audit records, 19,207 signals, provenance records and assessments
+validates under these rules.
+
 ## Layout
 
 Every entry at the top level and one level down in `conformance/`, `fixtures/` and `tooling/`

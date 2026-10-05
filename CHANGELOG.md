@@ -74,6 +74,15 @@ deployment validates with zero rejections.
   hook and MCP shapes above would have landed unseen; and a value that became a `$ref` lost its
   recorded type and read as `TYPE_CHANGED`. The referenced definition is now digested at the
   referring path, with `ref` recorded beside it; a cycle stops at its second visit.
+- **Evidence hygiene** (SPEC §6.2). `audit-event.event_type` is two or more lower-case dotted segments,
+  with the reference writer's first segments reserved and a vendor name for anyone else; `summary`
+  and `reasoning` refuse any control character; a `details` string value is at most 200 characters;
+  `actor.runtime_agent` (optional, the closed vocabulary) is added while `actor.runtime` stays open,
+  because the real journal spells it eleven ways; `schema_version` is `major.minor` on every schema
+  (the lease schemas widen from the literal `1.0`); `provenance.spec` is a slug; a CDI assessment has
+  exactly six dimensions, each id once, with integer scores; a sealed config path is dotted lower-case
+  and the runner checks it names a field the fixture carries. Ten invalid fixtures, one valid. Every
+  real audit record, signal, provenance record and assessment in the reference deployment validates.
 
 ## [1.1.0] — 2026-10-05
 

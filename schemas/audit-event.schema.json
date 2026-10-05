@@ -11,7 +11,9 @@
   ],
   "properties": {
     "schema_version": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
     },
     "timestamp": {
       "type": "string",
@@ -24,7 +26,9 @@
     },
     "event_type": {
       "type": "string",
-      "description": "OPEN, unlike the CDI signal vocabulary. The journal records what happened; a product may record its own kinds of event."
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "maxLength": 120,
+      "description": "What happened, as two or more lower-case dotted segments (`spec.created`, `codex.health.audit_probe`). OPEN, unlike the CDI signal vocabulary: a product may record its own kinds of event. The reference writer's first segments are reserved for its vocabulary (agent, architecture, artefact, audit, break_glass, cdi, chat, codex, config, decision, deploy, enforcement, evidence, execution, fg, governance, integration, lease, memory, mode, phase, provenance, report, responsible_ai, review, roadmap, security, session, spec, steering, task, tool, ux, work, workbench, workspace); any other writer uses its vendor name as the first segment. Empty, upper case, whitespace and a single segment are refused (schema set 1.2): every one of the 33,608 real records already conformed."
     },
     "session_id": {
       "type": "string",
@@ -59,7 +63,8 @@
           ]
         },
         "runtime": {
-          "type": "string"
+          "type": "string",
+          "description": "The client that acted, as a label: the reference deployment has written `vscode`, `claude-code`, `codex-cli`, `GitHub Copilot` and others. Deliberately OPEN: closing it would reject real evidence. Identity is `runtime_agent`."
         },
         "model_vendor": {
           "type": "string"
@@ -69,6 +74,18 @@
         },
         "model_version": {
           "type": "string"
+        },
+        "runtime_agent": {
+          "type": "string",
+          "enum": [
+            "codex-cli",
+            "claude-code",
+            "gemini-code-assist",
+            "github-copilot",
+            "cdf-native",
+            "unknown"
+          ],
+          "description": "The closed agent identity vocabulary the lease carries, so an audit event keys to the same identity (schema set 1.2, optional; a 1.2 writer records it on every agent-kind event). `unknown` is a first-class value."
         }
       },
       "additionalProperties": true
@@ -76,12 +93,26 @@
     "summary": {
       "type": "string",
       "maxLength": 300,
-      "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text."
+      "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text. No control character (`\\p{Cc}`), tab and newline included: the reference writer replaces them with a space before write.",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "\\p{Cc}"
+          }
+        }
+      ]
     },
     "reasoning": {
       "type": "string",
       "maxLength": 500,
-      "description": "Why the agent chose this action, at most 500 characters: the reference writer's own cap. Never prompt text."
+      "description": "Why the agent chose this action, at most 500 characters: the reference writer's own cap. Never prompt text. No control character, as `summary`.",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "\\p{Cc}"
+          }
+        }
+      ]
     },
     "request_hash": {
       "type": "string",
@@ -104,7 +135,9 @@
           "string",
           "number",
           "boolean"
-        ]
+        ],
+        "maxLength": 200,
+        "description": "A flat scalar; a string value is at most 200 characters, the reference writer's own cap, because `details` reaches a permanent record."
       },
       "propertyNames": {
         "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of eleven words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",

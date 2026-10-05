@@ -105,7 +105,9 @@
     "sealed": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+        "description": "A dotted path of lower-case segments (`review_policy.reviewer_cannot_be_implementer`). The runner also checks that a sealed path in a fixture resolves to a key the file carries."
       },
       "description": "Dotted paths of fields an upper layer has fixed. SEALING IS PART OF THE CONTRACT, and any implementation that ignores it fails conformance. A sealed field may not be relaxed by a downstream layer: a lower layer may match the sealed value or make it stricter, never looser. Ignoring this would let a workspace quietly undo a control its organisation set."
     }

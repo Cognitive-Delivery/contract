@@ -13,7 +13,9 @@
   ],
   "properties": {
     "schema_version": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
     },
     "timestamp": {
       "type": "string",

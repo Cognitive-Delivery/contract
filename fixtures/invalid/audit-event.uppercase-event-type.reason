@@ -1,0 +1,1 @@
+`event_type` is `Spec.Created`. Kinds are lower-case dotted segments so that `spec.created` and `Spec.Created` cannot be two kinds for one event; every one of the reference deployment's 33,608 records already conformed.
