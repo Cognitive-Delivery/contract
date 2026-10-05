@@ -390,6 +390,8 @@ SPEC-agent-lease-manifest.md the normative specification
 README.md                   this file
 CHANGELOG.md                what changed, per release
 CONTRIBUTING.md             how to run the checks and tighten a schema within 1.x
+GOVERNANCE.md               who decides, what needs a proposal, how a change lands, how a release is cut
+docs/                       proposals: one page per semantic change, on docs/proposals/TEMPLATE.md, kept as the record
 SECURITY.md                 what counts as a vulnerability here, and where to report one
 LICENSE                     Apache-2.0
 package.json                the npm package; `files` is the tarball's allow-list
