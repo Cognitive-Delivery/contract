@@ -5,11 +5,26 @@
  * in a README.
  */
 
-import { compare, applyAllowlist, validateAllowlist, missingAllowlistEntries } from '../check-additive.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * The guard lives at the repository root and is not in the published package (`files` in
+ * package.json), so it is loaded here rather than at module top: a static import made the
+ * installed package's `npm test` fail with ERR_MODULE_NOT_FOUND before a single fixture ran
+ * (review of 5 October 2026, defect 1). When it is absent the run says so — `present: false`
+ * and zero scenarios — rather than passing a guard it never saw.
+ */
+async function loadGuard() {
+  try {
+    return await import('../check-additive.mjs');
+  } catch (error) {
+    if (error && error.code === 'ERR_MODULE_NOT_FOUND') return null;
+    throw error;
+  }
+}
 
 function lock(schemas, contentModels = {}, lockFormat = 3) {
   return { lockFormat, schemaSetVersion: '1.0.0', major: '1', contentModels, schemas };
@@ -30,6 +45,11 @@ const base = () => lock({
 const codes = (r) => r.findings.map((f) => `${f.code} ${f.path}`).sort();
 
 export async function runGuardTests() {
+  const guard = await loadGuard();
+  if (guard === null) {
+    return { present: false, count: 0, failures: [] };
+  }
+  const { compare, applyAllowlist, validateAllowlist, missingAllowlistEntries } = guard;
   const failures = [];
   const expect = (name, actual, wanted) => {
     const a = JSON.stringify(actual);
@@ -156,5 +176,5 @@ export async function runGuardTests() {
     expect('allowlist-entry-kept', missingAllowlistEntries({ entries: [entry] }, { entries: [entry] }).length, 0);
   }
 
-  return { count: cases.length + 17, failures };
+  return { present: true, count: cases.length + 17, failures };
 }

@@ -32,6 +32,14 @@ the contract itself permits something it should not:
   is in scope.
 - **A path in the corpus or runner that executes fixture content** rather than reading it as
   data.
+- **The published test key.** `conformance/test-key.txt` is public on purpose: the signature
+  vectors are signed with it so any implementation can check them. It signs fixtures and nothing
+  else. A real lease, record or attestation that verifies under it is a vulnerability in whatever
+  issued it, and a verifier that accepts it outside a conformance run is in scope here.
+- **The allow-list.** `compat-allowlist.json` is the one way a tightening passes the additive
+  guard within a major. An entry that waves through a narrowing with no evidence, or the guard
+  accepting an entry whose evidence file does not exist, is in scope: the allow-list is a control
+  and a hole in it is a hole in the compatibility promise.
 
 ## What is not in scope
 

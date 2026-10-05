@@ -194,6 +194,24 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 - **`package.json` said `schemaSetVersion` 1.0.0.** It had been stale since 1.0.1, and the version
   currency check added in 1.0.2 did not read it. It now reads it.
 
+### Fixed
+
+- **The published package runs its own `npm test`.** 1.1.0's tarball could not: `conformance/run.mjs`
+  imported `idFor` from `tooling/sync-version.mjs` and `guard-tests.mjs` imported
+  `check-additive.mjs`, and neither is in `files`, so the installed package failed with
+  ERR_MODULE_NOT_FOUND before validating a single fixture (review of 5 October 2026, defect 1).
+  `idFor` now lives in `conformance/ids.mjs`, which ships; the guard is loaded dynamically and
+  reported **not present** from the tarball rather than passed; and a CI job packs the tarball,
+  installs it into an empty directory with `ajv`, and runs the installed package's test on Node 20
+  and 22, because no check run from a clone can see what the clone has and the tarball lacks.
+- **`exports` exposes every file under `conformance/` and `schemas.lock.json`**, so
+  `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves from a consumer; the
+  two explicit module entries stay as they were.
+- **The README's Layout block is checked** (`conformance/layout-check.mjs`, in `npm test`): every
+  entry at the top level and under `conformance/`, `fixtures/` and `tooling/` must have a line, and
+  every line a file. It had fallen eleven files behind. **SECURITY.md** now names the published test
+  key and the allow-list as in-scope surfaces.
+
 ## [1.0.2] — 2026-09-19
 
 ### Fixed

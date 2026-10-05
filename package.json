@@ -38,7 +38,9 @@
     "./schemas/*": "./schemas/*",
     "./fixtures/*": "./fixtures/*",
     "./conformance/runner.mjs": "./conformance/runner.mjs",
-    "./conformance/ajv-adapter.mjs": "./conformance/ajv-adapter.mjs"
+    "./conformance/ajv-adapter.mjs": "./conformance/ajv-adapter.mjs",
+    "./conformance/*": "./conformance/*",
+    "./schemas.lock.json": "./schemas.lock.json"
   },
   "peerDependencies": {
     "ajv": "^8.0.0"
