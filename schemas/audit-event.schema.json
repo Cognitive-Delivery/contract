@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/audit-event.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/audit-event.schema.json",
   "title": "CDF governance audit event",
   "description": "One line of the append-only governance journal. Rotated files carry the same shape. Deliberately holds a request hash rather than the request, and a sanitised summary rather than content: this file is retained indefinitely, so anything that reaches it is effectively permanent. CORRECTED against real artefacts: event_id and session_id are NOT required. A writer active between 2026-05-12 and 2026-05-15 emitted 61 codex.health.audit_probe records without them. The journal is append-only and retained indefinitely, so those records are permanent and a conformant reader will meet them. Rejecting real evidence would be worse than a slightly weaker schema. The current writer emits both.",
   "type": "object",

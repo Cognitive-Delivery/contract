@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/cdi-assessment.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/cdi-assessment.schema.json",
   "title": "CDF CDI assessment record",
   "description": "A recorded human assessment against the six Index dimensions, on a ninety-day cadence. Distinct from the signal log: signals are emitted automatically, this is a judgement someone made and put their name to. CORRECTED against real artefacts: every field is snake_case on disk (level_label, average_score, lowest_score, lowest_dimensions) while the TypeScript interface is camelCase. The writer wins.",
   "type": "object",

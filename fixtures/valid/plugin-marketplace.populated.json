@@ -1,5 +1,5 @@
 {
-  "$schema": "https://cognitivedelivery.co.uk/contract/1.0.0/plugin-marketplace.schema.json",
+  "$schema": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
   "name": "cdf-first-party",
   "owner": {
     "name": "Cognitive Delivery",

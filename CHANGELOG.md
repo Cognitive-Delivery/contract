@@ -96,6 +96,22 @@ tooling in this repository.
 
 ### Fixed
 
+- **Every `$id` resolves.** The schemas named `https://cognitivedelivery.co.uk/contract/1.0.0/…`,
+  which redirected to `www` and returned 404 for the life of 1.0.x: a dangling identifier in a
+  contract about recording things verifiably. Each `$id` is now
+  `https://cognitive-delivery.github.io/contract/1.x/<file>`, served by GitHub Pages from the
+  `schemas/` directory at the deployed commit (`pages.yml`; no copy is committed, so nothing can
+  drift) and checked byte for byte against the tag on every release. `1.x`, not `1.0.3`: an
+  identifier that changed on every minor release would be a version number with extra steps, and
+  the version a document was written against is its own `schema_version`. Nothing resolved the old
+  URL, so the change costs no reader anything. Pages must be enabled on the repository (source
+  "GitHub Actions") for the URLs to serve; until then the release job warns rather than fails.
+
+- **One version source.** `tooling/sync-version.mjs` writes the version from `package.json` into
+  `cdfContract.schemaSetVersion`, the README's version line, every schema's `$id` major and any
+  fixture's `$schema`; `npm run lock` runs it first, and `npm test` checks all of them plus the
+  CHANGELOG, the lock and the SPEC header, and refuses any remaining reference to the old host.
+
 - **`package.json` said `schemaSetVersion` 1.0.0.** It had been stale since 1.0.1, and the version
   currency check added in 1.0.2 did not read it. It now reads it.
 

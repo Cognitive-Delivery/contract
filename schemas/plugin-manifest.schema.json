@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/plugin-manifest.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",
   "title": "CDF Plugin Manifest",
   "description": "A plugin's `plugin.json`, read from `.claude-plugin/plugin.json`. A strict superset of Claude Code's manifest: every key Claude Code defines is honoured with the same meaning, so a Claude Code plugin validates here unchanged and a CDF plugin remains a valid Claude Code plugin. The single addition is the optional `cdf` block, which declares what the harness alone understands — what the plugin contributes, what its own code asks to be allowed, and who vouches for the declaration. `name` is the only required key, which is Claude Code's rule and not a relaxation of ours: a manifest that named nothing could not be addressed, and everything else has a defensible default. A declaration is not an installation: reading this file tells the loader what a plugin says about itself, never that it may run.",
   "definitions": {

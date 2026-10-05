@@ -50,10 +50,11 @@
   },
   "scripts": {
     "test": "node ./conformance/run.mjs",
-    "lock": "node ./generate-schemas-lock.mjs",
+    "lock": "node ./tooling/sync-version.mjs && node ./generate-schemas-lock.mjs",
     "check:additive": "node ./check-additive.mjs",
     "generate": "node ./generate-contract-types.mjs",
-    "check": "node ./generate-contract-types.mjs --check"
+    "check": "node ./generate-contract-types.mjs --check",
+    "version:sync": "node ./tooling/sync-version.mjs"
   },
   "cdfContract": {
     "schemaSetVersion": "1.0.2",
