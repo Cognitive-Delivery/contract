@@ -142,20 +142,72 @@
             },
             "read_paths": {
               "type": "array",
-              "description": "Workspace-relative POSIX globs the agent may read. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root.",
+              "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
               "items": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
               }
             },
             "write_paths": {
               "type": "array",
-              "description": "Workspace-relative POSIX globs the agent may change. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+              "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
               "items": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
               }
             },
             "hosts": {
@@ -196,11 +248,27 @@
             },
             "paths": {
               "type": "array",
-              "description": "Workspace-relative POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself.",
+              "description": "POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself. A denial MAY be home-relative (`~/.ssh/**`), because refusing a path outside the workspace is meaningful even though no allow could grant it; a leading `/`, any `..` segment and any backslash are refused.",
               "items": {
                 "type": "string",
                 "minLength": 1,
-                "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
               }
             },
             "hosts": {

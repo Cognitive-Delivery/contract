@@ -53,7 +53,9 @@
       "paths": [
         ".cdf/audit/**",
         ".cdf/runtime/**",
-        ".env"
+        ".env",
+        "~/.ssh/**",
+        "~/.aws/**"
       ],
       "hosts": [
         "*.internal.example"

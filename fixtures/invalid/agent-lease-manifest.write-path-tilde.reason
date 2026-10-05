@@ -1,0 +1,1 @@
+`allow.write_paths` contains `~` on its own: the home directory itself. The rule that refuses `~/x` refuses this too, because `^~` is anchored on the first character and not on a following slash.

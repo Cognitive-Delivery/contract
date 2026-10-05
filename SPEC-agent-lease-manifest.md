@@ -112,11 +112,31 @@ each of which **MAY** be empty.
 
 `deny` **MUST** carry `commands`, `paths` and `hosts`, each of which **MAY** be empty.
 
-Paths **MUST** be workspace-relative POSIX globs. An implementation **MUST** reject any path that is
-absolute or contains a `..` segment, and **MUST** re-check the resolved path against the workspace
-root rather than relying on the pattern alone. Rejecting the pattern is not sufficient: a symbolic
-link can carry a conforming relative path outside the root, so the check **MUST** be performed on the
-resolved path at use time.
+Paths **MUST** be workspace-relative POSIX globs. An implementation **MUST** reject an `allow` path
+that has any of these five forms, and the published schemas reject them too:
+
+| Form | Example | Why |
+|---|---|---|
+| a leading `/` | `/etc/passwd` | absolute |
+| any `..` segment | `../x`, `src/../x`, `a/..` | traversal |
+| a leading `~` | `~/x`, `~` | home-relative, outside the workspace |
+| a drive-letter prefix | `C:/Users/x` | absolute on Windows, invisible to a slash-only check |
+| any backslash | `..\x`, `C:\Users\x` | never a separator in a POSIX glob; refused rather than normalised |
+
+The schema expresses the rule as `allOf` of `not`/`pattern` clauses, each in the RFC 9485 I-Regexp
+subset, with no lookahead. That is deliberate: Go's `regexp` and every validator built on it reject
+lookahead, and a schema set a Go implementation cannot load is not portable whatever its README
+says. The contract's CI compiles every pattern under RE2. A `.` segment (`./x`, `src/./x`) and a
+percent-encoded sequence (`%2e%2e/x`) are **not** refused by pattern: a glob is not a URL, and the
+resolved-path check below is the control for anything a pattern cannot see.
+
+A `deny` path **MAY** be home-relative (`~/.ssh/**`), because refusing to touch a path outside the
+workspace is meaningful even though no `allow` could grant it; a leading `/`, any `..` segment and
+any backslash are refused in `deny` as well.
+
+An implementation **MUST** also re-check the resolved path against the workspace root at use time
+rather than relying on the pattern alone. Rejecting the pattern is not sufficient: a symbolic link
+can carry a conforming relative path outside the root.
 
 Hosts are hostnames, optionally with a single leading wildcard label. `*.example.com` **MUST** match
 `api.example.com` and **MUST NOT** match `example.com`; matching a bare parent domain requires
@@ -199,9 +219,10 @@ An issuer **MUST** refuse, rather than issue a lease, in each of these cases:
 1. `intent.purpose` is absent or empty.
 2. Narrowing leaves `allow.tools` empty. A lease that opens nothing is indistinguishable in later
    evidence from a lease that was never used, and those are different facts.
-3. Any declared `allow` path escapes the workspace — absolute, `~`-rooted, or containing `..`. The
-   escaping path **MUST** refuse the whole manifest rather than being silently dropped from it.
-   Dropping it would grant a narrower lease than was asked for without saying so.
+3. Any declared `allow` path escapes the workspace: a leading `/`, a `..` segment, a leading `~`, a
+   drive-letter prefix, or a backslash (§4.4). The escaping path **MUST** refuse the whole manifest
+   rather than being silently dropped from it. Dropping it would grant a narrower lease than was
+   asked for without saying so.
 4. `agent.runtime_agent` is `unknown` for a `native` or `delegated-cli` agent (§4.2).
 5. The parent's `depth` is already zero.
 6. The parent's remaining `fan_out` is zero.
@@ -398,4 +419,5 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.0 | 2026-10-05 | §4.4 names the five refused `allow` path forms (adding a leading `~`, a drive-letter prefix and any backslash to the absolute and `..` forms) and permits a home-relative `deny` path; the schemas express the rule without lookahead so RE2 validators can load it. The reference implementation already refused all five; the schema and the text now agree with it |
 | 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time — the schemas had referred to "canonical bytes" in six descriptions without defining them anywhere — down to the closed escape set and UTF-16 key ordering, with executable test vectors at §7.1 |

@@ -52,6 +52,19 @@ tooling in this repository.
 
 ### Changed
 
+- **Path rules are written without lookahead, and refuse three forms they used to accept.** Every
+  `read_paths`, `write_paths`, `deny.paths`, plugin `worker`, `docPacks` and `git-subdir` `path`
+  rule is now `allOf` of `not`/`pattern` clauses in the RFC 9485 I-Regexp subset. Go's `regexp`
+  (RE2) and the validators built on it could not load the old `(?!…)` rule at all, so the README's
+  "an implementation in another language needs nothing else" was false for Go; the new
+  `regex portability (RE2)` CI job now passes and is required. An `allow` path additionally refuses
+  a leading `~`, a drive-letter prefix and any backslash, which SPEC §5.2 already required and the
+  reference implementation already did; six new invalid fixtures prove each form. A `deny` path may
+  be home-relative (`~/.ssh/**`), because the reference implementation's own root policy denies
+  exactly that and refusing a path outside the workspace is meaningful. Each tightening is
+  allow-listed with its fixture as evidence; no real lease in the reference deployment carried a
+  refused `allow` form.
+
 - **The push baseline is the pushed-from commit.** The additive guard compared a push against
   `HEAD^`, so a three-commit push whose first commit broke the rule was compared only against its
   own second commit and passed. It now compares against `github.event.before`, falling back to the
