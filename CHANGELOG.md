@@ -106,7 +106,7 @@ tooling in this repository.
 
 ### Changed
 
-- **The README no longer claims the plugin schemas contain every key Claude Code defines.** The
+- **The README no longer claims the plugin schemas contain every key Claude Code has.** The
   sentence was true at 1.0.0 and stopped being true as Claude Code grew; a standing superlative
   about a moving target is the kind of sentence this contract exists to refuse. The README now says
   what is modelled and as of which date, names the two CDF extensions (`cdf`; the `local` source
