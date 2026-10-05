@@ -141,7 +141,7 @@ jobs:
       # is not portable, whatever the README says. `bowtie summary --show failures` exits non-zero
       # when any implementation failed or errored on any test.
       - name: Install Bowtie
-        uses: bowtie-json-schema/bowtie@2026.7.4
+        uses: bowtie-json-schema/bowtie@v2026.7.4
 
       - name: Run the suite
         run: |
