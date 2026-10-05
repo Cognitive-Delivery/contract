@@ -18,9 +18,28 @@ in `package.json` matches the one stated in the README, the CHANGELOG and `schem
 added because the lock silently kept the previous version through a release.
 
 `npm run check:additive` compares the schema set against the shape it had before your change; in
-CI the baseline is the branch you are merging into. Note what it does **not** do: it compares
-schema shapes only, and will report "Lock is current" on a lock whose version field is stale.
-That check lives in `npm test`.
+CI the baseline is the branch you are merging into. It reports named findings in the style of
+`buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`,
+`PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
+`SCHEMA_REMOVED`. The last four need a baseline in lock format 2 (`lockFormat` in
+`schemas.lock.json`); against an older baseline they are reported as not comparable rather than
+passed quietly. Note what the check does **not** do: it compares schema shapes only, and will
+report "Lock is current" on a lock whose version field is stale. That check lives in `npm test`,
+as do the guard's own scenario tests (`conformance/guard-tests.mjs`): every finding is seen to
+fire and every additive change seen to pass, because a guard nobody has watched fail is a
+sentence in a README.
+
+## Tightening a schema within 1.x
+
+Sometimes a schema must refuse what it used to accept: a hash field that was always meant to be
+SHA-256 gains a pattern, or a path rule gains a form it should never have allowed. The guard
+reports each of these as breaking, and it is right to. The way through is
+`compat-allowlist.json`: one entry per finding, naming `finding`, `schema`, `path`, a `reason`,
+a `date`, and an `evidence` file (normally the invalid fixture that proves the refused form, or a
+recorded check of real artefacts showing no conformant writer ever produced it). The guard refuses
+an entry whose evidence file does not exist, and refuses a change that drops an entry the baseline
+had: the list is history, never configuration. An entry is a claim that no reader in a customer's
+repository loses a record it depends on, and it is reviewed like a schema change.
 
 ## Changing the specification
 
@@ -40,6 +59,8 @@ and, realistically, a major version.
    shape, not the `minimal` one.
 3. Run `npm run lock` and commit `schemas.lock.json`. The lock is the record of the shape
    before the next change; a schema change without it leaves nothing to compare against.
+   If `npm run check:additive -- --baseline-ref origin/main` reports a finding, either loosen
+   the change or add an allow-list entry with its evidence (see "Tightening a schema within 1.x").
 4. Run the checks.
 
 ## What will be refused

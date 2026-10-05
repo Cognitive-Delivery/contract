@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
+import { runGuardTests } from './guard-tests.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -65,7 +66,12 @@ console.log(
 const currency = await checkVersionCurrency();
 console.log(`Version ${currency.version} stated consistently in package.json, README, CHANGELOG and schemas.lock.json.`);
 
-const failures = [...report.failures, ...currency.problems];
+// The guard is a control, so it is tested like one: every finding seen to fire, every
+// additive change seen to pass, the allow-list seen to refuse an entry without evidence.
+const guard = await runGuardTests();
+console.log(`Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`);
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

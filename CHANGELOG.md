@@ -15,7 +15,28 @@ tooling in this repository.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 2). The lock
+  records, per property path, `pattern`, the `allOf[].not.pattern` set, `minLength`, `maxLength`,
+  `minimum`, `maximum`, `additionalProperties` and the number of `anyOf` branches, and per schema
+  whether its root is open or closed; enum values keep their JSON type instead of being
+  stringified. `check-additive.mjs` reports named findings (`PATTERN_TIGHTENED`,
+  `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` beside the four it already knew) and
+  says plainly when a baseline predates the format and those four cannot be compared.
+
+  Until now a pattern could be tightened inside 1.x and the guard would print "additive only",
+  which is the class of change the 4 October 2026 review found it blind to. Nothing in the
+  schemas changed in this entry; the guard learned to see.
+
+- **`compat-allowlist.json`**: the one way a tightening passes within a major. Each entry names
+  the finding, the schema, the path, a reason, a date and an existing evidence file; the guard
+  refuses an entry with no evidence and refuses a change that drops an entry the baseline had.
+  Documented in CONTRIBUTING.
+
+- **The guard's own tests** run in `npm test` (`conformance/guard-tests.mjs`): 27 scenarios in
+  which every finding is seen to fire, every additive change is seen to pass, and the allow-list is
+  seen to refuse an entry without evidence.
 
 ## [1.0.2] — 2026-09-19
 
