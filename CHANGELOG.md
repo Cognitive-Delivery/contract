@@ -15,6 +15,18 @@ tooling in this repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.1.0] — 2026-10-05
+
+The first release after the review of 4 October 2026 (CDF spec `contract-fix-batch-one-4`,
+DR-182). Five of the review's ten improvements, in the order the guard first so every tightening
+that follows is classified and allow-listed by name. **Additive within 1.x by the contract's own
+rule, mechanically checked**: against 1.0.2 the guard reports 46 allow-listed tightenings, each
+with the fixture or real-data count that proves no conformant writer ever produced what it now
+refuses, and every real journal in the reference deployment (33,557 audit records, 5,652 signals,
+4,535 provenance lines) validates with zero rejections. No existing hash or signature changes.
+
 ### Added
 
 - **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 3). The lock
@@ -288,7 +300,8 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.1.0
 [1.0.2]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.0
