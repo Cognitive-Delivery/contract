@@ -22,7 +22,7 @@ it had at that ref, digesting the baseline's schemas with the current generator;
 is the branch you are merging into, or the pushed-from commit. It reports named findings in the style of
 `buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`,
 `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
-`SCHEMA_REMOVED`. The last four need a baseline in lock format 2 (`lockFormat` in
+`SCHEMA_REMOVED`. Since lock format 4 a local `$ref` is digested at the path that refers to it, so re-pointing a property to a stricter definition is a visible change rather than a changed string the guard ignores. The last four findings need a baseline in lock format 2 (`lockFormat` in
 `schemas.lock.json`); against an older baseline they are reported as not comparable rather than
 passed quietly. Note what the check does **not** do: it compares schema shapes only, and will
 report "Lock is current" on a lock whose version field is stale. That check lives in `npm test`,

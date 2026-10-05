@@ -1,0 +1,1 @@
+A marketplace entry whose `headers` carries `Authorization`. The marketplace file is read by everyone who adds the marketplace, so a header that needs a credential cannot live in it; the entry's own description says so and `headersHelper` is the route. Refused by key, in any case.

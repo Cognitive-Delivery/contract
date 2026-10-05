@@ -1,0 +1,1 @@
+An inline MCP server whose `env` carries a literal GitHub token (a synthetic `ghp_` value of the documented length). Refused by the github-token pattern: an environment value in a manifest is a secret in a file, and `${GITHUB_TOKEN}` interpolation is the route.

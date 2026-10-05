@@ -1,0 +1,1 @@
+An `http` MCP server with no `url`. A remote server is reached somewhere; the reference requires `url` for `http`, `sse`, `ws` and `streamable-http`.

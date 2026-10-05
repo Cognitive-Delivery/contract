@@ -1,0 +1,1 @@
+An inline MCP server whose `Authorization` header carries a literal bearer token. The key itself is legitimate for a remote server (`Authorization: Bearer ${TOKEN}` is the documented form); the literal value is what is refused.

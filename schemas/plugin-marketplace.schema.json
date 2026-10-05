@@ -252,10 +252,10 @@
           "$ref": "#/definitions/componentPath"
         },
         "hooks": {
-          "$ref": "#/definitions/componentSource"
+          "$ref": "#/definitions/hooksSource"
         },
         "mcpServers": {
-          "$ref": "#/definitions/componentSource"
+          "$ref": "#/definitions/mcpServersSource"
         },
         "lspServers": {
           "$ref": "#/definitions/lspServers"
@@ -264,7 +264,13 @@
           "type": "object",
           "description": "Request headers for an archive or url source. Never credentials: a value that needs a secret belongs in `headersHelper`, which the host runs and whose output the marketplace file never sees.",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/definitions/credentialFree"
+          },
+          "propertyNames": {
+            "not": {
+              "pattern": "^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$"
+            },
+            "description": "An `authorization` header, in any case, is refused: its value would be a credential in a file everyone reads. `headersHelper` is the route."
           }
         },
         "headersHelper": {
@@ -1060,6 +1066,511 @@
         "signals": {}
       },
       "additionalProperties": true
+    },
+    "credentialFree": {
+      "type": "string",
+      "description": "A string that is not a credential. Refuses the seven shapes the reference evidence sanitiser refuses — a private key block, an AWS access key id, a GitHub token, an OpenAI key, a Slack token, a literal bearer token and a JWT — each as an I-Regexp without lookahead or word boundaries. A detector, not a guarantee: it catches these shapes and nothing else, and the documented route for a secret remains the host's own environment (`$VAR` interpolation) or `headersHelper`.",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(^|[^A-Za-z0-9])AKIA[0-9A-Z]{16}([^A-Za-z0-9]|$)"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(^|[^A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{36,}"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(^|[^A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}"
+          }
+        },
+        {
+          "not": {
+            "pattern": "Bearer +[A-Za-z0-9._~+/-]{16,}"
+          }
+        },
+        {
+          "not": {
+            "pattern": "eyJ[A-Za-z0-9_-]{8,}\\.eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}"
+          }
+        }
+      ]
+    },
+    "hookHandler": {
+      "description": "One hook, discriminated by `type`, after the Claude Code settings schema on SchemaStore (read 2026-10-05). The five types are closed because a handler of unknown type is one the harness cannot vet; each type's own fields stay open because Claude Code adds fields between releases and a plugin that uses one must not stop validating here.",
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "command"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "command"
+              ]
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A shell command, or with `args` an executable run without a shell."
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "async": {
+              "type": "boolean"
+            },
+            "asyncRewake": {
+              "type": "boolean"
+            },
+            "shell": {
+              "type": "string",
+              "enum": [
+                "bash",
+                "powershell"
+              ]
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds."
+            },
+            "if": {
+              "type": "string",
+              "description": "A permission-rule filter; the hook runs only when it matches."
+            },
+            "statusMessage": {
+              "type": "string"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Runs a command."
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "prompt"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "prompt"
+              ]
+            },
+            "prompt": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string"
+            },
+            "continueOnBlock": {
+              "type": "boolean"
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds."
+            },
+            "if": {
+              "type": "string",
+              "description": "A permission-rule filter; the hook runs only when it matches."
+            },
+            "statusMessage": {
+              "type": "string"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Asks the model a single-turn question."
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "prompt"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "agent"
+              ]
+            },
+            "prompt": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds."
+            },
+            "if": {
+              "type": "string",
+              "description": "A permission-rule filter; the hook runs only when it matches."
+            },
+            "statusMessage": {
+              "type": "string"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Runs a subagent with tools."
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "http"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Where the hook input is POSTed."
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              },
+              "description": "Request headers. Values may interpolate `$VAR` from `allowedEnvVars`; a literal credential is refused."
+            },
+            "allowedEnvVars": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds."
+            },
+            "if": {
+              "type": "string",
+              "description": "A permission-rule filter; the hook runs only when it matches."
+            },
+            "statusMessage": {
+              "type": "string"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true,
+          "description": "POSTs the hook input to a URL."
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "server",
+            "tool"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "mcp_tool"
+              ]
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A configured MCP server."
+            },
+            "tool": {
+              "type": "string",
+              "minLength": 1
+            },
+            "input": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds."
+            },
+            "if": {
+              "type": "string",
+              "description": "A permission-rule filter; the hook runs only when it matches."
+            },
+            "statusMessage": {
+              "type": "string"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true,
+          "description": "Calls a tool on a connected MCP server."
+        }
+      ]
+    },
+    "hookMatcher": {
+      "type": "object",
+      "required": [
+        "hooks"
+      ],
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "A pattern matched against the event context; absent means every occurrence."
+        },
+        "hooks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/hookHandler"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "hooksMap": {
+      "type": "object",
+      "description": "The event map: event name to matchers. The event names are the thirty-three the Claude Code hooks reference lists (read 2026-10-05); an unknown event is refused because nothing would ever fire it.",
+      "propertyNames": {
+        "enum": [
+          "PreToolUse",
+          "PostToolUse",
+          "PostToolUseFailure",
+          "PermissionRequest",
+          "Notification",
+          "UserPromptSubmit",
+          "Stop",
+          "StopFailure",
+          "SubagentStart",
+          "SubagentStop",
+          "PreCompact",
+          "PostCompact",
+          "Elicitation",
+          "ElicitationResult",
+          "TeammateIdle",
+          "TaskCompleted",
+          "Setup",
+          "InstructionsLoaded",
+          "CwdChanged",
+          "FileChanged",
+          "ConfigChange",
+          "WorktreeCreate",
+          "WorktreeRemove",
+          "SessionStart",
+          "SessionEnd",
+          "PostToolBatch",
+          "TaskCreated",
+          "PermissionDenied",
+          "UserPromptExpansion",
+          "MessageDisplay",
+          "DirectoryAdded",
+          "PreModelSwitch",
+          "PostModelSwitch"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/hookMatcher"
+        }
+      }
+    },
+    "hooksSource": {
+      "description": "Hooks declared inline as the event map, as a path to a `.json` file that declares them (wrapped in a top-level `hooks` key), or as an array mixing both. Claude Code accepts all three.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/hooksMap"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/hooksMap"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "mcpServer": {
+      "type": "object",
+      "description": "One MCP server config, keyed by name in `mcpServers`, after the Claude Code `.mcp.json` reference (read 2026-10-05). `stdio` needs `command`; `http`, `sse`, `ws` and `streamable-http` need `url`; an entry with no `type` is left as the reference leaves it. `env` and `headers` values are credential-free: a literal secret in a plugin manifest ships to everyone who installs it, and `${VAR}` interpolation or `headersHelper` is the route.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "http",
+            "sse",
+            "ws",
+            "streamable-http"
+          ]
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/credentialFree"
+          }
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/credentialFree"
+          }
+        },
+        "headersHelper": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "alwaysLoad": {
+          "type": "boolean"
+        },
+        "oauth": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "stdio"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "http",
+                  "sse",
+                  "ws",
+                  "streamable-http"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "url"
+            ]
+          }
+        }
+      ]
+    },
+    "mcpServersMap": {
+      "type": "object",
+      "description": "Server name to config.",
+      "additionalProperties": {
+        "$ref": "#/definitions/mcpServer"
+      }
+    },
+    "mcpServersSource": {
+      "description": "MCP servers declared inline keyed by name, as a path to a `.json` config, an `.mcpb` or `.dxt` bundle path, an `https://` bundle URL, or an array mixing these. Claude Code accepts all of them.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/mcpServersMap"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/mcpServersMap"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
+        }
+      ]
     }
   },
   "type": "object",

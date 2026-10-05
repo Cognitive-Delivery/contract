@@ -56,6 +56,16 @@ because honouring a key with the same meaning there means refusing an unknown on
 in the corpus: the manifest reference's own example manifest and Anthropic's marketplace for its
 bundled plugins both validate as fixtures.
 
+Since 1.2 the inline forms are typed, not merely allowed: an inline `hooks` object is the event
+map (the thirty-three events the hooks reference lists, five handler types with their required
+fields) and an inline `mcpServers` object is a map of server configs (`stdio` needs `command`, a
+remote type needs `url`). Three things are refused on sight because a plugin manifest ships to
+everyone who installs it: a credential-shaped value in a hook header, an MCP `env` or an MCP
+`headers` (seven shapes, the same the evidence sanitiser refuses; `${VAR}` interpolation and
+`headersHelper` are the routes), an `authorization` key in a marketplace entry's `headers`, and a
+contributed provider at plain `http://` anywhere but loopback. Anthropic's bundled-plugin manifest
+still validates unchanged.
+
 This is a dated statement, not a standing guarantee. The references change; a key added after that
 date validates here (the content model is open) but is not yet modelled, and the date in the schema
 descriptions says how current the modelling is. An earlier README promised more than a schema can

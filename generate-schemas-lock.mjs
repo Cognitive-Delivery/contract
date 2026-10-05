@@ -34,7 +34,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const schemaDir = resolve(here, 'schemas');
 const lockPath = resolve(here, 'schemas.lock.json');
 
-export const LOCK_FORMAT = 3;
+export const LOCK_FORMAT = 4; // 4: a local $ref is digested at the referring path (see resolveRef)
 
 function compareJson(a, b) {
   const left = JSON.stringify(a);
@@ -55,13 +55,40 @@ function notPatternsOf(node) {
 }
 
 /** Walk a schema and emit a flat path → shape map. Deterministic: keys are sorted on write. */
-function digest(node, path, required, out) {
+/**
+ * A local `$ref` is followed (lock format 4): the referenced definition's constraints are
+ * digested AT the referring path, with `ref` recorded beside them. Before this, a property that
+ * was re-pointed from one definition to a stricter one changed only its `ref` string, which the
+ * guard did not compare, so `hooks` could go from "any object" to a typed event map unseen, and a
+ * value that became a `$ref` lost its recorded type and read as TYPE_CHANGED. The definition is
+ * still digested under `#<name>` as before. A cycle stops at the second visit and records the
+ * ref only.
+ */
+function resolveRef(node, ctx) {
+  if (!node || typeof node !== 'object' || typeof node.$ref !== 'string' || !node.$ref.startsWith('#/definitions/')) return node;
+  const name = node.$ref.slice('#/definitions/'.length);
+  const target = ctx.definitions?.[name];
+  if (!target || typeof target !== 'object' || ctx.stack.includes(name)) return node;
+  const { $ref, ...rest } = node;
+  return { ...target, ...rest, $ref, __resolvedFrom: name };
+}
+
+function digest(node, path, required, out, ctx = { definitions: {}, stack: [] }) {
   if (!node || typeof node !== 'object') {
     return;
+  }
+  node = resolveRef(node, ctx);
+  if (node.__resolvedFrom) {
+    ctx = { definitions: ctx.definitions, stack: [...ctx.stack, node.__resolvedFrom], via: { name: node.__resolvedFrom, at: path } };
   }
 
   if (path) {
     const entry = { required };
+    // The same constraint seen through a `$ref`: `via` is where it lives in the definition
+    // (`#allow.hosts[]` for `allow.hosts[]`), so one allow-list entry at the definition covers it.
+    if (ctx.via && path.startsWith(ctx.via.at)) {
+      entry.via = `#${ctx.via.name}${path.slice(ctx.via.at.length)}`;
+    }
     if (node.type !== undefined) {
       entry.type = Array.isArray(node.type) ? [...node.type].sort() : node.type;
     }
@@ -106,17 +133,17 @@ function digest(node, path, required, out) {
 
   const requiredHere = new Set(node.required ?? []);
   for (const [key, child] of Object.entries(node.properties ?? {})) {
-    digest(child, path ? `${path}.${key}` : key, requiredHere.has(key), out);
+    digest(child, path ? `${path}.${key}` : key, requiredHere.has(key), out, ctx);
   }
   if (node.items) {
-    digest(node.items, `${path}[]`, false, out);
+    digest(node.items, `${path}[]`, false, out, ctx);
   }
   if (node.additionalProperties && typeof node.additionalProperties === 'object') {
     // The shape of every unnamed member, e.g. the scalar-only `details` values.
-    digest(node.additionalProperties, `${path}.*`, false, out);
+    digest(node.additionalProperties, `${path}.*`, false, out, ctx);
   }
   for (const [key, child] of Object.entries(node.definitions ?? {})) {
-    digest(child, `#${key}`, false, out);
+    digest(child, `#${key}`, false, out, ctx);
   }
   // A union's branches describe the SAME path. Walking them as if they were the path itself
   // let the last branch overwrite the entry (format 2 recorded `workspace_id` with the second
@@ -127,7 +154,8 @@ function digest(node, path, required, out) {
     const entry = out[path];
     const types = new Set();
     const patterns = new Set();
-    for (const branch of node.anyOf) {
+    for (const rawBranch of node.anyOf) {
+      const branch = resolveRef(rawBranch, ctx);
       if (!branch || typeof branch !== 'object') continue;
       for (const t of Array.isArray(branch.type) ? branch.type : branch.type ? [branch.type] : []) types.add(t);
       if (typeof branch.pattern === 'string') patterns.add(branch.pattern);
@@ -135,14 +163,19 @@ function digest(node, path, required, out) {
     if (types.size > 0) entry.anyOfTypes = [...types].sort();
     if (patterns.size > 0) entry.anyOfPatterns = [...patterns].sort();
   }
-  for (const branch of node.anyOf ?? []) {
+  for (const rawBranch of node.anyOf ?? []) {
+    const branch = resolveRef(rawBranch, ctx);
     if (!branch || typeof branch !== 'object') continue;
+    const branchCtx = branch.__resolvedFrom ? { definitions: ctx.definitions, stack: [...ctx.stack, branch.__resolvedFrom], via: { name: branch.__resolvedFrom, at: path } } : ctx;
     const requiredHere = new Set(branch.required ?? []);
     for (const [key, child] of Object.entries(branch.properties ?? {})) {
-      digest(child, path ? `${path}.${key}` : key, requiredHere.has(key), out);
+      digest(child, path ? `${path}.${key}` : key, requiredHere.has(key), out, branchCtx);
     }
     if (branch.items) {
-      digest(branch.items, `${path}[]`, false, out);
+      digest(branch.items, `${path}[]`, false, out, branchCtx);
+    }
+    if (branch.additionalProperties && typeof branch.additionalProperties === 'object') {
+      digest(branch.additionalProperties, `${path}.*`, false, out, branchCtx);
     }
   }
 }
@@ -166,7 +199,7 @@ export async function buildLock(options = {}) {
   for (const file of files) {
     const schema = JSON.parse(await readFile(join(dir, file), 'utf8'));
     const flat = {};
-    digest(schema, '', false, flat);
+    digest(schema, '', false, flat, { definitions: schema.definitions ?? {}, stack: [] });
     schemas[file] = Object.fromEntries(Object.keys(flat).sort().map((k) => [k, flat[k]]));
     contentModels[file] = contentModelOf(schema);
   }
@@ -174,7 +207,7 @@ export async function buildLock(options = {}) {
   const version = options.version ?? JSON.parse(await readFile(resolve(here, 'package.json'), 'utf8')).version;
 
   return {
-    note: 'Generated by generate-schemas-lock.mjs. The additive-only rule for 1.x is enforced against this file by check-additive.mjs. schemaSetVersion is the PACKAGE version; only `major` is load-bearing. lockFormat 3 records patterns, bounds, content models, union sizes and union branch types and patterns as well as types, required and enums.',
+    note: 'Generated by generate-schemas-lock.mjs. The additive-only rule for 1.x is enforced against this file by check-additive.mjs. schemaSetVersion is the PACKAGE version; only `major` is load-bearing. lockFormat 4 records patterns, bounds, content models, union sizes and union branch types and patterns as well as types, required and enums, and digests a local $ref at the referring path so a re-pointed reference is a visible change.',
     lockFormat: LOCK_FORMAT,
     // NOTE ON THE NAME. This is the PACKAGE version, and 1.0.1 is where that first stopped
     // being the same thing as the schema set's version: it changed nothing in schemas/, because

@@ -1,0 +1,1 @@
+An `http` hook whose header value is a literal bearer token. A plugin manifest ships to everyone who installs it; a credential in it is published. The value is refused by the bearer-token pattern; `$VAR` interpolation through `allowedEnvVars` is the route.

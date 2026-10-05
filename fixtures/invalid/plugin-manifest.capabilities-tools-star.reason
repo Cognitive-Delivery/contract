@@ -1,0 +1,1 @@
+`cdf.capabilities.tools` asks for `*`. Capabilities are the lease `allow` shape, and the tool identity rule refuses `*` there for the same reason: a plugin that asks for every tool has not asked for one, and its worker lease would open everything or nothing.
