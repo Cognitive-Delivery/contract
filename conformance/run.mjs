@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
 import { runGuardTests } from './guard-tests.mjs';
+import { runSchemaChecks } from './schema-checks.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -71,7 +72,12 @@ console.log(`Version ${currency.version} stated consistently in package.json, RE
 const guard = await runGuardTests();
 console.log(`Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures];
+// The schema set itself: strict compile, the inlined granted manifest identical to its
+// source, and the package's own version statement. Held here, not in a consumer.
+const schemaChecks = await runSchemaChecks();
+console.log(`Schema checks: ${schemaChecks.schemaCount} schemas strict-compiled, identity and version checked, ${schemaChecks.failures.length} failure(s).`);
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);
