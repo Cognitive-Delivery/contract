@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # to create the GitHub Release for the tag; nothing else is written
   id-token: write # the OIDC token npm checks. Without it the publish is unauthenticated.
 
 jobs:
@@ -64,6 +64,34 @@ jobs:
       # configured per package and needs the package to exist). CI still attests
       # every release; a hand publish is now possible when it has to be.
       - run: npm publish --provenance
+
+      # The GitHub Release for the tag: the CHANGELOG section as its notes, the tarball a
+      # consumer would install attached, and where the provenance can be checked. Until 1.1.0 no
+      # release had ever been cut here — the tag existed, the npm version existed, and the
+      # repository's Releases page said "none" — so a reader on GitHub could not tell a version
+      # had shipped. Creating one that already exists is an edit, so a re-run is safe.
+      - name: GitHub Release with notes, tarball and provenance links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node tooling/changelog-section.mjs "$VERSION" > "$RUNNER_TEMP/notes.md"
+          {
+            echo
+            echo "---"
+            echo "npm: https://www.npmjs.com/package/@cognitive-delivery/contract/v/${VERSION}"
+            echo "Provenance: published from this workflow run with \`npm publish --provenance\`; verify with \`npm audit signatures\` after installing, or search Sigstore for \`pkg:npm/%40cognitive-delivery/contract@${VERSION}\`."
+            echo "Schemas: https://cognitive-delivery.github.io/contract/${VERSION%%.*}.x/"
+          } >> "$RUNNER_TEMP/notes.md"
+          mkdir -p "$RUNNER_TEMP/pkg"
+          npm pack --pack-destination "$RUNNER_TEMP/pkg" > /dev/null
+          TARBALL="$(ls "$RUNNER_TEMP"/pkg/*.tgz)"
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
+            gh release upload "$GITHUB_REF_NAME" "$TARBALL" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$TARBALL" --title "$VERSION" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
+          fi
 
       # Every `$id` must serve the bytes of the schema it names. Pages deploys from main on push,
       # so at the tag the served file and the tagged file are the same commit's. A 404 means Pages

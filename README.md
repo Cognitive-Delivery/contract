@@ -129,7 +129,10 @@ npm install @cognitive-delivery/contract
 Releases are published from CI through npm trusted publishing, so each one carries a provenance
 attestation linking the package on the registry to the commit and the workflow that built it.
 A contract that asks other people to record what produced an artefact should be able to show
-what produced its own.
+what produced its own. The same workflow creates a GitHub Release for the tag, with that
+version's CHANGELOG section as its notes, the tarball attached, and the provenance links; and a
+daily workflow fetches every schema's `$id` and fails when one does not serve the bytes on
+`main`, because an identifier that stops resolving is a defect nobody reports.
 
 You can also use it straight from this repository, as a submodule or a clone pinned to a tag.
 `schemas/` and `fixtures/` are plain files and an implementation in another language needs
@@ -295,6 +298,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
   schema-checks.mjs         strict compile, the inlined granted manifest identical to its source, the version
   layout-check.mjs          this block is current
+  changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII
   jcs/                      RFC 8785's own reference vectors, vendored with their licence
@@ -308,6 +312,7 @@ generate-schemas-lock.mjs   writes schemas.lock.json from schemas/
 generate-contract-types.mjs writes a consumer's TypeScript types from schemas/; `--check` for currency
 tooling/                    repository tooling; not in the package
   sync-version.mjs          one version, stated in package.json, written everywhere else from it
+  changelog-section.mjs     prints one release's CHANGELOG section; the release workflow's notes
   regex-portability/        the Go program CI runs to compile every pattern under RE2
 SPEC-agent-lease-manifest.md the normative specification
 README.md                   this file
