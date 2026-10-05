@@ -1,6 +1,6 @@
 [
   {
-    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.1.0): fixtures, part 1 of 2",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",
@@ -3137,7 +3137,1700 @@
           }
         },
         "valid": false
+      }
+    ]
+  },
+  {
+    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.1.0): fixtures, part 2 of 2",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",
+      "title": "CDF Plugin Manifest",
+      "description": "A plugin's `plugin.json`, read from `.claude-plugin/plugin.json`. Models every key the Claude Code plugin manifest and marketplace references, read 2026-10-05 document, with the same meaning, so a Claude Code plugin validates here; unknown top-level keys pass through, as Claude Code strips them with a warning. Two keys are CDF's own: the optional `cdf` block, which declares what the harness alone understands, and plugin-level `category`, which Claude Code documents only on a marketplace entry — what the plugin contributes, what its own code asks to be allowed, and who vouches for the declaration. `name` is the only required key, which is Claude Code's rule and not a relaxation of ours: a manifest that named nothing could not be addressed, and everything else has a defensible default. A declaration is not an installation: reading this file tells the loader what a plugin says about itself, never that it may run.",
+      "definitions": {
+        "attestation": {
+          "type": "object",
+          "description": "Who vouches for the declaration. Optional: a plugin published without a key has nothing to sign with, and the harness records that honestly rather than claiming a signature it does not have. The issuer vocabulary is the lease manifest's, so one reader understands both.",
+          "required": [
+            "issuer"
+          ],
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "bridge",
+                "harness",
+                "plugin"
+              ],
+              "description": "Which party produced the declaration.",
+              "$comment": "stability: stable"
+            },
+            "signature": {
+              "type": "string",
+              "pattern": "^[0-9a-f]+$",
+              "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign.",
+              "$comment": "stability: stable"
+            },
+            "key_fingerprint": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Fingerprint of the key that produced `signature`. Never the key.",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "author": {
+          "description": "Who publishes the plugin. An object is the documented form; a bare string is accepted because marketplaces in the wild carry one, and a reader that refused it would refuse a real plugin.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "$comment": "stability: stable"
+                },
+                "email": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "url": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true
+            }
+          ]
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "What the plugin's own code asks to be allowed when the harness runs it out of process. This is the lease manifest's `allow` shape, property for property, because a plugin worker's lease is generated from it and narrowed against the workspace root policy. It is deliberately NOT the store-listing `interface.capabilities` vocabulary a plugin may also carry: that is a shelf label, this is an authorisation request. Every list is optional here — an absent list is a plugin that asks for nothing, which is the correct default — whereas the granted manifest requires all five.",
+          "properties": {
+            "tools": {
+              "type": "array",
+              "description": "Governed tool names the agent may call.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                "description": "A governed tool name the plugin asks to call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+              },
+              "$comment": "stability: stable"
+            },
+            "read_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              },
+              "$comment": "stability: stable"
+            },
+            "write_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              },
+              "$comment": "stability: stable"
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hostnames the agent may reach, with an optional leading wildcard label (`*.example.com`). Enforced by the egress proxy once it keys off the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host the plugin asks to reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+              },
+              "$comment": "stability: stable"
+            },
+            "commands": {
+              "type": "array",
+              "description": "Executable names the agent may run.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable the plugin asks to run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+              },
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "cdf": {
+          "type": "object",
+          "description": "The additive CDF block. Absent in a plain Claude Code plugin, and its absence is not a defect: such a plugin contributes its skills, commands, agents, hooks and MCP servers and declares nothing further.",
+          "required": [
+            "schemaVersion"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "enum": [
+                "1.0"
+              ],
+              "description": "Contract version this block was written against.",
+              "$comment": "stability: stable"
+            },
+            "contributes": {
+              "$ref": "#/definitions/contributes",
+              "$comment": "stability: stable"
+            },
+            "capabilities": {
+              "$ref": "#/definitions/capabilities",
+              "$comment": "stability: stable"
+            },
+            "attestation": {
+              "$ref": "#/definitions/attestation",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "check": {
+          "type": "object",
+          "description": "A data or delivery check the plugin implements. `worker` is a path inside the plugin; the harness runs it out of process, never in the kernel.",
+          "required": [
+            "id",
+            "worker"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "worker": {
+              "type": "string",
+              "minLength": 1,
+              "allOf": [
+                {
+                  "not": {
+                    "pattern": "^/"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(^|/)\\.\\.(/|$)"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^~"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^[A-Za-z]:"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "\\\\"
+                  }
+                }
+              ],
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "componentPath": {
+          "description": "A component directory or file, or a list of them. Claude Code accepts a single string or an array of strings for `skills`, `commands`, `agents`, `outputStyles`, `workflows` and `experimental.themes`, and scans the default folder when the key is absent, so an absent key is not an empty contribution. Every path starts with `./` (`skills` also accepts `\".\"`). Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          ]
+        },
+        "contributes": {
+          "type": "object",
+          "description": "What the plugin adds to the harness as DATA the kernel reads. Every list is optional. Nothing here is code the kernel executes: a contributed check names a worker the harness spawns, and a contributed provider names a host the egress policy must already permit.",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "description": "Model providers the plugin adds to the registry.",
+              "items": {
+                "$ref": "#/definitions/provider"
+              },
+              "$comment": "stability: stable"
+            },
+            "trackers": {
+              "type": "array",
+              "description": "Tracker strategies the plugin adds to the mirror.",
+              "items": {
+                "$ref": "#/definitions/tracker"
+              },
+              "$comment": "stability: stable"
+            },
+            "docPacks": {
+              "type": "array",
+              "description": "Paths inside the plugin to document packs it contributes.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              },
+              "$comment": "stability: stable"
+            },
+            "checks": {
+              "type": "array",
+              "description": "Checks the plugin implements.",
+              "items": {
+                "$ref": "#/definitions/check"
+              },
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "prices": {
+          "type": "object",
+          "description": "Declared unit prices, for budget accounting. Advisory: the harness records what it spent, not what it was told it would cost.",
+          "properties": {
+            "input_per_million": {
+              "type": "number",
+              "minimum": 0,
+              "$comment": "stability: stable"
+            },
+            "output_per_million": {
+              "type": "number",
+              "minimum": 0,
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "provider": {
+          "type": "object",
+          "description": "A model provider the plugin contributes. `kind` is the closed set of wire protocols the harness speaks; a provider whose protocol is neither is not a provider the harness can drive.",
+          "required": [
+            "id",
+            "kind"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "openai-compatible",
+                "anthropic"
+              ],
+              "description": "The wire protocol. Closed: the harness has exactly these two clients.",
+              "$comment": "stability: stable"
+            },
+            "baseUrl": {
+              "type": "string",
+              "minLength": 1,
+              "anyOf": [
+                {
+                  "pattern": "^https://"
+                },
+                {
+                  "pattern": "^http://(127\\.0\\.0\\.1|localhost|\\[::1\\])(:[0-9]{1,5})?(/|$)"
+                }
+              ],
+              "description": "Where the provider is reached: `https://`, or `http://` to loopback only (`127.0.0.1`, `localhost`, `[::1]`), because a local model provider such as Ollama or LM Studio lives there and a plain-http remote provider would carry a key in the clear.",
+              "$comment": "stability: stable"
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "prices": {
+              "$ref": "#/definitions/prices",
+              "$comment": "stability: stable"
+            },
+            "extraHosts": {
+              "type": "array",
+              "description": "Hostnames beyond the base URL's own that this provider reaches. They must still be permitted by the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "repository": {
+          "description": "The source repository, as a URL string or as an object carrying one.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "tracker": {
+          "type": "object",
+          "description": "A tracker strategy the plugin contributes. The action ids name integration actions; an id the host does not know is reported, never invented.",
+          "required": [
+            "id",
+            "label",
+            "readAction"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "readAction": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "commentAction": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "transitionAction": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "createAction": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "externalIdLabel": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "externalIdPlaceholder": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Plugins that must be enabled for this one to work. Each entry is `\"name\"`, `\"name@marketplace\"`, or an object with `name`, `marketplace` and `version`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "$comment": "stability: stable"
+                  },
+                  "marketplace": {
+                    "type": "string",
+                    "$comment": "stability: stable"
+                  },
+                  "version": {
+                    "type": "string",
+                    "$comment": "stability: stable"
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "userConfigOption": {
+          "type": "object",
+          "description": "One user-configuration option. A STRICT object in Claude Code: an unknown key stops the plugin loading, so the contract refuses it too, which is the one place the contract closes a content model to mean what Claude Code means. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "type",
+            "title",
+            "description"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "directory",
+                "file"
+              ],
+              "$comment": "stability: stable"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "description": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "required": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            },
+            "default": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "$comment": "stability: stable"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "$comment": "stability: stable"
+            },
+            "multiple": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            },
+            "sensitive": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            },
+            "min": {
+              "type": "number",
+              "$comment": "stability: stable"
+            },
+            "max": {
+              "type": "number",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": false
+        },
+        "userConfig": {
+          "type": "object",
+          "description": "Values Claude Code prompts the user for when the plugin is enabled. Keys are identifiers of letters, digits and underscores not starting with a digit. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/userConfigOption"
+          }
+        },
+        "channel": {
+          "type": "object",
+          "description": "A message channel bound to one of the plugin's MCP servers. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "server"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "displayName": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "userConfig": {
+              "$ref": "#/definitions/userConfig",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lspServer": {
+          "type": "object",
+          "description": "One language server. A STRICT object in Claude Code: `command` and `extensionToLanguage` are required and an unknown key fails validation. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "command",
+            "extensionToLanguage"
+          ],
+          "properties": {
+            "command": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "extensionToLanguage": {
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^\\."
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "$comment": "stability: stable"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "$comment": "stability: stable"
+            },
+            "transport": {
+              "type": "string",
+              "enum": [
+                "stdio",
+                "socket"
+              ],
+              "$comment": "stability: stable"
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "$comment": "stability: stable"
+            },
+            "initializationOptions": {
+              "type": "object",
+              "$comment": "stability: stable"
+            },
+            "settings": {
+              "type": "object",
+              "$comment": "stability: stable"
+            },
+            "workspaceFolder": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "startupTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "$comment": "stability: stable"
+            },
+            "shutdownTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "$comment": "stability: stable"
+            },
+            "requestTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "$comment": "stability: stable"
+            },
+            "restartOnCrash": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            },
+            "maxRestarts": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "$comment": "stability: stable"
+            },
+            "diagnostics": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lspServers": {
+          "description": "`.json` LSP config files, an inline map of server name to config, or an array of either. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/lspServer"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/definitions/lspServer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "commandEntry": {
+          "type": "object",
+          "description": "One command in the `commands` object map. Exactly one of `source` (a path) or `content` (inline Markdown) is set. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "properties": {
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "content": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "description": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "argumentHint": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "model": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "allowedTools": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "$comment": "stability: stable"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "source"
+              ]
+            },
+            {
+              "required": [
+                "content"
+              ]
+            }
+          ],
+          "additionalProperties": true
+        },
+        "commands": {
+          "description": "Flat `.md` command files, directories of them, or an object map of command name to `source` or `content`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/commandEntry"
+              }
+            }
+          ]
+        },
+        "monitor": {
+          "type": "object",
+          "description": "One background monitor. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "name",
+            "command",
+            "description"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "when": {
+              "type": "string",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": false
+        },
+        "experimental": {
+          "type": "object",
+          "description": "Container for `themes`, `monitors` and `evals`, whose manifest shape Claude Code says may still change. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "properties": {
+            "themes": {
+              "$ref": "#/definitions/componentPath",
+              "$comment": "stability: stable"
+            },
+            "monitors": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/monitor"
+                  }
+                }
+              ],
+              "$comment": "stability: stable"
+            },
+            "evals": {
+              "$ref": "#/definitions/componentPath",
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "credentialFree": {
+          "type": "string",
+          "description": "A string that is not a credential. Refuses the seven shapes the reference evidence sanitiser refuses — a private key block, an AWS access key id, a GitHub token, an OpenAI key, a Slack token, a literal bearer token and a JWT — each as an I-Regexp without lookahead or word boundaries. A detector, not a guarantee: it catches these shapes and nothing else, and the documented route for a secret remains the host's own environment (`$VAR` interpolation) or `headersHelper`.",
+          "allOf": [
+            {
+              "not": {
+                "pattern": "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])AKIA[0-9A-Z]{16}([^A-Za-z0-9]|$)"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{36,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "Bearer +[A-Za-z0-9._~+/-]{16,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "eyJ[A-Za-z0-9_-]{8,}\\.eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}"
+              }
+            }
+          ]
+        },
+        "hookHandler": {
+          "description": "One hook, discriminated by `type`, after the Claude Code settings schema on SchemaStore (read 2026-10-05). The five types are closed because a handler of unknown type is one the harness cannot vet; each type's own fields stay open because Claude Code adds fields between releases and a plugin that uses one must not stop validating here.",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "command"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "command"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "command": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A shell command, or with `args` an executable run without a shell.",
+                  "$comment": "stability: stable"
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "$comment": "stability: stable"
+                },
+                "async": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                },
+                "asyncRewake": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                },
+                "shell": {
+                  "type": "string",
+                  "enum": [
+                    "bash",
+                    "powershell"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds.",
+                  "$comment": "stability: stable"
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches.",
+                  "$comment": "stability: stable"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "once": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Runs a command."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "prompt"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "prompt"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "$comment": "stability: stable"
+                },
+                "model": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "continueOnBlock": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds.",
+                  "$comment": "stability: stable"
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches.",
+                  "$comment": "stability: stable"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "once": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Asks the model a single-turn question."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "prompt"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "agent"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "$comment": "stability: stable"
+                },
+                "model": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds.",
+                  "$comment": "stability: stable"
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches.",
+                  "$comment": "stability: stable"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "once": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Runs a subagent with tools."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "http"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Where the hook input is POSTed.",
+                  "$comment": "stability: stable"
+                },
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/definitions/credentialFree"
+                  },
+                  "description": "Request headers. Values may interpolate `$VAR` from `allowedEnvVars`; a literal credential is refused.",
+                  "$comment": "stability: stable"
+                },
+                "allowedEnvVars": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "$comment": "stability: stable"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds.",
+                  "$comment": "stability: stable"
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches.",
+                  "$comment": "stability: stable"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "once": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true,
+              "description": "POSTs the hook input to a URL."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "server",
+                "tool"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "mcp_tool"
+                  ],
+                  "$comment": "stability: stable"
+                },
+                "server": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A configured MCP server.",
+                  "$comment": "stability: stable"
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1,
+                  "$comment": "stability: stable"
+                },
+                "input": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "$comment": "stability: stable"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds.",
+                  "$comment": "stability: stable"
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches.",
+                  "$comment": "stability: stable"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "$comment": "stability: stable"
+                },
+                "once": {
+                  "type": "boolean",
+                  "$comment": "stability: stable"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Calls a tool on a connected MCP server."
+            }
+          ]
+        },
+        "hookMatcher": {
+          "type": "object",
+          "required": [
+            "hooks"
+          ],
+          "properties": {
+            "matcher": {
+              "type": "string",
+              "description": "A pattern matched against the event context; absent means every occurrence.",
+              "$comment": "stability: stable"
+            },
+            "hooks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/hookHandler"
+              },
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true
+        },
+        "hooksMap": {
+          "type": "object",
+          "description": "The event map: event name to matchers. The event names are the thirty-three the Claude Code hooks reference lists (read 2026-10-05); an unknown event is refused because nothing would ever fire it.",
+          "propertyNames": {
+            "enum": [
+              "PreToolUse",
+              "PostToolUse",
+              "PostToolUseFailure",
+              "PermissionRequest",
+              "Notification",
+              "UserPromptSubmit",
+              "Stop",
+              "StopFailure",
+              "SubagentStart",
+              "SubagentStop",
+              "PreCompact",
+              "PostCompact",
+              "Elicitation",
+              "ElicitationResult",
+              "TeammateIdle",
+              "TaskCompleted",
+              "Setup",
+              "InstructionsLoaded",
+              "CwdChanged",
+              "FileChanged",
+              "ConfigChange",
+              "WorktreeCreate",
+              "WorktreeRemove",
+              "SessionStart",
+              "SessionEnd",
+              "PostToolBatch",
+              "TaskCreated",
+              "PermissionDenied",
+              "UserPromptExpansion",
+              "MessageDisplay",
+              "DirectoryAdded",
+              "PreModelSwitch",
+              "PostModelSwitch"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/hookMatcher"
+            }
+          }
+        },
+        "hooksSource": {
+          "description": "Hooks declared inline as the event map, as a path to a `.json` file that declares them (wrapped in a top-level `hooks` key), or as an array mixing both. Claude Code accepts all three.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hooksMap"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/hooksMap"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "mcpServer": {
+          "type": "object",
+          "description": "One MCP server config, keyed by name in `mcpServers`, after the Claude Code `.mcp.json` reference (read 2026-10-05). `stdio` needs `command`; `http`, `sse`, `ws` and `streamable-http` need `url`; an entry with no `type` is left as the reference leaves it. `env` and `headers` values are credential-free: a literal secret in a plugin manifest ships to everyone who installs it, and `${VAR}` interpolation or `headersHelper` is the route.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "stdio",
+                "http",
+                "sse",
+                "ws",
+                "streamable-http"
+              ],
+              "$comment": "stability: stable"
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "$comment": "stability: stable"
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              },
+              "$comment": "stability: stable"
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1,
+              "$comment": "stability: stable"
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              },
+              "$comment": "stability: stable"
+            },
+            "headersHelper": {
+              "type": "string",
+              "$comment": "stability: stable"
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "$comment": "stability: stable"
+            },
+            "alwaysLoad": {
+              "type": "boolean",
+              "$comment": "stability: stable"
+            },
+            "oauth": {
+              "type": "object",
+              "additionalProperties": true,
+              "$comment": "stability: stable"
+            }
+          },
+          "additionalProperties": true,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "stdio"
+                    ],
+                    "$comment": "stability: stable"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "command"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "http",
+                      "sse",
+                      "ws",
+                      "streamable-http"
+                    ],
+                    "$comment": "stability: stable"
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          ]
+        },
+        "mcpServersMap": {
+          "type": "object",
+          "description": "Server name to config.",
+          "additionalProperties": {
+            "$ref": "#/definitions/mcpServer"
+          }
+        },
+        "mcpServersSource": {
+          "description": "MCP servers declared inline keyed by name, as a path to a `.json` config, an `.mcpb` or `.dxt` bundle path, an `https://` bundle URL, or an array mixing these. Claude Code accepts all of them.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/mcpServersMap"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/mcpServersMap"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
       },
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "description": "The plugin id: letters, digits, `.`, `_` and `-`, starting with a letter or digit, as Claude Code accepts (it recommends kebab-case and warns otherwise). The only required key, and the one a decision record is keyed to. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "description": {
+          "type": "string",
+          "$comment": "stability: stable"
+        },
+        "version": {
+          "type": "string",
+          "description": "The plugin's own version. An open string: a plugin is free to version itself however it likes, and a marketplace may pin a different one.",
+          "$comment": "stability: stable"
+        },
+        "author": {
+          "$ref": "#/definitions/author",
+          "$comment": "stability: stable"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "A human label for a listing. `name` remains the identity.",
+          "$comment": "stability: stable"
+        },
+        "homepage": {
+          "type": "string",
+          "$comment": "stability: stable"
+        },
+        "repository": {
+          "$ref": "#/definitions/repository",
+          "$comment": "stability: stable"
+        },
+        "license": {
+          "type": "string",
+          "$comment": "stability: stable"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "$comment": "stability: stable"
+        },
+        "category": {
+          "type": "string",
+          "description": "Free-form category. A CDF extension on the manifest: Claude Code documents `category` on a marketplace entry only, and strips it from `plugin.json` with a warning. Kept because CDF's decision records key on it; the README names it as not a Claude Code key. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Free-form publisher metadata. Carried, never interpreted.",
+          "$comment": "stability: stable"
+        },
+        "defaultEnabled": {
+          "type": "boolean",
+          "description": "Whether a host that installs this plugin enables it by default. A hint to the host, never an approval: presence is not approval, and neither is this.",
+          "$comment": "stability: stable"
+        },
+        "skills": {
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
+        },
+        "commands": {
+          "$ref": "#/definitions/commands",
+          "$comment": "stability: stable"
+        },
+        "agents": {
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
+        },
+        "hooks": {
+          "$ref": "#/definitions/hooksSource",
+          "$comment": "stability: stable"
+        },
+        "mcpServers": {
+          "$ref": "#/definitions/mcpServersSource",
+          "$comment": "stability: stable"
+        },
+        "lspServers": {
+          "$ref": "#/definitions/lspServers",
+          "$comment": "stability: stable"
+        },
+        "$schema": {
+          "type": "string",
+          "description": "JSON Schema URL for editor autocomplete. Ignored at load time.",
+          "$comment": "stability: stable"
+        },
+        "icon": {
+          "type": "string",
+          "minLength": 1,
+          "allOf": [
+            {
+              "not": {
+                "pattern": "^/"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|/)\\.\\.(/|$)"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^~"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^[A-Za-z]:"
+              }
+            },
+            {
+              "not": {
+                "pattern": "\\\\"
+              }
+            }
+          ],
+          "description": "Path of an image inside the plugin for its listing in Anthropic's directory. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "documentationUrl": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Read by Anthropic's directory from `plugin.json` only; Claude Code ignores it at load time and warns when it appears in a marketplace entry. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "supportUrl": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Read by Anthropic's directory from `plugin.json` only; Claude Code ignores it at load time and warns when it appears in a marketplace entry. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "privacyPolicyUrl": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Read by Anthropic's directory from `plugin.json` only; Claude Code ignores it at load time and warns when it appears in a marketplace entry. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "termsOfServiceUrl": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Read by Anthropic's directory from `plugin.json` only; Claude Code ignores it at load time and warns when it appears in a marketplace entry. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "dependencies": {
+          "$ref": "#/definitions/dependencies",
+          "$comment": "stability: stable"
+        },
+        "settings": {
+          "type": "object",
+          "description": "Settings applied while the plugin is enabled; Claude Code honours `agent` and `subagentStatusLine` and drops the rest. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "additionalProperties": true,
+          "$comment": "stability: stable"
+        },
+        "userConfig": {
+          "$ref": "#/definitions/userConfig",
+          "$comment": "stability: stable"
+        },
+        "types": {
+          "type": "string",
+          "minLength": 1,
+          "allOf": [
+            {
+              "not": {
+                "pattern": "^/"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|/)\\.\\.(/|$)"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^~"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^[A-Za-z]:"
+              }
+            },
+            {
+              "not": {
+                "pattern": "\\\\"
+              }
+            }
+          ],
+          "description": "A `.d.ts` file declaring a mod's `$.state` values and `$` nouns. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/channel"
+          },
+          "$comment": "stability: stable"
+        },
+        "outputStyles": {
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
+        },
+        "workflows": {
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
+        },
+        "themes": {
+          "description": "Theme files or directories at the top level. Claude Code still loads this key but warns; `experimental.themes` is the documented place. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          ],
+          "$comment": "stability: stable"
+        },
+        "experimental": {
+          "$ref": "#/definitions/experimental",
+          "$comment": "stability: stable"
+        },
+        "cdf": {
+          "$ref": "#/definitions/cdf",
+          "$comment": "stability: stable"
+        }
+      },
+      "additionalProperties": true
+    },
+    "tests": [
       {
         "description": "plugin-manifest.mcp-stdio-without-command is refused",
         "data": {

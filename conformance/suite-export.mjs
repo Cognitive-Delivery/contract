@@ -57,14 +57,37 @@ export async function buildSuite() {
         data: f.data,
         valid: f.kind !== 'invalid',
       }));
-    suite[`${shape}.json`] = [{
-      description: `${schema.title ?? shape} (${file}, @cognitive-delivery/contract ${pkg.version}): every fixture of the conformance corpus`,
+    // One case per schema would be simplest, but a harness that reads a case as one line of JSON
+    // (Bowtie's Go harness, bufio.Scanner, 64 KiB) errors on every test of a case above that
+    // size, and the plugin manifest with its stability comments is 66 KB as one line. So the
+    // tests are chunked into cases that each serialise under CASE_LINE_BUDGET bytes, every case
+    // carrying the full schema; a schema alone above the budget still gets one test per case,
+    // which is the best that can be done without changing what is tested.
+    const cases = [];
+    const title = `${schema.title ?? shape} (${file}, @cognitive-delivery/contract ${pkg.version})`;
+    let chunk = [];
+    const lineLength = (list, index) => JSON.stringify({ description: `${title}: fixtures ${index}`, schema, tests: list }).length;
+    for (const test of tests) {
+      if (chunk.length > 0 && lineLength([...chunk, test], cases.length + 1) > CASE_LINE_BUDGET) {
+        cases.push(chunk);
+        chunk = [];
+      }
+      chunk.push(test);
+    }
+    if (chunk.length > 0) cases.push(chunk);
+    suite[`${shape}.json`] = cases.map((list, i) => ({
+      description: cases.length === 1
+        ? `${title}: every fixture of the conformance corpus`
+        : `${title}: fixtures, part ${i + 1} of ${cases.length}`,
       schema,
-      tests,
-    }];
+      tests: list,
+    }));
   }
   return suite;
 }
+
+/** Bytes per serialised case, with headroom under the 64 KiB a line-reading harness allows. */
+export const CASE_LINE_BUDGET = 60000;
 
 export function serialiseSuite(cases) {
   return `${JSON.stringify(cases, null, 2)}\n`;

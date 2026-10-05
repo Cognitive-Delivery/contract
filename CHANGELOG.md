@@ -102,7 +102,7 @@ deployment validates with zero rejections.
   JSON-Schema-Test-Suite format (one file per schema, every fixture a test, written by
   `npm run lock` and checked current by `npm test`), and CI runs it through Bowtie against
   `go-jsonschema`, `rust-jsonschema`, `python-jsonschema`, `java-json-schema`,
-  `dotnet-jsonschema-net` and `js-ajv`, failing on any disagreement. A second job runs
+  `dotnet-jsonschema-net` and `js-ajv`, failing on any disagreement. A case is kept under 60 KB as one line, chunking a schema's tests across cases where needed, because a harness that reads a case as a line (the Go one) errors above 64 KiB. A second job runs
   Sourcemeta's `jsonschema metaschema` and `lint` (six style rules excluded by name, each with
   its reason in the workflow). Two orphan `componentSource` definitions the typed hook and MCP
   shapes had left behind are removed, and the marketplace's empty `relevance.signals` schema
