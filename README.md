@@ -92,7 +92,9 @@ The comparison is against the shape *before* the change, not against the lock si
 schemas: a lock regenerated in the same commit agrees with whatever broke it. On a pull request
 the baseline is the branch being merged into; on a push it is the previous commit.
 
-Every artefact carries `schema_version`. One without it is read as `1.0.0`.
+Every artefact carries `schema_version`, and the schemas require it: a conformant writer always
+writes it. A reader meeting a pre-contract artefact without it may read it as `1.0`; it must not
+emit one.
 
 ## Installing
 
@@ -200,13 +202,19 @@ by UTF-16 code unit, and an absent member is omitted rather than nulled.
 These are not stylistic. Audit and Index evidence is append-only and retained indefinitely, so
 anything that reaches it is effectively permanent.
 
-- Prompts are **never** recorded. `prompt_hash` and `request_hash` are SHA-256.
-- `workspace_id` is a hash of the git remote URL, not a person identifier.
+- Prompts are **never** recorded. `prompt_hash`, `request_hash`, `steering_hash` and `content_hash`
+  are SHA-256, and since 1.1 the schemas refuse anything that is not a 64-character lower-case hex
+  digest, so a writer that skipped the hashing cannot produce a valid record.
+- `workspace_id` is a hash of the git remote URL, or a per-checkout UUID when the workspace has no
+  remote. Either way it is not a person identifier and not reversible to one; the schema accepts
+  exactly those two shapes.
 - The actor records a **kind** — human, agent or system — and the model. Never a name, email or
   git identity.
-- `details` is sanitised before write: keys matching token, secret, password, authorization,
-  prompt, content, file or path are dropped. Renaming a sensitive field to evade that check
-  defeats the control.
+- `details` is sanitised before write, and the schema enforces the same rule: a key whose segment
+  (split on non-alphanumerics and camelCase boundaries) is `authorization`, `content`, `file`,
+  `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` is refused. Values are
+  flat scalars. `summary` is capped at 300 characters and `reasoning` at 500. Renaming a sensitive
+  field to evade the list defeats the control.
 
 ## Layout
 

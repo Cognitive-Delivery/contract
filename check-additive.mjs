@@ -38,8 +38,8 @@
  *
  * Usage:
  *   node check-additive.mjs                          drift check only
- *   node check-additive.mjs --baseline <lock.json>   drift check and comparison
- *   node check-additive.mjs --baseline-ref origin/main
+ *   node check-additive.mjs --baseline <lock.json>   drift check and comparison with a lock file
+ *   node check-additive.mjs --baseline-ref origin/main   the schemas at that ref, digested now
  */
 
 import { readFile, writeFile, mkdtemp, access } from 'node:fs/promises';
@@ -69,7 +69,7 @@ function parentPath(path) {
 }
 
 /** Everything one side says about a property path, compared with the other. */
-export function compareEntry(file, path, before, after, extended, out) {
+export function compareEntry(file, path, before, after, extended, out, baselineFormat = 3) {
   if (!after) {
     out.push(finding('FIELD_REMOVED', file, path, 'removed. An older reader loses a field it depends on.'));
     return;
@@ -79,9 +79,13 @@ export function compareEntry(file, path, before, after, extended, out) {
     out.push(finding('FIELD_NOW_REQUIRED', file, path, 'became required. Records an older writer already wrote stop validating.'));
   }
 
+  // Format 2 let a union's last branch overwrite the path's own type, so a type comparison on a
+  // union site against a format-2 baseline compares an artefact of that defect. Skipped there.
+  const unionSite = before.anyOf !== undefined || after.anyOf !== undefined;
+  const typeComparable = !(unionSite && baselineFormat < 3);
   const beforeType = JSON.stringify(before.type ?? null);
   const afterType = JSON.stringify(after.type ?? null);
-  if (beforeType !== afterType) {
+  if (typeComparable && beforeType !== afterType) {
     out.push(finding('TYPE_CHANGED', file, path, `type changed from ${beforeType} to ${afterType}. Both sides now disagree about what they are reading.`));
   }
 
@@ -116,6 +120,12 @@ export function compareEntry(file, path, before, after, extended, out) {
     out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses ${addedNots.map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`));
   }
 
+  const beforeKeyNots = new Set(before.keyNotPatterns ?? []);
+  const addedKeyNots = (after.keyNotPatterns ?? []).filter((p) => !beforeKeyNots.has(p));
+  if (addedKeyNots.length > 0) {
+    out.push(finding('PATTERN_TIGHTENED', file, path, `now refuses member names matching ${addedKeyNots.map((p) => JSON.stringify(p)).join(', ')}. A key that was carried may now be rejected.`));
+  }
+
   for (const lower of ['minLength', 'minimum']) {
     if (after[lower] !== undefined && (before[lower] === undefined || after[lower] > before[lower])) {
       out.push(finding('BOUND_TIGHTENED', file, path, `${lower} ${before[lower] === undefined ? 'added' : 'raised'} to ${after[lower]}.`));
@@ -136,6 +146,22 @@ export function compareEntry(file, path, before, after, extended, out) {
   if ((before.anyOf ?? null) !== (after.anyOf ?? null)) {
     out.push(finding('UNION_CHANGED', file, path, `anyOf went from ${before.anyOf ?? 'none'} to ${after.anyOf ?? 'none'} branch(es). A form that validated may no longer.`));
   }
+  if (baselineFormat >= 3) {
+    // A union that gains a pattern branch widens; one that loses a pattern branch narrows; a
+    // plain string that becomes a union of patterns narrows (it used to accept anything).
+    const afterUnionPatterns = new Set(after.anyOfPatterns ?? []);
+    const lostUnionPatterns = (before.anyOfPatterns ?? []).filter((p) => !afterUnionPatterns.has(p));
+    if (lostUnionPatterns.length > 0) {
+      out.push(finding('PATTERN_TIGHTENED', file, path, `union pattern ${lostUnionPatterns.map((p) => JSON.stringify(p)).join(', ')} removed. A value that was legal may now be rejected.`));
+    }
+    if ((before.anyOfPatterns ?? []).length === 0 && before.pattern === undefined && afterUnionPatterns.size > 0) {
+      out.push(finding('PATTERN_TIGHTENED', file, path, `now must match one of ${[...afterUnionPatterns].map((p) => JSON.stringify(p)).join(', ')}. A value that was legal may now be rejected.`));
+    }
+    const beforeUnionTypes = before.anyOfTypes ?? [];
+    const afterUnionTypes = new Set(after.anyOfTypes ?? []);
+    const lostTypes = beforeUnionTypes.filter((t) => !afterUnionTypes.has(t));
+    if (lostTypes.length > 0) out.push(finding('TYPE_CHANGED', file, path, `union lost type(s) ${lostTypes.join(', ')}. A form that validated no longer does.`));
+  }
 }
 
 /**
@@ -153,7 +179,7 @@ export function compare(baseline, current) {
       continue;
     }
     for (const [path, entry] of Object.entries(before)) {
-      compareEntry(file, path, entry, after[path], extended, findings);
+      compareEntry(file, path, entry, after[path], extended, findings, baseline.lockFormat ?? 1);
     }
     // A field that did not exist before and arrives required breaks every older writer, when
     // its parent already existed (a required member of a brand-new optional object is fine).
@@ -230,6 +256,29 @@ async function fileFromRef(ref, name) {
   return target;
 }
 
+/**
+ * The baseline, digested from the schemas AS THEY WERE at `ref` with the current generator.
+ * Reading the baseline's committed lock instead would compare two lock formats, and format 2
+ * recorded a union's last branch over the parent entry; a baseline computed fresh has no such
+ * history. The committed lock stays the drift record for its own commit, which is a different job.
+ */
+async function baselineLockFromRef(ref) {
+  const { stdout: listing } = await run('git', ['ls-tree', '--name-only', `${ref}:schemas`], { cwd: here });
+  const files = listing.split('\n').filter((n) => n.endsWith('.json'));
+  if (files.length === 0) throw new Error(`no schemas at ${ref}`);
+  const dir = await mkdtemp(join(tmpdir(), 'cdf-baseline-schemas-'));
+  for (const file of files) {
+    const { stdout } = await run('git', ['show', `${ref}:schemas/${file}`], { cwd: here, maxBuffer: 32 * 1024 * 1024 });
+    await writeFile(join(dir, file), stdout, 'utf8');
+  }
+  let version = 'unknown';
+  try {
+    const { stdout } = await run('git', ['show', `${ref}:package.json`], { cwd: here });
+    version = JSON.parse(stdout).version ?? version;
+  } catch { /* a baseline without package.json keeps 'unknown' */ }
+  return buildLock({ schemaDir: dir, version });
+}
+
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
@@ -257,15 +306,18 @@ async function main() {
     process.exit(1);
   }
 
-  let baselinePath = arg('--baseline');
+  const baselinePath = arg('--baseline');
   const ref = arg('--baseline-ref');
   let baselineAllowlist = null;
+  let baseline = null;
 
-  if (!baselinePath && ref) {
+  if (baselinePath) {
+    baseline = await readJson(baselinePath);
+  } else if (ref) {
     try {
-      baselinePath = await fileFromRef(ref, 'schemas.lock.json');
+      baseline = await baselineLockFromRef(ref);
     } catch {
-      console.log(`No schemas.lock.json at ${ref}; nothing to compare against. Drift check passed.`);
+      console.log(`No schemas at ${ref}; nothing to compare against. Drift check passed.`);
       return;
     }
     try {
@@ -275,18 +327,16 @@ async function main() {
     }
   }
 
-  if (!baselinePath) {
+  if (!baseline) {
     console.log('Lock is current and the allow-list is well-formed. No baseline given, so no compatibility comparison was made.');
     return;
   }
-
-  const baseline = await readJson(baselinePath);
   const { findings, extended } = compare(baseline, current);
   const { accepted, unlisted } = applyAllowlist(findings, allowlist);
   const dropped = missingAllowlistEntries(baselineAllowlist, allowlist);
 
   if (!extended) {
-    console.log(`Baseline ${baseline.schemaSetVersion} is lock format ${baseline.lockFormat ?? 1}: PATTERN_TIGHTENED, BOUND_TIGHTENED, CONTENT_MODEL_CLOSED and UNION_CHANGED are NOT COMPARABLE against it.`);
+    console.log(`Baseline ${baseline.schemaSetVersion} is lock format ${baseline.lockFormat ?? 1}: PATTERN_TIGHTENED, BOUND_TIGHTENED, CONTENT_MODEL_CLOSED and UNION_CHANGED are NOT COMPARABLE against it. (A --baseline-ref baseline is always digested with the current generator, so this only happens with an explicit --baseline lock file.)`);
   }
   for (const f of accepted) {
     console.log(`accepted (allow-listed ${f.entry.date}): ${describe(f)} — ${f.entry.reason}`);

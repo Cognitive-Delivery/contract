@@ -17,13 +17,17 @@ tooling in this repository.
 
 ### Added
 
-- **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 2). The lock
+- **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 3). The lock
   records, per property path, `pattern`, the `allOf[].not.pattern` set, `minLength`, `maxLength`,
   `minimum`, `maximum`, `additionalProperties` and the number of `anyOf` branches, and per schema
   whether its root is open or closed; enum values keep their JSON type instead of being
   stringified. `check-additive.mjs` reports named findings (`PATTERN_TIGHTENED`,
   `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` beside the four it already knew) and
-  says plainly when a baseline predates the format and those four cannot be compared.
+  says plainly when a baseline predates the format and those four cannot be compared. A
+  `--baseline-ref` baseline is digested from the schemas as they were at that ref with the current
+  generator, so two lock formats are never compared; the committed lock stays the drift record for
+  its own commit. Format 3 records a union's branch types and patterns on the parent entry, and
+  `propertyNames` refusals, both of which format 2 lost.
 
   Until now a pattern could be tightened inside 1.x and the guard would print "additive only",
   which is the class of change the 4 October 2026 review found it blind to. Nothing in the
@@ -51,6 +55,26 @@ tooling in this repository.
   change, and is made a required check then.
 
 ### Changed
+
+- **The privacy properties are enforced by shape, not prose.** `request_hash`, `prompt_hash`,
+  `steering_hash` and `content_hash` require a 64-character lower-case hex digest; `details` on the
+  audit event and the CDI signal refuses by `propertyNames` any key whose segment is one of the
+  reference writer's eleven words (`authorization`, `content`, `file`, `password`, `path`, `payload`,
+  `prompt`, `request`, `secret`, `token`), split on non-alphanumerics and camelCase boundaries
+  exactly as the writer does; `summary` is capped at 300 characters and `reasoning` at 500, the
+  writer's own caps. Before this a raw prompt in `request_hash` validated, which SECURITY.md itself
+  calls a security issue. Each tightening is allow-listed with its fixture; the check against the
+  reference deployment's journals (33,538 audit records, 5,634 signals, 4,535 provenance lines) rejects
+  nothing.
+
+- **`workspace_id` is widened, and its description corrected.** It accepts a SHA-256 digest or a
+  lower-case UUID, because the collector writes a per-checkout UUID when the workspace has no git
+  remote and 4,910 of the reference deployment's 5,634 signals carry one. The description said
+  "SHA-256 of the git remote URL" and was false against real artefacts.
+
+- **`schema_version` stays required and the prose stops saying otherwise.** The README and the
+  provenance description said an absent value "is read as 1.0"; the schemas required it, and zero
+  real records lack it. A writer always writes it; a reader may read a pre-contract artefact as 1.0.
 
 - **Path rules are written without lookahead, and refuse three forms they used to accept.** Every
   `read_paths`, `write_paths`, `deny.paths`, plugin `worker`, `docPacks` and `git-subdir` `path`

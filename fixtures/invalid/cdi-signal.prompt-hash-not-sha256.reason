@@ -1,0 +1,1 @@
+`prompt_hash` carries the prompt. Same control, same reason, same shape as the audit event's `request_hash`: 64 lower-case hex characters or nothing. All 5,634 real signals in the reference deployment carry a digest.
