@@ -1,0 +1,45 @@
+name: id-watch
+
+# Every schema's `$id` is a URL, and a URL is a promise that someone else keeps: GitHub Pages
+# serves it. The release workflow checks each `$id` once, at the tag. This checks them every day,
+# because 1.0.x shipped `$id`s that never resolved and nothing noticed for three releases. A red
+# run here is the owner's notification; it opens nothing and changes nothing.
+#
+# Two failures: a `$id` that does not return 200, and one that returns bytes other than the file
+# on `main`. The second is the subtle one — Pages serving a stale deploy, or a schema edited on
+# `main` without a deploy — and it is why the comparison is byte for byte rather than "it loaded".
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    name: every $id serves main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Fetch each $id and compare with main
+        run: |
+          status=0
+          for f in schemas/*.schema.json; do
+            name="$(basename "$f")"
+            url="$(node -p "JSON.parse(require('fs').readFileSync('$f','utf8')).\$id")"
+            code="$(curl -sS -o "$RUNNER_TEMP/served.json" -w '%{http_code}' "$url" || echo 000)"
+            if [ "$code" != "200" ]; then
+              echo "::error::${url} returned ${code}"; status=1; continue
+            fi
+            if ! cmp -s "$RUNNER_TEMP/served.json" "$f"; then
+              echo "::error::${url} serves different bytes from ${f} on main"; status=1
+            else
+              echo "${name}: 200, bytes identical to main"
+            fi
+          done
+          exit $status

@@ -211,6 +211,14 @@ refuses, and every real journal in the reference deployment (33,557 audit record
   entry at the top level and under `conformance/`, `fixtures/` and `tooling/` must have a line, and
   every line a file. It had fallen eleven files behind. **SECURITY.md** now names the published test
   key and the allow-list as in-scope surfaces.
+- **A GitHub Release for every tag.** Until now no release had been cut on GitHub: the tags and
+  the npm versions existed and the repository's Releases page said none. `release.yml` now creates
+  (or, on a re-run, edits) the release for the tag with this CHANGELOG section as its notes
+  (`tooling/changelog-section.mjs`, whose extraction `npm test` also checks is non-empty), the
+  `npm pack` tarball attached, and links to the npm version page and how to verify its provenance.
+- **A daily `$id` watch** (`.github/workflows/id-watch.yml`). The release workflow checks every
+  `$id` once, at the tag; this fetches each one every day and fails when it is not 200 or serves
+  bytes other than the file on `main`. A red run is the notification; it changes nothing.
 
 ## [1.0.2] — 2026-09-19
 

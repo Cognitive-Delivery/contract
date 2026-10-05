@@ -16,6 +16,7 @@ import { runGuardTests } from './guard-tests.mjs';
 import { runSchemaChecks } from './schema-checks.mjs';
 import { runLayoutCheck } from './layout-check.mjs';
 import { idFor } from './ids.mjs';
+import { changelogSection } from './changelog.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -45,6 +46,12 @@ async function checkVersionCurrency() {
   }
   if (!changelog.includes(`[${version}]: https://`)) {
     problems.push(`CHANGELOG.md has no link definition for [${version}]`);
+  }
+  // The release workflow publishes this section as the GitHub Release's notes, so it has to
+  // extract to something: a heading with an empty body would release an empty page.
+  const section = changelogSection(changelog, version);
+  if (section === null || section.trim() === '' || section.trim() === 'Nothing yet.') {
+    problems.push(`CHANGELOG.md section [${version}] is missing or empty — the release notes come from it`);
   }
   // schemas.lock.json was the one that actually escaped. `check:additive` reported "Lock is
   // current" on a lock carrying the PREVIOUS version, because it compares schema shapes and
