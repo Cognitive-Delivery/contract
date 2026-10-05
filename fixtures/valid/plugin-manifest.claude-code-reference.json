@@ -18,7 +18,7 @@
   ],
   "defaultEnabled": true,
   "dependencies": [
-    "secrets-vault",
+    "vault-plugin",
     "linter@tools-marketplace",
     {
       "name": "formatter",
