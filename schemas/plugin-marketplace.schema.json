@@ -19,13 +19,16 @@
           "properties": {
             "name": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "$comment": "stability: stable"
             },
             "email": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "url": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true
@@ -44,7 +47,8 @@
             "minLength": 1,
             "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
             "description": "A governed tool name the plugin asks to call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
-          }
+          },
+          "$comment": "stability: stable"
         },
         "read_paths": {
           "type": "array",
@@ -79,7 +83,8 @@
                 }
               }
             ]
-          }
+          },
+          "$comment": "stability: stable"
         },
         "write_paths": {
           "type": "array",
@@ -114,7 +119,8 @@
                 }
               }
             ]
-          }
+          },
+          "$comment": "stability: stable"
         },
         "hosts": {
           "type": "array",
@@ -125,7 +131,8 @@
             "maxLength": 253,
             "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
             "description": "A host the plugin asks to reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
-          }
+          },
+          "$comment": "stability: stable"
         },
         "commands": {
           "type": "array",
@@ -135,7 +142,8 @@
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
             "description": "An executable the plugin asks to run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -166,73 +174,93 @@
       "properties": {
         "name": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "$comment": "stability: stable"
         },
         "source": {
-          "$ref": "#/definitions/source"
+          "$ref": "#/definitions/source",
+          "$comment": "stability: stable"
         },
         "displayName": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "version": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "author": {
-          "$ref": "#/definitions/author"
+          "$ref": "#/definitions/author",
+          "$comment": "stability: stable"
         },
         "homepage": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "repository": {
-          "$ref": "#/definitions/repository"
+          "$ref": "#/definitions/repository",
+          "$comment": "stability: stable"
         },
         "license": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "keywords": {
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "$comment": "stability: stable"
         },
         "category": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "tags": {
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "$comment": "stability: stable"
         },
         "defaultEnabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "strict": {
           "type": "boolean",
-          "description": "Whether the entry must match the fetched manifest exactly. Absent means true: the stricter reading is the default, so a marketplace relaxes it deliberately."
+          "description": "Whether the entry must match the fetched manifest exactly. Absent means true: the stricter reading is the default, so a marketplace relaxes it deliberately.",
+          "$comment": "stability: stable"
         },
         "skills": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "commands": {
-          "$ref": "#/definitions/commands"
+          "$ref": "#/definitions/commands",
+          "$comment": "stability: stable"
         },
         "agents": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "hooks": {
-          "$ref": "#/definitions/hooksSource"
+          "$ref": "#/definitions/hooksSource",
+          "$comment": "stability: stable"
         },
         "mcpServers": {
-          "$ref": "#/definitions/mcpServersSource"
+          "$ref": "#/definitions/mcpServersSource",
+          "$comment": "stability: stable"
         },
         "lspServers": {
-          "$ref": "#/definitions/lspServers"
+          "$ref": "#/definitions/lspServers",
+          "$comment": "stability: stable"
         },
         "headers": {
           "type": "object",
@@ -245,47 +273,59 @@
               "pattern": "^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$"
             },
             "description": "An `authorization` header, in any case, is refused: its value would be a credential in a file everyone reads. `headersHelper` is the route."
-          }
+          },
+          "$comment": "stability: stable"
         },
         "headersHelper": {
           "type": "string",
           "minLength": 1,
-          "description": "A path or command that produces this entry's archive-download headers at fetch time. Claude Code requires the entry to set `\"strict\": false`, and the schema enforces that with if/then. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+          "description": "A path or command that produces this entry's archive-download headers at fetch time. Claude Code requires the entry to set `\"strict\": false`, and the schema enforces that with if/then. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
         },
         "relevance": {
-          "$ref": "#/definitions/relevance"
+          "$ref": "#/definitions/relevance",
+          "$comment": "stability: stable"
         },
         "dependencies": {
-          "$ref": "#/definitions/dependencies"
+          "$ref": "#/definitions/dependencies",
+          "$comment": "stability: stable"
         },
         "metadata": {
           "type": "object",
-          "description": "Free-form publisher metadata on the entry. Carried, never interpreted."
+          "description": "Free-form publisher metadata on the entry. Carried, never interpreted.",
+          "$comment": "stability: stable"
         },
         "settings": {
           "type": "object",
-          "additionalProperties": true
+          "additionalProperties": true,
+          "$comment": "stability: stable"
         },
         "userConfig": {
-          "$ref": "#/definitions/userConfig"
+          "$ref": "#/definitions/userConfig",
+          "$comment": "stability: stable"
         },
         "channels": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/channel"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "outputStyles": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "workflows": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "themes": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "experimental": {
-          "$ref": "#/definitions/experimental"
+          "$ref": "#/definitions/experimental",
+          "$comment": "stability: stable"
         },
         "types": {
           "type": "string",
@@ -316,10 +356,12 @@
                 "pattern": "\\\\"
               }
             }
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "cdf": {
-          "$ref": "#/definitions/entryCdf"
+          "$ref": "#/definitions/entryCdf",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true,
@@ -334,7 +376,8 @@
         ],
         "properties": {
           "strict": {
-            "const": false
+            "const": false,
+            "$comment": "stability: stable"
           }
         }
       }
@@ -346,10 +389,12 @@
         "digest": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$",
-          "description": "The sha256 the fetched tree must hash to, lower-case hex. A claim the loader checks; a mismatch is a refusal with both digests named, never a warning."
+          "description": "The sha256 the fetched tree must hash to, lower-case hex. A claim the loader checks; a mismatch is a refusal with both digests named, never a warning.",
+          "$comment": "stability: stable"
         },
         "capabilities": {
-          "$ref": "#/definitions/capabilities"
+          "$ref": "#/definitions/capabilities",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -360,13 +405,16 @@
       "properties": {
         "pluginRoot": {
           "type": "string",
-          "description": "The directory relative paths in `source` resolve from."
+          "description": "The directory relative paths in `source` resolve from.",
+          "$comment": "stability: stable"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "version": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -380,13 +428,16 @@
       "properties": {
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "url": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -445,16 +496,19 @@
           "type": "string",
           "enum": [
             "archive"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "url": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "sha256": {
           "type": "string",
           "pattern": "^[0-9a-fA-F]{64}$",
-          "description": "The archive digest as 64 hex characters, upper or lower case as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+          "description": "The archive digest as 64 hex characters, upper or lower case as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -471,17 +525,20 @@
           "type": "string",
           "enum": [
             "command"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "command": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "timeout": {
           "type": "integer",
           "minimum": 1,
           "maximum": 600,
-          "description": "Seconds, 1 to 600; Claude Code defaults to 60. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+          "description": "Seconds, 1 to 600; Claude Code defaults to 60. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
         },
         "mode": {
           "type": "string",
@@ -489,7 +546,8 @@
             "copy",
             "link"
           ],
-          "description": "`copy` (default) copies the printed directory; `link` loads it in place. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+          "description": "`copy` (default) copies the printed directory; `link` loads it in place. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -507,11 +565,13 @@
           "type": "string",
           "enum": [
             "git-subdir"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "url": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "path": {
           "type": "string",
@@ -542,17 +602,20 @@
                 "pattern": "\\\\"
               }
             }
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "ref": {
           "type": "string",
           "minLength": 1,
-          "description": "A branch, tag or other revision. A branch is not a pin."
+          "description": "A branch, tag or other revision. A branch is not a pin.",
+          "$comment": "stability: stable"
         },
         "sha": {
           "type": "string",
           "pattern": "^[0-9a-f]{7,40}$",
-          "description": "A commit sha. The only ref that cannot move."
+          "description": "A commit sha. The only ref that cannot move.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -569,22 +632,26 @@
           "type": "string",
           "enum": [
             "github"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "repo": {
           "type": "string",
           "pattern": "^[^/\\s]+/[^/\\s]+$",
-          "description": "owner/repo."
+          "description": "owner/repo.",
+          "$comment": "stability: stable"
         },
         "ref": {
           "type": "string",
           "minLength": 1,
-          "description": "A branch, tag or other revision. A branch is not a pin."
+          "description": "A branch, tag or other revision. A branch is not a pin.",
+          "$comment": "stability: stable"
         },
         "sha": {
           "type": "string",
           "pattern": "^[0-9a-f]{7,40}$",
-          "description": "A commit sha. The only ref that cannot move."
+          "description": "A commit sha. The only ref that cannot move.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -601,11 +668,13 @@
           "type": "string",
           "enum": [
             "local"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "path": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -622,17 +691,21 @@
           "type": "string",
           "enum": [
             "npm"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "package": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "version": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "registry": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -649,21 +722,25 @@
           "type": "string",
           "enum": [
             "url"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "url": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "ref": {
           "type": "string",
           "minLength": 1,
-          "description": "A branch, tag or other revision. A branch is not a pin."
+          "description": "A branch, tag or other revision. A branch is not a pin.",
+          "$comment": "stability: stable"
         },
         "sha": {
           "type": "string",
           "pattern": "^[0-9a-f]{7,40}$",
-          "description": "A commit sha. The only ref that cannot move."
+          "description": "A commit sha. The only ref that cannot move.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -685,13 +762,16 @@
             "properties": {
               "name": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "$comment": "stability: stable"
               },
               "marketplace": {
-                "type": "string"
+                "type": "string",
+                "$comment": "stability: stable"
               },
               "version": {
-                "type": "string"
+                "type": "string",
+                "$comment": "stability: stable"
               }
             },
             "additionalProperties": true
@@ -716,17 +796,21 @@
             "boolean",
             "directory",
             "file"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "title": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "required": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "default": {
           "anyOf": [
@@ -745,7 +829,8 @@
                 "type": "string"
               }
             }
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "options": {
           "type": "array",
@@ -753,19 +838,24 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 64
-          }
+          },
+          "$comment": "stability: stable"
         },
         "multiple": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "sensitive": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "min": {
-          "type": "number"
+          "type": "number",
+          "$comment": "stability: stable"
         },
         "max": {
-          "type": "number"
+          "type": "number",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": false
@@ -789,13 +879,16 @@
       "properties": {
         "server": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "displayName": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "userConfig": {
-          "$ref": "#/definitions/userConfig"
+          "$ref": "#/definitions/userConfig",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": false
@@ -810,7 +903,8 @@
       "properties": {
         "command": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "extensionToLanguage": {
           "type": "object",
@@ -821,61 +915,74 @@
           "additionalProperties": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "$comment": "stability: stable"
         },
         "args": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "transport": {
           "type": "string",
           "enum": [
             "stdio",
             "socket"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "env": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "initializationOptions": {
-          "type": "object"
+          "type": "object",
+          "$comment": "stability: stable"
         },
         "settings": {
-          "type": "object"
+          "type": "object",
+          "$comment": "stability: stable"
         },
         "workspaceFolder": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "startupTimeout": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "shutdownTimeout": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "requestTimeout": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "restartOnCrash": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "maxRestarts": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "diagnostics": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": false
@@ -918,26 +1025,32 @@
       "properties": {
         "source": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "content": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "argumentHint": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "model": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "allowedTools": {
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
       "oneOf": [
@@ -987,18 +1100,22 @@
       "properties": {
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "command": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "description": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "when": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": false
@@ -1008,7 +1125,8 @@
       "description": "Container for `themes`, `monitors` and `evals`, whose manifest shape Claude Code says may still change. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
       "properties": {
         "themes": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         },
         "monitors": {
           "anyOf": [
@@ -1022,10 +1140,12 @@
                 "$ref": "#/definitions/monitor"
               }
             }
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "evals": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/componentPath",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -1035,10 +1155,12 @@
       "description": "Signals that tell Claude Code when to suggest the plugin: `topic` and `signals`. Carried, not interpreted. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
       "properties": {
         "topic": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "signals": {
-          "description": "Relevance signals as the marketplace reference leaves them: any value, not modelled."
+          "description": "Relevance signals as the marketplace reference leaves them: any value, not modelled.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -1098,46 +1220,56 @@
               "type": "string",
               "enum": [
                 "command"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "command": {
               "type": "string",
               "minLength": 1,
-              "description": "A shell command, or with `args` an executable run without a shell."
+              "description": "A shell command, or with `args` an executable run without a shell.",
+              "$comment": "stability: stable"
             },
             "args": {
               "type": "array",
               "items": {
                 "type": "string"
-              }
+              },
+              "$comment": "stability: stable"
             },
             "async": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             },
             "asyncRewake": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             },
             "shell": {
               "type": "string",
               "enum": [
                 "bash",
                 "powershell"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "timeout": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "Seconds."
+              "description": "Seconds.",
+              "$comment": "stability: stable"
             },
             "if": {
               "type": "string",
-              "description": "A permission-rule filter; the hook runs only when it matches."
+              "description": "A permission-rule filter; the hook runs only when it matches.",
+              "$comment": "stability: stable"
             },
             "statusMessage": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "once": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true,
@@ -1154,32 +1286,40 @@
               "type": "string",
               "enum": [
                 "prompt"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "prompt": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "$comment": "stability: stable"
             },
             "model": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "continueOnBlock": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             },
             "timeout": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "Seconds."
+              "description": "Seconds.",
+              "$comment": "stability: stable"
             },
             "if": {
               "type": "string",
-              "description": "A permission-rule filter; the hook runs only when it matches."
+              "description": "A permission-rule filter; the hook runs only when it matches.",
+              "$comment": "stability: stable"
             },
             "statusMessage": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "once": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true,
@@ -1196,29 +1336,36 @@
               "type": "string",
               "enum": [
                 "agent"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "prompt": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "$comment": "stability: stable"
             },
             "model": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "timeout": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "Seconds."
+              "description": "Seconds.",
+              "$comment": "stability: stable"
             },
             "if": {
               "type": "string",
-              "description": "A permission-rule filter; the hook runs only when it matches."
+              "description": "A permission-rule filter; the hook runs only when it matches.",
+              "$comment": "stability: stable"
             },
             "statusMessage": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "once": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true,
@@ -1235,40 +1382,48 @@
               "type": "string",
               "enum": [
                 "http"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "url": {
               "type": "string",
               "minLength": 1,
-              "description": "Where the hook input is POSTed."
+              "description": "Where the hook input is POSTed.",
+              "$comment": "stability: stable"
             },
             "headers": {
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/definitions/credentialFree"
               },
-              "description": "Request headers. Values may interpolate `$VAR` from `allowedEnvVars`; a literal credential is refused."
+              "description": "Request headers. Values may interpolate `$VAR` from `allowedEnvVars`; a literal credential is refused.",
+              "$comment": "stability: stable"
             },
             "allowedEnvVars": {
               "type": "array",
               "items": {
                 "type": "string"
-              }
+              },
+              "$comment": "stability: stable"
             },
             "timeout": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "Seconds."
+              "description": "Seconds.",
+              "$comment": "stability: stable"
             },
             "if": {
               "type": "string",
-              "description": "A permission-rule filter; the hook runs only when it matches."
+              "description": "A permission-rule filter; the hook runs only when it matches.",
+              "$comment": "stability: stable"
             },
             "statusMessage": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "once": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true,
@@ -1286,35 +1441,43 @@
               "type": "string",
               "enum": [
                 "mcp_tool"
-              ]
+              ],
+              "$comment": "stability: stable"
             },
             "server": {
               "type": "string",
               "minLength": 1,
-              "description": "A configured MCP server."
+              "description": "A configured MCP server.",
+              "$comment": "stability: stable"
             },
             "tool": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "$comment": "stability: stable"
             },
             "input": {
               "type": "object",
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "timeout": {
               "type": "number",
               "exclusiveMinimum": 0,
-              "description": "Seconds."
+              "description": "Seconds.",
+              "$comment": "stability: stable"
             },
             "if": {
               "type": "string",
-              "description": "A permission-rule filter; the hook runs only when it matches."
+              "description": "A permission-rule filter; the hook runs only when it matches.",
+              "$comment": "stability: stable"
             },
             "statusMessage": {
-              "type": "string"
+              "type": "string",
+              "$comment": "stability: stable"
             },
             "once": {
-              "type": "boolean"
+              "type": "boolean",
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true,
@@ -1330,13 +1493,15 @@
       "properties": {
         "matcher": {
           "type": "string",
-          "description": "A pattern matched against the event context; absent means every occurrence."
+          "description": "A pattern matched against the event context; absent means every occurrence.",
+          "$comment": "stability: stable"
         },
         "hooks": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/hookHandler"
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true
@@ -1426,48 +1591,58 @@
             "sse",
             "ws",
             "streamable-http"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "command": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "args": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "env": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/credentialFree"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "url": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "$comment": "stability: stable"
         },
         "headers": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/credentialFree"
-          }
+          },
+          "$comment": "stability: stable"
         },
         "headersHelper": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "timeout": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "alwaysLoad": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "oauth": {
           "type": "object",
-          "additionalProperties": true
+          "additionalProperties": true,
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true,
@@ -1478,7 +1653,8 @@
               "type": {
                 "enum": [
                   "stdio"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             },
             "required": [
@@ -1500,7 +1676,8 @@
                   "sse",
                   "ws",
                   "streamable-http"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             },
             "required": [
@@ -1557,24 +1734,30 @@
   ],
   "properties": {
     "$schema": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "name": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
-      "description": "The marketplace id: letters, digits, `.`, `_` and `-`, starting with a letter or digit, no `..`, as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+      "description": "The marketplace id: letters, digits, `.`, `_` and `-`, starting with a letter or digit, no `..`, as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "$comment": "stability: stable"
     },
     "owner": {
-      "$ref": "#/definitions/owner"
+      "$ref": "#/definitions/owner",
+      "$comment": "stability: stable"
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "version": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "metadata": {
-      "$ref": "#/definitions/metadata"
+      "$ref": "#/definitions/metadata",
+      "$comment": "stability: stable"
     },
     "allowCrossMarketplaceDependenciesOn": {
       "type": "array",
@@ -1582,7 +1765,8 @@
       "items": {
         "type": "string",
         "minLength": 1
-      }
+      },
+      "$comment": "stability: stable"
     },
     "renames": {
       "type": "object",
@@ -1592,18 +1776,21 @@
           "string",
           "null"
         ]
-      }
+      },
+      "$comment": "stability: stable"
     },
     "plugins": {
       "type": "array",
       "description": "The listed plugins. Required, and may be empty: an empty marketplace is a marketplace that lists nothing, not a malformed one.",
       "items": {
         "$ref": "#/definitions/entry"
-      }
+      },
+      "$comment": "stability: stable"
     },
     "forceRemoveDeletedPlugins": {
       "type": "boolean",
-      "description": "When true, a plugin removed from `plugins` is uninstalled on users' machines. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+      "description": "When true, a plugin removed from `plugins` is uninstalled on users' machines. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "$comment": "stability: stable"
     }
   },
   "additionalProperties": true

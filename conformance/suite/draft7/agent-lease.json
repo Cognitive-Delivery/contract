@@ -23,7 +23,8 @@
             "schema_version": {
               "type": "string",
               "pattern": "^\\d+\\.\\d+$",
-              "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+              "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule.",
+              "$comment": "stability: stable"
             },
             "agent": {
               "type": "object",
@@ -38,7 +39,8 @@
                   "type": "string",
                   "minLength": 1,
                   "description": "Display label for the cockpit, at most 120 characters: the worker role, the session, the plugin. Not an identity, and never a person's name, email address or git identity; this value is recorded in an audit journal that is retained indefinitely.",
-                  "maxLength": 120
+                  "maxLength": 120,
+                  "$comment": "stability: stable"
                 },
                 "kind": {
                   "type": "string",
@@ -48,7 +50,8 @@
                     "plugin",
                     "external"
                   ],
-                  "description": "How the harness runs this agent. native: inside the kernel's own process. delegated-cli: a spawned coding CLI. plugin: loaded into the host. external: presented over a bridge from outside the harness."
+                  "description": "How the harness runs this agent. native: inside the kernel's own process. delegated-cli: a spawned coding CLI. plugin: loaded into the host. external: presented over a bridge from outside the harness.",
+                  "$comment": "stability: stable"
                 },
                 "runtime_agent": {
                   "type": "string",
@@ -60,11 +63,13 @@
                     "cdf-native",
                     "unknown"
                   ],
-                  "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell. `cdf-native` (schema set 1.0, additive) is the harness's own native turn loop: the kernel drives a model provider directly, with no vendor CLI or SDK."
+                  "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell. `cdf-native` (schema set 1.0, additive) is the harness's own native turn loop: the kernel drives a model provider directly, with no vendor CLI or SDK.",
+                  "$comment": "stability: stable"
                 },
                 "provider": {
                   "type": "string",
-                  "description": "The organisation or product providing the agent, when it differs from the runtime."
+                  "description": "The organisation or product providing the agent, when it differs from the runtime.",
+                  "$comment": "stability: stable"
                 },
                 "model": {
                   "type": "object",
@@ -76,29 +81,36 @@
                   "properties": {
                     "vendor": {
                       "type": "string",
-                      "minLength": 1
+                      "minLength": 1,
+                      "$comment": "stability: stable"
                     },
                     "family": {
                       "type": "string",
-                      "minLength": 1
+                      "minLength": 1,
+                      "$comment": "stability: stable"
                     },
                     "version": {
-                      "type": "string"
+                      "type": "string",
+                      "$comment": "stability: stable"
                     }
                   },
-                  "additionalProperties": true
+                  "additionalProperties": true,
+                  "$comment": "stability: stable"
                 },
                 "harness_version": {
                   "type": "string",
-                  "description": "Version of the harness that generated or presented this manifest."
+                  "description": "Version of the harness that generated or presented this manifest.",
+                  "$comment": "stability: stable"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "parent_lease_id": {
               "type": "string",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-              "description": "The lease this manifest is presented under, when it is a child. A root manifest has none and is narrowed against the workspace policy instead."
+              "description": "The lease this manifest is presented under, when it is a child. A root manifest has none and is narrowed against the workspace policy instead.",
+              "$comment": "stability: stable"
             },
             "intent": {
               "type": "object",
@@ -109,20 +121,24 @@
               "properties": {
                 "spec_slug": {
                   "type": "string",
-                  "description": "The governed spec this run serves, when there is one."
+                  "description": "The governed spec this run serves, when there is one.",
+                  "$comment": "stability: stable"
                 },
                 "task_id": {
                   "type": "string",
-                  "description": "The task within that spec, when there is one."
+                  "description": "The task within that spec, when there is one.",
+                  "$comment": "stability: stable"
                 },
                 "purpose": {
                   "type": "string",
                   "minLength": 1,
                   "description": "One sentence of intent, at most 500 characters. Recorded in the audit journal, so no prompt and no content.",
-                  "maxLength": 500
+                  "maxLength": 500,
+                  "$comment": "stability: stable"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "allow": {
               "type": "object",
@@ -143,7 +159,8 @@
                     "minLength": 1,
                     "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
                     "description": "A governed tool name the agent may call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "read_paths": {
                   "type": "array",
@@ -178,7 +195,8 @@
                         }
                       }
                     ]
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "write_paths": {
                   "type": "array",
@@ -213,7 +231,8 @@
                         }
                       }
                     ]
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "hosts": {
                   "type": "array",
@@ -224,7 +243,8 @@
                     "maxLength": 253,
                     "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
                     "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "commands": {
                   "type": "array",
@@ -234,7 +254,8 @@
                     "minLength": 1,
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
                     "description": "An executable the agent may run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "tool_args": {
                   "type": "object",
@@ -246,10 +267,11 @@
                     "type": "object",
                     "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
                   },
-                  "$comment": "stability: development. A declaration an issuer MAY omit from the grant (SPEC 4.4); becomes a rule when a gate enforces it."
+                  "$comment": "stability: development; a declaration an issuer MAY omit from the grant (SPEC 4.4); becomes a rule when a gate enforces it"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "deny": {
               "type": "object",
@@ -268,7 +290,8 @@
                     "minLength": 1,
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
                     "description": "An executable refused outright. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "paths": {
                   "type": "array",
@@ -293,7 +316,8 @@
                         }
                       }
                     ]
-                  }
+                  },
+                  "$comment": "stability: stable"
                 },
                 "hosts": {
                   "type": "array",
@@ -304,10 +328,12 @@
                     "maxLength": 253,
                     "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
                     "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
-                  }
+                  },
+                  "$comment": "stability: stable"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "budget": {
               "type": "object",
@@ -317,39 +343,46 @@
                   "type": "integer",
                   "minimum": 0,
                   "description": "Maximum tool calls or turns.",
-                  "maximum": 9007199254740991
+                  "maximum": 9007199254740991,
+                  "$comment": "stability: stable"
                 },
                 "wall_clock_ms": {
                   "type": "integer",
                   "minimum": 0,
                   "description": "Maximum lifetime in milliseconds; the lease expires when it is spent.",
-                  "maximum": 9007199254740991
+                  "maximum": 9007199254740991,
+                  "$comment": "stability: stable"
                 },
                 "tokens": {
                   "type": "integer",
                   "minimum": 0,
                   "description": "Maximum model tokens, input plus output.",
-                  "maximum": 9007199254740991
+                  "maximum": 9007199254740991,
+                  "$comment": "stability: stable"
                 },
                 "cost_usd": {
                   "type": "number",
                   "minimum": 0,
-                  "description": "Maximum spend in US dollars."
+                  "description": "Maximum spend in US dollars.",
+                  "$comment": "stability: stable"
                 },
                 "depth": {
                   "type": "integer",
                   "minimum": 0,
                   "description": "How many generations of child lease may be issued beneath this one. Zero means no children. At most 16: the reference root policy allows 4, and a declaration above the ceiling is nonsense rather than something to clamp.",
-                  "maximum": 16
+                  "maximum": 16,
+                  "$comment": "stability: stable"
                 },
                 "fan_out": {
                   "type": "integer",
                   "minimum": 0,
                   "description": "How many child leases may be live under this one at once. At most 256: the reference root policy allows 8.",
-                  "maximum": 256
+                  "maximum": 256,
+                  "$comment": "stability: stable"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             },
             "approvals": {
               "type": "array",
@@ -359,7 +392,8 @@
                 "minLength": 1,
                 "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
                 "description": "An action that needs a human first; the same identifier rule as a tool name. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
-              }
+              },
+              "$comment": "stability: stable"
             },
             "attestation": {
               "type": "object",
@@ -376,20 +410,24 @@
                     "harness",
                     "plugin"
                   ],
-                  "description": "Which party produced the declaration."
+                  "description": "Which party produced the declaration.",
+                  "$comment": "stability: stable"
                 },
                 "signature": {
                   "type": "string",
                   "pattern": "^[0-9a-f]{64}$",
-                  "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign: 64 hex characters, which is HMAC-SHA256 like the lease's own signature. An odd-length or longer value is not a signature this contract defines."
+                  "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign: 64 hex characters, which is HMAC-SHA256 like the lease's own signature. An odd-length or longer value is not a signature this contract defines.",
+                  "$comment": "stability: stable"
                 },
                 "key_fingerprint": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "Fingerprint of the key that produced `signature`. Never the key."
+                  "description": "Fingerprint of the key that produced `signature`. Never the key.",
+                  "$comment": "stability: stable"
                 }
               },
-              "additionalProperties": true
+              "additionalProperties": true,
+              "$comment": "stability: stable"
             }
           },
           "additionalProperties": true
@@ -411,50 +449,60 @@
         "schema_version": {
           "type": "string",
           "pattern": "^\\d+\\.\\d+$",
-          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule.",
+          "$comment": "stability: stable"
         },
         "lease_id": {
           "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-          "description": "The grant's identity. Lower-case UUID, the same shape as a capability token id."
+          "description": "The grant's identity. Lower-case UUID, the same shape as a capability token id.",
+          "$comment": "stability: stable"
         },
         "manifest": {
-          "$ref": "#/definitions/grantedManifest"
+          "$ref": "#/definitions/grantedManifest",
+          "$comment": "stability: stable"
         },
         "declared_hash": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$",
-          "description": "SHA-256, lower-case hex, of the canonical bytes of the manifest as DECLARED, before narrowing."
+          "description": "SHA-256, lower-case hex, of the canonical bytes of the manifest as DECLARED, before narrowing.",
+          "$comment": "stability: stable"
         },
         "parent_lease_id": {
           "type": "string",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-          "description": "The lease this one was issued under. Absent for a root lease."
+          "description": "The lease this one was issued under. Absent for a root lease.",
+          "$comment": "stability: stable"
         },
         "issued_at": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
-          "description": "When the lease was issued. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
+          "description": "When the lease was issued. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields.",
+          "$comment": "stability: stable"
         },
         "expires_at": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
-          "description": "When the lease stops opening anything, whatever its recorded status; fixed at issue. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
+          "description": "When the lease stops opening anything, whatever its recorded status; fixed at issue. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields.",
+          "$comment": "stability: stable"
         },
         "issuer_session_id": {
           "type": "string",
           "minLength": 1,
-          "description": "The kernel session that issued the lease."
+          "description": "The kernel session that issued the lease.",
+          "$comment": "stability: stable"
         },
         "key_fingerprint": {
           "type": "string",
           "minLength": 1,
-          "description": "Fingerprint of the signing key. Never the key."
+          "description": "Fingerprint of the signing key. Never the key.",
+          "$comment": "stability: stable"
         },
         "signature": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$",
-          "description": "HMAC-SHA256, lower-case hex, over the canonical bytes of every field except this one."
+          "description": "HMAC-SHA256, lower-case hex, over the canonical bytes of every field except this one.",
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true

@@ -73,6 +73,17 @@ export async function runSchemaChecks() {
     }
   }
 
+  // 2c. Conventions: every schema validates against conformance/metaschema.json (dialect, $id,
+  //     title, description; no `format`; a stability $comment on every declared property).
+  const meta = JSON.parse(await readFile(resolve(here, 'metaschema.json'), 'utf8'));
+  const conventions = new Ajv({ strict: false, allErrors: true }).compile(meta);
+  for (const [file, schema] of schemas) {
+    if (!conventions(schema)) {
+      const first = conventions.errors.slice(0, 3).map((e) => `${e.instancePath || '/'} ${e.message}`).join('; ');
+      failures.push(`conventions/${file}: ${first}${conventions.errors.length > 3 ? ` (+${conventions.errors.length - 3} more)` : ''}`);
+    }
+  }
+
   // 3. The package's own statement of the schema-set version.
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const stated = pkg.cdfContract?.schemaSetVersion;

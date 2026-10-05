@@ -20,7 +20,10 @@ export function dereference(node, source) {
   if (typeof node.$ref === 'string') {
     const key = node.$ref.replace('#/definitions/', '');
     if (!source.definitions || !(key in source.definitions)) throw new Error(`unresolvable $ref ${node.$ref}`);
-    return dereference(structuredClone(source.definitions[key]), source);
+    // Keywords beside the `$ref` (a description, the stability `$comment`) ride along, as the lock
+    // generator's resolveRef does; draft-07 ignores them beside `$ref`, a copy must not lose them.
+    const { $ref, ...rest } = node;
+    return dereference({ ...structuredClone(source.definitions[key]), ...rest }, source);
   }
   return Object.fromEntries(
     Object.entries(node).filter(([k]) => k !== 'definitions').map(([k, v]) => [k, dereference(v, source)]),

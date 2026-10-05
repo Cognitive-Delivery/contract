@@ -18,12 +18,14 @@
         "schema_version": {
           "type": "string",
           "pattern": "^\\d+\\.\\d+$",
-          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule.",
+          "$comment": "stability: stable"
         },
         "timestamp": {
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
-          "description": "ISO 8601 with a timezone."
+          "description": "ISO 8601 with a timezone.",
+          "$comment": "stability: stable"
         },
         "workspace_id": {
           "type": "string",
@@ -35,7 +37,8 @@
             {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
             }
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "event_type": {
           "type": "string",
@@ -168,7 +171,8 @@
             "deploy.assurance_report_generated",
             "deploy.assurance_signoff_recorded"
           ],
-          "description": "CLOSED, unlike the audit journal's event_type. The Index is computed from this vocabulary, so a second product adding a value is a contract change and should be one. Governed by ADR-013."
+          "description": "CLOSED, unlike the audit journal's event_type. The Index is computed from this vocabulary, so a second product adding a value is a contract change and should be one. Governed by ADR-013.",
+          "$comment": "stability: stable"
         },
         "adoption_tier": {
           "type": "integer",
@@ -178,31 +182,39 @@
             3,
             4
           ],
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         },
         "spec_slug": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "phase": {
           "type": "string",
-          "description": "An OPEN string, for the same reason as on the audit event. A reader must tolerate an unrecognised value: not throw, not coerce, not drop."
+          "description": "An OPEN string, for the same reason as on the audit event. A reader must tolerate an unrecognised value: not throw, not coerce, not drop.",
+          "$comment": "stability: stable"
         },
         "runtime_agent": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "model_vendor": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "model_family": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "model_version": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "prompt_hash": {
           "type": "string",
           "description": "SHA-256 of the prompt, lower-case hex. NEVER the prompt itself; the pattern refuses anything that is not a 64-character digest.",
-          "pattern": "^[0-9a-f]{64}$"
+          "pattern": "^[0-9a-f]{64}$",
+          "$comment": "stability: stable"
         },
         "outcome": {
           "type": "string",
@@ -210,7 +222,8 @@
             "success",
             "failure",
             "partial"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "details": {
           "type": "object",
@@ -241,7 +254,8 @@
                 }
               }
             ]
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
       "additionalProperties": true

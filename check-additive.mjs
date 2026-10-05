@@ -32,6 +32,8 @@
  *   CONTENT_MODEL_CLOSED    `additionalProperties` went from open to false or to a schema
  *   UNION_CHANGED           an `anyOf` lost a branch, or a branch type or pattern (gaining one widens)
  *   SCHEMA_REMOVED          a schema file is gone
+ *   STABILITY_LOWERED       a stable field became development (its promise was withdrawn)   [format 5]
+ *   CONDITIONAL_REQUIRED_ADDED  an allOf if/then made a name required                      [format 5]
  *
  * The last four need a baseline in lock format 2. Against a format-1 baseline they are
  * reported as NOT COMPARABLE rather than passed quietly.
@@ -86,7 +88,7 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
 
 function compareEntryInner(file, path, before, after, extended, out, baselineFormat = 3) {
   if (!after) {
-    out.push(finding('FIELD_REMOVED', file, path, 'removed. An older reader loses a field it depends on.', 'removed'));
+    out.push(finding('FIELD_REMOVED', file, path, `removed (it was ${before.stability ?? 'unmarked'}${before.deprecated ? ', deprecated' : ''}). An older reader loses a field it depends on; a deprecated field is still a field.`, 'removed'));
     return;
   }
 
@@ -181,6 +183,19 @@ function compareEntryInner(file, path, before, after, extended, out, baselineFor
     const afterUnionTypes = new Set(after.anyOfTypes ?? []);
     const lostTypes = beforeUnionTypes.filter((t) => !afterUnionTypes.has(t));
     if (lostTypes.length > 0) out.push(finding('TYPE_CHANGED', file, path, `union lost type(s) ${lostTypes.join(', ')}. A form that validated no longer does.`, `anyOfTypes=${JSON.stringify(after.anyOfTypes ?? [])}`));
+  }
+  if (baselineFormat >= 5) {
+    // A stable field is a promise; marking it development withdraws the promise. The reverse,
+    // and marking a field deprecated, are additive.
+    if (before.stability === 'stable' && after.stability === 'development') {
+      out.push(finding('STABILITY_LOWERED', file, path, 'was stable and is now development. A promise under the additive rule has been withdrawn.', 'stability=development'));
+    }
+    // A conditionally required name (allOf[].if/then.required) that was not required before.
+    const beforeConditional = new Set(before.conditionalRequired ?? []);
+    const addedConditional = (after.conditionalRequired ?? []).filter((n) => !beforeConditional.has(n));
+    if (addedConditional.length > 0) {
+      out.push(finding('CONDITIONAL_REQUIRED_ADDED', file, path, `now conditionally requires ${addedConditional.join(', ')}. A record that validated may no longer.`, `conditionalRequired=${JSON.stringify(addedConditional)}`));
+    }
   }
 }
 

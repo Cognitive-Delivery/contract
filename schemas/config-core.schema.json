@@ -14,13 +14,15 @@
         4
       ],
       "description": "How much governance this workspace has adopted. Read by the Index, so it must mean the same thing everywhere.",
-      "maximum": 9007199254740991
+      "maximum": 9007199254740991,
+      "$comment": "stability: stable"
     },
     "governance": {
       "type": "object",
       "properties": {
         "source": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "refresh_mode": {
           "type": "string",
@@ -28,31 +30,38 @@
             "on-open",
             "manual",
             "scheduled"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "profile": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "review_policy": {
       "type": "object",
       "description": "Who must review, and whether the author may. Security-relevant: an implementation that ignored reviewer_cannot_be_implementer would let work approve itself.",
       "properties": {
         "cross_model_review_required": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "reviewer_cannot_be_implementer": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "required_reviewers": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "provenance": {
       "type": "object",
@@ -61,26 +70,31 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "cdi": {
       "type": "object",
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "$comment": "stability: stable"
         },
         "aggregation_endpoint": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Null means local only. Null is the default and is a value, not an omission."
+          "description": "Null means local only. Null is the default and is a value, not an omission.",
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "break_glass": {
       "type": "object",
@@ -92,15 +106,18 @@
             "self-service-logged",
             "two-person",
             "disabled"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "timeout_minutes": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 9007199254740991
+          "maximum": 9007199254740991,
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "sealed": {
       "type": "array",
@@ -109,7 +126,8 @@
         "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
         "description": "A dotted path of lower-case segments (`review_policy.reviewer_cannot_be_implementer`). The runner also checks that a sealed path in a fixture resolves to a key the file carries."
       },
-      "description": "Dotted paths of fields an upper layer has fixed. SEALING IS PART OF THE CONTRACT, and any implementation that ignores it fails conformance. A sealed field may not be relaxed by a downstream layer: a lower layer may match the sealed value or make it stricter, never looser. Ignoring this would let a workspace quietly undo a control its organisation set."
+      "description": "Dotted paths of fields an upper layer has fixed. SEALING IS PART OF THE CONTRACT, and any implementation that ignores it fails conformance. A sealed field may not be relaxed by a downstream layer: a lower layer may match the sealed value or make it stricter, never looser. Ignoring this would let a workspace quietly undo a control its organisation set.",
+      "$comment": "stability: stable"
     }
   },
   "additionalProperties": true

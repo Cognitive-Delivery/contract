@@ -20,7 +20,7 @@ added because the lock silently kept the previous version through a release.
 `npm run check:additive -- --baseline-ref origin/main` compares the schema set against the shape
 it had at that ref, digesting the baseline's schemas with the current generator; in CI the baseline
 is the branch you are merging into, or the pushed-from commit. It reports named findings in the style of
-`buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`,
+`buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`, `STABILITY_LOWERED`, `CONDITIONAL_REQUIRED_ADDED`,
 `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
 `SCHEMA_REMOVED`. Since lock format 4 a local `$ref` is digested at the path that refers to it, so re-pointing a property to a stricter definition is a visible change rather than a changed string the guard ignores. The last four findings need a baseline in lock format 2 (`lockFormat` in
 `schemas.lock.json`); against an older baseline they are reported as not comparable rather than
@@ -40,6 +40,21 @@ or exclude it with a reason. Editing a clause changes its key and fails the same
 entry by updating its `key`. Inserting a clause earlier in a section renumbers the ones after it,
 which the check reports as stale entries plus unmapped clauses; add new clauses at the end of a
 section where you can.
+
+## Stability and deprecation
+
+Every declared property carries a `$comment` beginning `stability: stable` or
+`stability: development` (`conformance/metaschema.json` refuses one without it, and `npm test` runs
+that check). `stable` is a promise under the additive rule. `development` says the field may change
+within the major, and the guard lets it: a `development` field may be tightened or removed without
+an allow-list entry, which is the point of marking it. Lowering a field from `stable` to
+`development` is `STABILITY_LOWERED`, breaking, because it withdraws a promise. To retire a field,
+append `; deprecated: <what to use instead>` to its comment, which is additive, and keep the field
+until the next major: `FIELD_REMOVED` names a deprecated field as still a field. The marker is a
+draft-07 `$comment` rather than a custom keyword because Bowtie showed a strict validator elsewhere
+refusing one, and a schema only this repository can compile is not portable. Lock format 5 records
+`stability`, `deprecated` and `conditionalRequired` (the names an `allOf` `if`/`then` makes
+required; adding one is `CONDITIONAL_REQUIRED_ADDED`).
 
 ## Tightening a schema within 1.x
 

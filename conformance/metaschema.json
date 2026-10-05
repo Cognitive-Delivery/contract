@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Conventions of the contract's schemas",
+  "description": "A draft-07 schema over the schema files themselves, checked by conformance/schema-checks.mjs beside the strict compile. It holds the conventions the README and CONTRIBUTING state: every schema names its dialect, its $id, a title and a description; no schema uses the `format` keyword (its meaning varies by validator, so the contract uses patterns); and every declared property carries a `$comment` beginning `stability: stable` or `stability: development`, optionally `; deprecated: <replacement>`, which is how the contract marks what it promises and what it is still deciding (a draft-07 `$comment`, because Bowtie showed a custom keyword is refused by strict validators elsewhere). Nodes under `if`, `then`, `else` and `contains` are conditions, not declarations, and are not held to the property rule.",
+  "type": "object",
+  "required": ["$schema", "$id", "title", "description"],
+  "properties": {
+    "$schema": { "enum": ["http://json-schema.org/draft-07/schema#"] },
+    "$id": { "type": "string", "pattern": "^https://cognitive-delivery\\.github\\.io/contract/[0-9]+\\.x/[a-z-]+\\.schema\\.json$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [{ "$ref": "#/definitions/node" }],
+  "definitions": {
+    "stabilityComment": {
+      "type": "string",
+      "pattern": "^stability: (stable|development)(; deprecated: [^;]+)?(; .*)?$",
+      "description": "`stability: stable` is a promise under the additive rule; `stability: development` may change within the major and says so; `; deprecated: <replacement>` marks a field a writer should stop using, which is additive. Anything after another `; ` is free text."
+    },
+    "loose": {
+      "type": "object",
+      "propertyNames": { "not": { "enum": ["format"] } }
+    },
+    "node": {
+      "type": "object",
+      "propertyNames": { "not": { "enum": ["format"] } },
+      "properties": {
+        "properties": { "type": "object", "additionalProperties": { "$ref": "#/definitions/property" } },
+        "definitions": { "type": "object", "additionalProperties": { "$ref": "#/definitions/node" } },
+        "items": { "$ref": "#/definitions/node" },
+        "additionalProperties": { "anyOf": [{ "type": "boolean" }, { "$ref": "#/definitions/node" }] },
+        "propertyNames": { "$ref": "#/definitions/node" },
+        "anyOf": { "type": "array", "items": { "$ref": "#/definitions/node" } },
+        "allOf": { "type": "array", "items": { "$ref": "#/definitions/node" } },
+        "oneOf": { "type": "array", "items": { "$ref": "#/definitions/node" } },
+        "not": { "$ref": "#/definitions/node" },
+        "if": { "$ref": "#/definitions/loose" },
+        "then": { "$ref": "#/definitions/loose" },
+        "else": { "$ref": "#/definitions/loose" },
+        "contains": { "$ref": "#/definitions/loose" }
+      }
+    },
+    "property": {
+      "allOf": [
+        { "$ref": "#/definitions/node" },
+        {
+          "required": ["$comment"],
+          "properties": { "$comment": { "$ref": "#/definitions/stabilityComment" } }
+        }
+      ]
+    }
+  }
+}
