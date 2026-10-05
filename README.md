@@ -193,10 +193,14 @@ reject exactly the same artefacts and still produce different bytes for the same
 therefore be unable to verify a single one of each other's signatures. Everything looks correct
 right up until somebody else's hash arrives.
 
-`conformance/canonical-vectors.json` holds nine vectors with their expected byte strings and
-SHA-256 digests, plus two values that must *fail* to serialise. Supply a `canonicalise(value)`
-on your adapter and the runner checks them; omit it and the run reports **NOT CHECKED** rather
-than passing quietly. The rules themselves are section 7 of
+Canonical bytes are **RFC 8785 (JSON Canonicalization Scheme) after removing absent members**, so
+an implementation in another language can use an existing JCS library — Go, Java, Python, Rust,
+.NET and JavaScript all have one — rather than port the rules by hand. The corpus proves it either
+way: `conformance/jcs/` carries RFC 8785's own six reference vectors, and
+`conformance/canonical-vectors.json` nine more with their expected byte strings and SHA-256
+digests, plus two values that must *fail* to serialise. Supply a `canonicalise(value)` on your
+adapter and the runner checks all fifteen; omit it and the run reports **NOT CHECKED** rather than
+passing quietly. The restated rules are section 7 of
 [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) — the escape set is closed, keys sort
 by UTF-16 code unit, and an absent member is omitted rather than nulled.
 

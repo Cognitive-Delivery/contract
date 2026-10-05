@@ -56,6 +56,16 @@ tooling in this repository.
 
 ### Changed
 
+- **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes
+  are the RFC 8785 (JSON Canonicalization Scheme) serialisation after removing absent members, with
+  the field-by-field rules kept as an informative restatement. The restatement was already RFC 8785
+  (the reference canonicaliser passes RFC 8785's own vectors unchanged), so no existing hash or
+  signature changes; what changes is that an implementer in Go, Java, Python, Rust or .NET can use
+  an existing JCS library and check it against the corpus, which now carries RFC 8785's six
+  reference vectors (`conformance/jcs/`, vendored at a pinned commit under Apache-2.0 with its
+  source recorded) beside the contract's nine. Every `integer` field is bounded at 2^53 − 1 because
+  RFC 8785 presumes I-JSON; the ten `BOUND_TIGHTENED` findings are allow-listed with a fixture.
+
 - **The privacy properties are enforced by shape, not prose.** `request_hash`, `prompt_hash`,
   `steering_hash` and `content_hash` require a 64-character lower-case hex digest; `details` on the
   audit event and the CDI signal refuses by `propertyNames` any key whose segment is one of the

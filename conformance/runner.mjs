@@ -17,9 +17,10 @@
  *   3. A valid fixture round-trips **without losing unknown-but-valid fields**. That is what
  *      lets a newer writer and an older reader coexist, and it is the property most easily
  *      broken by a well-meaning field pick.
- *   4. Canonical bytes match, for an adapter that offers a `canonicalise`. Schema agreement is
- *      not interoperability: every hash in this contract is taken over canonical bytes, so two
- *      implementations that both pass 1 to 3 and disagree here cannot check each other's work.
+ *   4. Canonical bytes match, for an adapter that offers a `canonicalise`: the contract's nine
+ *      vectors and RFC 8785's own six (`jcs/`). Schema agreement is not interoperability: every
+ *      hash in this contract is taken over canonical bytes, so two implementations that both pass
+ *      1 to 3 and disagree here cannot check each other's work.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -109,6 +110,26 @@ async function checkCanonicalisation(adapter, failures) {
         `canonical/${vector.name}: expected ${JSON.stringify(vector.canonical)} (sha256 ${vector.sha256}), `
         + `got ${JSON.stringify(bytes)} (sha256 ${digest}) — ${vector.why}`,
       );
+    }
+  }
+
+  // RFC 8785's own test suite, vendored at a pinned commit (see jcs/SOURCE). Section 7 says
+  // canonical bytes ARE RFC 8785 after undefined-removal, so an implementation that passes the
+  // contract's nine vectors and fails these has found a disagreement the contract must hear about.
+  const jcsDir = resolve(here, 'jcs');
+  for (const file of (await readdir(join(jcsDir, 'input'))).filter((n) => n.endsWith('.json')).sort()) {
+    const value = JSON.parse(await readFile(join(jcsDir, 'input', file), 'utf8'));
+    const expectedHex = (await readFile(join(jcsDir, 'outhex', file.replace(/\.json$/, '.txt')), 'utf8')).replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+    let bytes;
+    try {
+      bytes = adapter.canonicalise(value);
+    } catch (error) {
+      failures.push(`canonical/jcs/${file}: threw (${error.message})`);
+      continue;
+    }
+    const gotHex = Buffer.from(String(bytes), 'utf8').toString('hex');
+    if (gotHex !== expectedHex) {
+      failures.push(`canonical/jcs/${file}: bytes differ from RFC 8785's reference output. Got ${JSON.stringify(bytes)}.`);
     }
   }
 

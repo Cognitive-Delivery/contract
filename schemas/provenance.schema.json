@@ -62,7 +62,8 @@
             3,
             4
           ],
-          "description": "How much governance this workspace has adopted. Closed: the tiers are the framework."
+          "description": "How much governance this workspace has adopted. Closed: the tiers are the framework.",
+          "maximum": 9007199254740991
         },
         "prompt_hash": {
           "type": "string",
@@ -116,7 +117,8 @@
                 "type": "string"
               },
               "line": {
-                "type": "integer"
+                "type": "integer",
+                "maximum": 9007199254740991
               }
             },
             "additionalProperties": true

@@ -48,10 +48,12 @@ repository loses a record it depends on, and it is reviewed like a schema change
 to disagree with it. If a change makes the two say different things, one of them is wrong and
 the pull request has to say which.
 
-Section 7 — canonical bytes — is the part to be most careful with. Every hash in this contract
-is taken over those bytes, so a change there silently invalidates every signature anyone has
-ever produced. Any change to it needs a matching change to `conformance/canonical-vectors.json`
-and, realistically, a major version.
+Section 7 — canonical bytes — does not change within a major version. Every hash in this
+contract is taken over those bytes, so a change there silently invalidates every signature anyone
+has ever produced. Since 1.1 the section says canonical bytes are RFC 8785 after
+undefined-removal, and the corpus carries RFC 8785's own vectors (`conformance/jcs/`, vendored at
+a pinned commit with its licence and source recorded) beside the contract's nine; a pull request
+that touches §7, `canonical-vectors.json` or `jcs/` is a 2.0 pull request, whatever else it says.
 
 ## Changing a schema
 
