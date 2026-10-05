@@ -56,7 +56,7 @@
     "check": "node ./generate-contract-types.mjs --check"
   },
   "cdfContract": {
-    "schemaSetVersion": "1.0.0",
+    "schemaSetVersion": "1.0.2",
     "compatibility": "Within 1.x, changes are additive only. New optional fields are allowed. Renaming, removing, narrowing or redefining a field requires 2.0.0 and a documented migration."
   },
   "devDependencies": {

@@ -38,6 +38,30 @@ tooling in this repository.
   which every finding is seen to fire, every additive change is seen to pass, and the allow-list is
   seen to refuse an entry without evidence.
 
+- **Three checks the contract's own CI now holds** (`conformance/schema-checks.mjs`, in `npm test`):
+  every schema compiles under Ajv strict mode; the granted manifest inlined in
+  `agent-lease.schema.json` is byte-for-byte the manifest schema dereferenced (this check used to
+  live only in the consuming harness, so the contract could not fail on its own drift); and
+  `package.json`'s `cdfContract.schemaSetVersion` matches the package version.
+
+- **A regex-portability job.** `tooling/regex-portability` compiles every `pattern` in every schema
+  with Go's `regexp` (RE2: no lookahead, no backreferences), because Go validators use it
+  unconditionally and a pattern RE2 rejects is a schema set a Go implementation cannot load. The
+  job is expected to fail until the path patterns are rewritten without lookahead in the next
+  change, and is made a required check then.
+
+### Changed
+
+- **The push baseline is the pushed-from commit.** The additive guard compared a push against
+  `HEAD^`, so a three-commit push whose first commit broke the rule was compared only against its
+  own second commit and passed. It now compares against `github.event.before`, falling back to the
+  merge base with `main` on a brand-new branch. Pull requests still compare against the base branch.
+
+### Fixed
+
+- **`package.json` said `schemaSetVersion` 1.0.0.** It had been stale since 1.0.1, and the version
+  currency check added in 1.0.2 did not read it. It now reads it.
+
 ## [1.0.2] — 2026-09-19
 
 ### Fixed

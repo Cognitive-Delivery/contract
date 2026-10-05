@@ -30,8 +30,10 @@ jobs:
 
       - run: npm ci
 
-      # Every valid fixture accepted, every invalid one rejected with a written reason,
-      # and an unknown field surviving a round trip.
+      # Every valid fixture accepted, every invalid one rejected with a written reason, an
+      # unknown field surviving a round trip, the canonical-bytes vectors, every schema
+      # compiling under Ajv strict mode, the granted-manifest copy identical to its source,
+      # the version stated consistently, and the guard's own scenarios.
       - run: npm test
 
   compatibility:
@@ -51,17 +53,44 @@ jobs:
 
       - run: npm ci
 
-      # On a pull request the baseline is the branch being merged into. On a push to main it
-      # is the previous commit. Either way the lock must also be current, or there is no record
-      # of the shape this change started from.
+      # On a pull request the baseline is the branch being merged into. On a push it is the
+      # commit the push started from (`github.event.before`), not HEAD^: a three-commit push
+      # whose first commit broke the rule would otherwise be compared only against its own
+      # second commit and pass. When `before` is the zero SHA (a brand-new branch), the
+      # baseline is the merge base with main. Either way the lock must also be current, or
+      # there is no record of the shape this change started from.
       - name: Compare against the base
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
             node ./check-additive.mjs --baseline-ref "origin/${{ github.base_ref }}"
           else
-            node ./check-additive.mjs --baseline-ref HEAD^
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              git fetch --no-tags origin main
+              BEFORE="$(git merge-base HEAD origin/main)"
+              echo "New branch: comparing against the merge base with main ($BEFORE)."
+            else
+              echo "Comparing against the pushed-from commit $BEFORE."
+            fi
+            node ./check-additive.mjs --baseline-ref "$BEFORE"
           fi
+
+  regex-portability:
+    name: regex portability (RE2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: false
+
+      # Every `pattern` in every schema must compile under RE2, which has no lookahead.
+      # Go validators use it unconditionally; a pattern that fails here fails there.
+      - run: go run . ../../schemas
+        working-directory: tooling/regex-portability
 
   line-endings:
     name: line endings
