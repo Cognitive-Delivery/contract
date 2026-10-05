@@ -6,7 +6,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -15,7 +15,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -33,7 +33,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -42,7 +42,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -60,7 +60,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -69,7 +69,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -78,7 +78,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#check.worker",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -87,7 +87,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#contributes.docPacks[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -96,7 +96,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -105,7 +105,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -114,7 +114,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#sourceGitSubdir.path",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -775,6 +775,141 @@
       "reason": "A credential-free string (the definition every header and env value in the plugin schemas refers to): the seven shapes the evidence sanitiser refuses (private key, AWS key, GitHub token, OpenAI key, Slack token, literal bearer, JWT). No real manifest or marketplace carries one; see fixtures/evidence/2026-10-05-plugin-components.md.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/plugin-manifest.mcp-env-github-token.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "details.*",
+      "after": "maxLength=200",
+      "reason": "A details string value is at most 200 characters, the writer own cap; the longest real value is 200; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.details-value-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "event_type",
+      "after": "pattern=^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "reason": "SPEC 6.2 (1.2): event_type is two or more lower-case dotted segments, at most 120 characters; the writer first segments are reserved and other writers use a vendor name. All 33,608 real records conform; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.uppercase-event-type.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "event_type",
+      "after": "maxLength=120",
+      "reason": "SPEC 6.2 (1.2): event_type is two or more lower-case dotted segments, at most 120 characters; the writer first segments are reserved and other writers use a vendor name. All 33,608 real records conform; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.empty-event-type.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "reasoning",
+      "after": "not=[\"\\\\p{Cc}\"]",
+      "reason": "DR-183 D4: no control character in summary or reasoning; the writer replaces them with a space and zero real records carry one; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.control-char-summary.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "summary",
+      "after": "not=[\"\\\\p{Cc}\"]",
+      "reason": "DR-183 D4: no control character in summary or reasoning; the writer replaces them with a space and zero real records carry one; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.control-char-summary.json"
+    },
+    {
+      "finding": "TYPE_CHANGED",
+      "schema": "cdi-assessment.schema.json",
+      "path": "dimensions[].score",
+      "after": "type=\"integer\"",
+      "reason": "A dimension score is a whole number 1 to 5; both real assessments carry integers; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-assessment.fractional-score.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-assessment.schema.json",
+      "path": "schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "sealed[]",
+      "after": "pattern=^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+      "reason": "A sealed path is dotted lower-case segments; the real config seals nothing yet and the populated fixture conforms; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/config-core.sealed-bad-path.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.schema_version",
+      "after": "pattern=^\\d+\\.\\d+$",
+      "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major. Every real record (33,608 audit, 19,231 signals, 995 provenance, 2 assessments, 6 lease records) is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.spec",
+      "after": "pattern=^[a-z0-9][a-z0-9-]{0,79}$",
+      "reason": "A provenance spec is a slug of at most 80 characters; all 263 real spec directories and 995 provenance records conform; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/provenance.spec-traversal.json"
     }
   ]
 }

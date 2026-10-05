@@ -1,0 +1,1 @@
+`actor.runtime_agent` is `copilot`, which is not in the closed identity vocabulary (`github-copilot` is). `runtime` stays open for labels; `runtime_agent` is the identity a lease keys on, and an identity outside the vocabulary keys to nothing.

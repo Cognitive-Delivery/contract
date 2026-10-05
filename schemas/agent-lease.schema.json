@@ -19,10 +19,8 @@
       "properties": {
         "schema_version": {
           "type": "string",
-          "enum": [
-            "1.0"
-          ],
-          "description": "Contract version this manifest was written against."
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
         },
         "agent": {
           "type": "object",
@@ -397,10 +395,8 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "enum": [
-        "1.0"
-      ],
-      "description": "Contract version this lease was written against."
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
     },
     "lease_id": {
       "type": "string",

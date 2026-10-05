@@ -25,11 +25,13 @@
       "properties": {
         "schema_version": {
           "type": "string",
-          "description": "Contract version this record was written against. Required: a conformant writer always writes it. A reader meeting a pre-contract artefact without it MAY read it as 1.0; it must not emit one."
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against. Required: a conformant writer always writes it. A reader meeting a pre-contract artefact without it MAY read it as 1.0; it must not emit one. Written as `major.minor`."
         },
         "spec": {
           "type": "string",
-          "description": "Slug of the governed spec this artefact belongs to."
+          "pattern": "^[a-z0-9][a-z0-9-]{0,79}$",
+          "description": "Slug of the governed spec this artefact belongs to: lower-case letters, digits and hyphens, at most 80 characters. It names a directory, so a path form is refused; every one of the reference deployment's 263 specs already conformed."
         },
         "phase": {
           "type": "string",

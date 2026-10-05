@@ -1,0 +1,1 @@
+A sealed path of `Review_Policy..reviewer`: upper case and an empty segment. A sealed path is dotted lower-case segments that name a field; one that names nothing seals nothing, which is the quiet way a control stops existing.

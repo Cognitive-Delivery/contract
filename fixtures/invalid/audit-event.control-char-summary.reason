@@ -1,0 +1,1 @@
+`summary` carries a BEL control character. The journal is read by terminals and viewers; a control character in a permanent line is at best noise and at worst a terminal escape. The reference writer replaces every control character with a space before write; the schema refuses `\p{Cc}` outright.

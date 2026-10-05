@@ -1,0 +1,1 @@
+`spec` is `../../etc`. The slug names a directory under `.cdf/specs/`; a path form would point a reader outside it. Slugs are lower-case letters, digits and hyphens, at most 80 characters, which every real spec already is.
