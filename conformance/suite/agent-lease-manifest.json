@@ -1,0 +1,2664 @@
+[
+  {
+    "description": "Agent Lease Manifest (agent-lease-manifest.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease-manifest.schema.json",
+      "title": "Agent Lease Manifest",
+      "description": "What an agent DECLARES it needs before the kernel lets it run. The manifest is the declared half of a two-part record: the agent (or the bridge or harness presenting on its behalf) declares tools, paths, hosts, commands and budget, and the kernel answers with an Agent Lease whose `manifest` is the GRANTED half, narrowed to what the parent lease and the workspace policy allow. Declared and granted have the same shape on purpose, so the narrowing diff is a plain comparison. Rule 7 of the harness: no manifest, no lease; no lease, no connectivity. A manifest the kernel cannot narrow to a non-empty grant is refused, and the refusal is recorded. Paths are workspace-relative POSIX globs; hosts are lower-case DNS names (IPv4 literals and localhost included) with an optional single leading wildcard label; commands are executable basenames; tools are identifiers of at most 128 characters and never `*`.",
+      "definitions": {
+        "model": {
+          "type": "object",
+          "description": "The model behind the agent, for attribution. Never a prompt, never a key.",
+          "required": [
+            "vendor",
+            "family"
+          ],
+          "properties": {
+            "vendor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "family": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "agent": {
+          "type": "object",
+          "description": "Who is asking. `name` is a label for the cockpit; `kind` says how the harness runs it; `runtime_agent` is the existing closed agent vocabulary so a lease keys to the same identity every audit event already carries.",
+          "required": [
+            "name",
+            "kind",
+            "runtime_agent"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Display label for the cockpit, at most 120 characters: the worker role, the session, the plugin. Not an identity, and never a person's name, email address or git identity; this value is recorded in an audit journal that is retained indefinitely.",
+              "maxLength": 120
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "native",
+                "delegated-cli",
+                "plugin",
+                "external"
+              ],
+              "description": "How the harness runs this agent. native: inside the kernel's own process. delegated-cli: a spawned coding CLI. plugin: loaded into the host. external: presented over a bridge from outside the harness."
+            },
+            "runtime_agent": {
+              "type": "string",
+              "enum": [
+                "codex-cli",
+                "claude-code",
+                "gemini-code-assist",
+                "github-copilot",
+                "cdf-native",
+                "unknown"
+              ],
+              "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell. `cdf-native` (schema set 1.0, additive) is the harness's own native turn loop: the kernel drives a model provider directly, with no vendor CLI or SDK."
+            },
+            "provider": {
+              "type": "string",
+              "description": "The organisation or product providing the agent, when it differs from the runtime."
+            },
+            "model": {
+              "$ref": "#/definitions/model"
+            },
+            "harness_version": {
+              "type": "string",
+              "description": "Version of the harness that generated or presented this manifest."
+            }
+          },
+          "additionalProperties": true
+        },
+        "intent": {
+          "type": "object",
+          "description": "Why the agent is running. `purpose` is required and non-empty: a manifest with no stated purpose is refused.",
+          "required": [
+            "purpose"
+          ],
+          "properties": {
+            "spec_slug": {
+              "type": "string",
+              "description": "The governed spec this run serves, when there is one."
+            },
+            "task_id": {
+              "type": "string",
+              "description": "The task within that spec, when there is one."
+            },
+            "purpose": {
+              "type": "string",
+              "minLength": 1,
+              "description": "One sentence of intent, at most 500 characters. Recorded in the audit journal, so no prompt and no content.",
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": true
+        },
+        "allow": {
+          "type": "object",
+          "description": "What the agent asks to be allowed. Every list is required and may be empty; an empty `tools` list in a GRANTED manifest is a lease that opens nothing, which is why the kernel refuses rather than grants it. Granted lists are always a subset of the parent's.",
+          "required": [
+            "tools",
+            "read_paths",
+            "write_paths",
+            "hosts",
+            "commands"
+          ],
+          "properties": {
+            "tools": {
+              "type": "array",
+              "description": "Governed tool names the agent may call. An empty list in a GRANTED manifest is refused (SPEC §5.2 R2).",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                "description": "A governed tool name the agent may call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+              }
+            },
+            "read_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              }
+            },
+            "write_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              }
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hosts the agent may reach. `*.example.com` matches `api.example.com` and not `example.com`; matching a bare parent domain requires listing it. Enforced by the egress proxy once it keys off the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+              }
+            },
+            "commands": {
+              "type": "array",
+              "description": "Executables the agent may run, by basename.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable the agent may run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+              }
+            },
+            "tool_args": {
+              "type": "object",
+              "x-stability": "development",
+              "description": "DECLARED argument constraints per tool (schema set 1.2, development stability): tool name to a JSON Schema the agent proposes for its own calls to that tool, after Progent's argument-schema policies. A declaration, not a grant: in 1.x an issuer MAY omit it from the granted manifest and MUST NOT treat it as granted authority, because the reference gate does not yet evaluate argument schemas and a narrowing rule without an enforcing gate is a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it. It becomes a rule when a gate enforces it.",
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "deny": {
+          "type": "object",
+          "description": "What the agent must not do even if `allow` would otherwise permit it. Granted deny lists are the UNION of the declared and the parent's, so a child can never shed a parent's refusal.",
+          "required": [
+            "commands",
+            "paths",
+            "hosts"
+          ],
+          "properties": {
+            "commands": {
+              "type": "array",
+              "description": "Executable names refused outright, for example sudo, su, docker, ssh, curl, wget, launchctl, systemctl.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable refused outright. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+              }
+            },
+            "paths": {
+              "type": "array",
+              "description": "POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself. A denial MAY be home-relative (`~/.ssh/**`), because refusing a path outside the workspace is meaningful even though no allow could grant it; a leading `/`, any `..` segment and any backslash are refused.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              }
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hostnames refused outright.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "budget": {
+          "type": "object",
+          "description": "Ceilings. Every field is optional and non-negative; an absent field means the parent's remaining budget applies. A child's granted budget is clamped to its parent's remaining, `depth` is decremented per generation and `fan_out` is decremented on the parent as each child is issued.",
+          "properties": {
+            "steps": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tool calls or turns.",
+              "maximum": 9007199254740991
+            },
+            "wall_clock_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum lifetime in milliseconds; the lease expires when it is spent.",
+              "maximum": 9007199254740991
+            },
+            "tokens": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum model tokens, input plus output.",
+              "maximum": 9007199254740991
+            },
+            "cost_usd": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum spend in US dollars."
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many generations of child lease may be issued beneath this one. Zero means no children. At most 16: the reference root policy allows 4, and a declaration above the ceiling is nonsense rather than something to clamp.",
+              "maximum": 16
+            },
+            "fan_out": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many child leases may be live under this one at once. At most 256: the reference root policy allows 8.",
+              "maximum": 256
+            }
+          },
+          "additionalProperties": true
+        },
+        "attestation": {
+          "type": "object",
+          "description": "Who vouches for the declaration. Optional: an agent presenting its own manifest has nothing to sign with, and the bridge or harness signs on its behalf.",
+          "required": [
+            "issuer"
+          ],
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "bridge",
+                "harness",
+                "plugin"
+              ],
+              "description": "Which party produced the declaration."
+            },
+            "signature": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign: 64 hex characters, which is HMAC-SHA256 like the lease's own signature. An odd-length or longer value is not a signature this contract defines."
+            },
+            "key_fingerprint": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Fingerprint of the key that produced `signature`. Never the key."
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "type": "object",
+      "required": [
+        "schema_version",
+        "agent",
+        "intent",
+        "allow",
+        "deny",
+        "budget",
+        "approvals"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+        },
+        "agent": {
+          "$ref": "#/definitions/agent"
+        },
+        "parent_lease_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "description": "The lease this manifest is presented under, when it is a child. A root manifest has none and is narrowed against the workspace policy instead."
+        },
+        "intent": {
+          "$ref": "#/definitions/intent"
+        },
+        "allow": {
+          "$ref": "#/definitions/allow"
+        },
+        "deny": {
+          "$ref": "#/definitions/deny"
+        },
+        "budget": {
+          "$ref": "#/definitions/budget"
+        },
+        "approvals": {
+          "type": "array",
+          "description": "Action names that need a human before the agent may perform them, under the same identifier rule as tool names. Required and may be empty.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+            "description": "An action that needs a human first; the same identifier rule as a tool name. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+          }
+        },
+        "attestation": {
+          "$ref": "#/definitions/attestation"
+        }
+      },
+      "additionalProperties": true
+    },
+    "tests": [
+      {
+        "description": "agent-lease-manifest.deny-home-relative validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "deny home-relative",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Carry a home-relative deny path, which §4.4 permits."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              "~/.ssh/**",
+              ".cdf/runtime/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.identity-forms validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "identity forms",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Carry every host, command, tool and approval form the identity rules admit."
+          },
+          "allow": {
+            "tools": [
+              "cdf_begin_work",
+              "server/tool",
+              "mcp:server:tool",
+              "Tool.Name-1"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "127.0.0.1",
+              "localhost",
+              "*.example.com",
+              "*",
+              "example.com",
+              "api-v2.internal.example",
+              "xn--bcher-kva.example"
+            ],
+            "commands": [
+              "git",
+              "npm",
+              "python3.12",
+              "my-tool_v2",
+              "g++"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su"
+            ],
+            "paths": [],
+            "hosts": [
+              "evil.example",
+              "*.tracker.example"
+            ]
+          },
+          "budget": {},
+          "approvals": [
+            "phase.advance",
+            "external.write"
+          ]
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.minimal validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "native",
+            "runtime_agent": "unknown"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [],
+            "read_paths": [],
+            "write_paths": [],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.native validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "native chat turn (ollama)",
+            "kind": "native",
+            "runtime_agent": "cdf-native",
+            "provider": "ollama",
+            "model": {
+              "vendor": "ollama",
+              "family": "llama3.1"
+            },
+            "harness_version": "2.67.0"
+          },
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Governed chat turn for spec demo task 1.1 (InProgress), run by the native loop."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_present_manifest"
+            ],
+            "read_paths": [
+              "**"
+            ],
+            "write_paths": [
+              "**"
+            ],
+            "hosts": [
+              "github.com",
+              "127.0.0.1"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/runtime/lease-signing.key"
+            ],
+            "hosts": []
+          },
+          "budget": {
+            "steps": 50,
+            "tokens": 200000,
+            "cost_usd": 1,
+            "wall_clock_ms": 600000,
+            "depth": 1,
+            "fan_out": 1
+          },
+          "approvals": [],
+          "attestation": {
+            "issuer": "harness"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.populated validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.tool-args validates",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "tool args",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Declare argument constraints for two tools."
+          },
+          "allow": {
+            "tools": [
+              "cdf_begin_work",
+              "server/tool",
+              "mcp:server:tool",
+              "Tool.Name-1"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "127.0.0.1",
+              "localhost",
+              "*.example.com",
+              "*",
+              "example.com",
+              "api-v2.internal.example",
+              "xn--bcher-kva.example"
+            ],
+            "commands": [
+              "git",
+              "npm",
+              "python3.12",
+              "my-tool_v2",
+              "g++"
+            ],
+            "tool_args": {
+              "cdf_write_artefact": {
+                "type": "object",
+                "properties": {
+                  "artefact": {
+                    "enum": [
+                      "requirements"
+                    ]
+                  }
+                }
+              },
+              "server/tool": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su"
+            ],
+            "paths": [],
+            "hosts": [
+              "evil.example",
+              "*.tracker.example"
+            ]
+          },
+          "budget": {},
+          "approvals": [
+            "phase.advance",
+            "external.write"
+          ]
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease-manifest.allow-missing-hosts is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.approval-star is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": [
+            "*"
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.attestation-odd-signature is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.attestation-unknown-issuer is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "ci"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.budget-above-2-53 is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Implement task 1.1 within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {
+            "tokens": 9007199254740992
+          },
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.command-args is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": [
+              "git status"
+            ]
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.command-path is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": [
+              "/usr/bin/git"
+            ]
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.command-shell-operator is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": [
+              "git;rm"
+            ]
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.deny-command-path is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [
+              "/usr/bin/sudo"
+            ],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.deny-host-scheme is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": [
+              "http://evil.example"
+            ]
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.deny-missing-hosts is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.depth-above-ceiling is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 17,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-path is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "api.example.com/v1"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-port is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "api.example.com:443"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-scheme is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "https://api.example.com"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-space is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "api example.com"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-trailing-dot is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "example.com."
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-uppercase is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "API.example.com"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.host-wildcard-interior is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "api.*.example.com"
+            ],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.missing-purpose is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "native",
+            "runtime_agent": "unknown"
+          },
+          "intent": {},
+          "allow": {
+            "tools": [],
+            "read_paths": [],
+            "write_paths": [],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.model-without-family is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.name-too-long is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.negative-budget is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "native",
+            "runtime_agent": "unknown"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [],
+            "read_paths": [],
+            "write_paths": [],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {
+            "steps": -1,
+            "cost_usd": -0.5
+          },
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.purpose-too-long is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.schema-version-major-only is refused",
+        "data": {
+          "schema_version": "1",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.tool-args-bad-key is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "tool args",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Declare argument constraints for two tools."
+          },
+          "allow": {
+            "tools": [
+              "cdf_begin_work",
+              "server/tool",
+              "mcp:server:tool",
+              "Tool.Name-1"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "127.0.0.1",
+              "localhost",
+              "*.example.com",
+              "*",
+              "example.com",
+              "api-v2.internal.example",
+              "xn--bcher-kva.example"
+            ],
+            "commands": [
+              "git",
+              "npm",
+              "python3.12",
+              "my-tool_v2",
+              "g++"
+            ],
+            "tool_args": {
+              "*": {
+                "type": "object"
+              }
+            }
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su"
+            ],
+            "paths": [],
+            "hosts": [
+              "evil.example",
+              "*.tracker.example"
+            ]
+          },
+          "budget": {},
+          "approvals": [
+            "phase.advance",
+            "external.write"
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.tool-args-not-object is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "tool args",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Declare argument constraints for two tools."
+          },
+          "allow": {
+            "tools": [
+              "cdf_begin_work",
+              "server/tool",
+              "mcp:server:tool",
+              "Tool.Name-1"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [
+              "127.0.0.1",
+              "localhost",
+              "*.example.com",
+              "*",
+              "example.com",
+              "api-v2.internal.example",
+              "xn--bcher-kva.example"
+            ],
+            "commands": [
+              "git",
+              "npm",
+              "python3.12",
+              "my-tool_v2",
+              "g++"
+            ],
+            "tool_args": {
+              "cdf_write_artefact": "required: artefact"
+            }
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su"
+            ],
+            "paths": [],
+            "hosts": [
+              "evil.example",
+              "*.tracker.example"
+            ]
+          },
+          "budget": {},
+          "approvals": [
+            "phase.advance",
+            "external.write"
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.tool-space-inside is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf read"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.tool-star is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "*"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.tool-whitespace is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              " "
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/**"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.unknown-kind is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "daemon",
+            "runtime_agent": "unknown"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [],
+            "read_paths": [],
+            "write_paths": [],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.unknown-runtime-agent is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "implementer worker 2",
+            "kind": "delegated-cli",
+            "runtime_agent": "copilot",
+            "provider": "anthropic",
+            "model": {
+              "vendor": "anthropic",
+              "family": "claude",
+              "version": "5"
+            },
+            "harness_version": "2.67.0"
+          },
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "intent": {
+            "spec_slug": "demo",
+            "task_id": "1.1",
+            "purpose": "Implement task 1.1 of demo within its file scope."
+          },
+          "allow": {
+            "tools": [
+              "cdf_write_artefact",
+              "cdf_update_task_status",
+              "cdf_record_provenance"
+            ],
+            "read_paths": [
+              "**",
+              "./docs/**",
+              "src/./lib/**",
+              "%2e%2e/not-traversal/**"
+            ],
+            "write_paths": [
+              "src/demo/**",
+              "test/unit/demo*.test.ts"
+            ],
+            "hosts": [
+              "api.anthropic.com"
+            ],
+            "commands": [
+              "claude"
+            ]
+          },
+          "deny": {
+            "commands": [
+              "sudo",
+              "su",
+              "docker",
+              "ssh",
+              "curl",
+              "wget",
+              "launchctl",
+              "systemctl"
+            ],
+            "paths": [
+              ".cdf/audit/**",
+              ".cdf/runtime/**",
+              ".env",
+              "~/.ssh/**",
+              "~/.aws/**"
+            ],
+            "hosts": [
+              "*.internal.example"
+            ]
+          },
+          "budget": {
+            "steps": 200,
+            "wall_clock_ms": 900000,
+            "tokens": 400000,
+            "cost_usd": 4.5,
+            "depth": 1,
+            "fan_out": 0
+          },
+          "approvals": [
+            "external.write",
+            "phase.advance"
+          ],
+          "attestation": {
+            "issuer": "bridge",
+            "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+            "key_fingerprint": "sha256:3b1f0e"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-backslash-drive is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "C:\\Users\\x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-backslash-traversal is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "..\\x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-drive-letter is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "C:/Users/x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-embedded-backslash-traversal is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "src/..\\x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-escapes is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "native",
+            "runtime_agent": "unknown"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [],
+            "read_paths": [],
+            "write_paths": [
+              "../x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-home is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "~/x"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease-manifest.write-path-tilde is refused",
+        "data": {
+          "schema_version": "1.0",
+          "agent": {
+            "name": "reviewer",
+            "kind": "delegated-cli",
+            "runtime_agent": "claude-code"
+          },
+          "intent": {
+            "purpose": "Review the diff for task 1.1."
+          },
+          "allow": {
+            "tools": [
+              "cdf_read_code_map"
+            ],
+            "read_paths": [
+              "src/**"
+            ],
+            "write_paths": [
+              "~"
+            ],
+            "hosts": [],
+            "commands": []
+          },
+          "deny": {
+            "commands": [],
+            "paths": [],
+            "hosts": []
+          },
+          "budget": {},
+          "approvals": []
+        },
+        "valid": false
+      }
+    ]
+  }
+]

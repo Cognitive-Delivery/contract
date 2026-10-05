@@ -18,6 +18,7 @@ import { runLayoutCheck } from './layout-check.mjs';
 import { idFor } from './ids.mjs';
 import { changelogSection } from './changelog.mjs';
 import { runTraceabilityCheck } from './traceability-check.mjs';
+import { staleSuiteFiles } from './suite-export.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -133,7 +134,15 @@ console.log(layout.checked
 const trace = await runTraceabilityCheck();
 console.log(`Traceability: ${trace.clauseCount} SPEC clauses mapped, ${trace.excluded} excluded with a reason, ${trace.failures.length} failure(s).`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...trace.failures];
+// The suite other validators run (conformance/suite/, official JSON-Schema-Test-Suite format) is
+// the corpus this runner just ran, or it is stale and says so.
+const stale = await staleSuiteFiles();
+console.log(stale.length === 0
+  ? 'Suite export: conformance/suite/ is current with the schemas and fixtures.'
+  : `Suite export: ${stale.length} stale file(s) — run \`npm run lock\`.`);
+const suiteFailures = stale.map((f) => `suite: conformance/suite/${f} is stale; run \`npm run lock\` and commit it.`);
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...trace.failures, ...suiteFailures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

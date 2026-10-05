@@ -1,0 +1,921 @@
+[
+  {
+    "description": "Agent Lease (agent-lease.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease.schema.json",
+      "title": "Agent Lease",
+      "description": "The grant envelope the kernel returns for an accepted Agent Lease Manifest. The lease id is the only key that opens anything: the tool gate, the dispatcher, and later the egress proxy and process supervisor all key off it. `manifest` is the GRANTED manifest after narrowing; `declared_hash` is the SHA-256 of the declared manifest's canonical bytes, so the narrowing diff can be reconstructed from the two. `signature` is HMAC-SHA256, lower-case hex, over the canonical bytes of every field except `signature`; `key_fingerprint` names the key without revealing it. A lease with a parent is a child whose grant is a subset of the parent's; that containment is the registry's rule, not this schema's, because a schema cannot see the parent.",
+      "definitions": {
+        "grantedManifest": {
+          "description": "The GRANTED manifest: the same shape as the Agent Lease Manifest the agent declared, after narrowing. This is a dereferenced copy of agent-lease-manifest.schema.json, inlined because the contract keeps every schema self-contained (a reader compiles each file on its own, with no cross-file references). A test in the consumer asserts the copy is identical to the source.",
+          "type": "object",
+          "required": [
+            "schema_version",
+            "agent",
+            "intent",
+            "allow",
+            "deny",
+            "budget",
+            "approvals"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+$",
+              "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+            },
+            "agent": {
+              "type": "object",
+              "description": "Who is asking. `name` is a label for the cockpit; `kind` says how the harness runs it; `runtime_agent` is the existing closed agent vocabulary so a lease keys to the same identity every audit event already carries.",
+              "required": [
+                "name",
+                "kind",
+                "runtime_agent"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Display label for the cockpit, at most 120 characters: the worker role, the session, the plugin. Not an identity, and never a person's name, email address or git identity; this value is recorded in an audit journal that is retained indefinitely.",
+                  "maxLength": 120
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "native",
+                    "delegated-cli",
+                    "plugin",
+                    "external"
+                  ],
+                  "description": "How the harness runs this agent. native: inside the kernel's own process. delegated-cli: a spawned coding CLI. plugin: loaded into the host. external: presented over a bridge from outside the harness."
+                },
+                "runtime_agent": {
+                  "type": "string",
+                  "enum": [
+                    "codex-cli",
+                    "claude-code",
+                    "gemini-code-assist",
+                    "github-copilot",
+                    "cdf-native",
+                    "unknown"
+                  ],
+                  "description": "The closed agent identity vocabulary. `unknown` is a first-class value, never an error: the kernel looked and could not tell. `cdf-native` (schema set 1.0, additive) is the harness's own native turn loop: the kernel drives a model provider directly, with no vendor CLI or SDK."
+                },
+                "provider": {
+                  "type": "string",
+                  "description": "The organisation or product providing the agent, when it differs from the runtime."
+                },
+                "model": {
+                  "type": "object",
+                  "description": "The model behind the agent, for attribution. Never a prompt, never a key.",
+                  "required": [
+                    "vendor",
+                    "family"
+                  ],
+                  "properties": {
+                    "vendor": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "family": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "harness_version": {
+                  "type": "string",
+                  "description": "Version of the harness that generated or presented this manifest."
+                }
+              },
+              "additionalProperties": true
+            },
+            "parent_lease_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "description": "The lease this manifest is presented under, when it is a child. A root manifest has none and is narrowed against the workspace policy instead."
+            },
+            "intent": {
+              "type": "object",
+              "description": "Why the agent is running. `purpose` is required and non-empty: a manifest with no stated purpose is refused.",
+              "required": [
+                "purpose"
+              ],
+              "properties": {
+                "spec_slug": {
+                  "type": "string",
+                  "description": "The governed spec this run serves, when there is one."
+                },
+                "task_id": {
+                  "type": "string",
+                  "description": "The task within that spec, when there is one."
+                },
+                "purpose": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "One sentence of intent, at most 500 characters. Recorded in the audit journal, so no prompt and no content.",
+                  "maxLength": 500
+                }
+              },
+              "additionalProperties": true
+            },
+            "allow": {
+              "type": "object",
+              "description": "What the agent asks to be allowed. Every list is required and may be empty; an empty `tools` list in a GRANTED manifest is a lease that opens nothing, which is why the kernel refuses rather than grants it. Granted lists are always a subset of the parent's.",
+              "required": [
+                "tools",
+                "read_paths",
+                "write_paths",
+                "hosts",
+                "commands"
+              ],
+              "properties": {
+                "tools": {
+                  "type": "array",
+                  "description": "Governed tool names the agent may call. An empty list in a GRANTED manifest is refused (SPEC §5.2 R2).",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                    "description": "A governed tool name the agent may call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+                  }
+                },
+                "read_paths": {
+                  "type": "array",
+                  "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "allOf": [
+                      {
+                        "not": {
+                          "pattern": "^/"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "(^|/)\\.\\.(/|$)"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "^~"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "^[A-Za-z]:"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "\\\\"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "write_paths": {
+                  "type": "array",
+                  "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "allOf": [
+                      {
+                        "not": {
+                          "pattern": "^/"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "(^|/)\\.\\.(/|$)"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "^~"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "^[A-Za-z]:"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "\\\\"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "hosts": {
+                  "type": "array",
+                  "description": "Hosts the agent may reach. `*.example.com` matches `api.example.com` and not `example.com`; matching a bare parent domain requires listing it. Enforced by the egress proxy once it keys off the lease.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253,
+                    "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                    "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+                  }
+                },
+                "commands": {
+                  "type": "array",
+                  "description": "Executables the agent may run, by basename.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                    "description": "An executable the agent may run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+                  }
+                },
+                "tool_args": {
+                  "type": "object",
+                  "x-stability": "development",
+                  "description": "DECLARED argument constraints per tool (schema set 1.2, development stability): tool name to a JSON Schema the agent proposes for its own calls to that tool, after Progent's argument-schema policies. A declaration, not a grant: in 1.x an issuer MAY omit it from the granted manifest and MUST NOT treat it as granted authority, because the reference gate does not yet evaluate argument schemas and a narrowing rule without an enforcing gate is a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it. It becomes a rule when a gate enforces it.",
+                  "propertyNames": {
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
+                  }
+                }
+              },
+              "additionalProperties": true
+            },
+            "deny": {
+              "type": "object",
+              "description": "What the agent must not do even if `allow` would otherwise permit it. Granted deny lists are the UNION of the declared and the parent's, so a child can never shed a parent's refusal.",
+              "required": [
+                "commands",
+                "paths",
+                "hosts"
+              ],
+              "properties": {
+                "commands": {
+                  "type": "array",
+                  "description": "Executable names refused outright, for example sudo, su, docker, ssh, curl, wget, launchctl, systemctl.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                    "description": "An executable refused outright. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+                  }
+                },
+                "paths": {
+                  "type": "array",
+                  "description": "POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself. A denial MAY be home-relative (`~/.ssh/**`), because refusing a path outside the workspace is meaningful even though no allow could grant it; a leading `/`, any `..` segment and any backslash are refused.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "allOf": [
+                      {
+                        "not": {
+                          "pattern": "^/"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "(^|/)\\.\\.(/|$)"
+                        }
+                      },
+                      {
+                        "not": {
+                          "pattern": "\\\\"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "hosts": {
+                  "type": "array",
+                  "description": "Hostnames refused outright.",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253,
+                    "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                    "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+                  }
+                }
+              },
+              "additionalProperties": true
+            },
+            "budget": {
+              "type": "object",
+              "description": "Ceilings. Every field is optional and non-negative; an absent field means the parent's remaining budget applies. A child's granted budget is clamped to its parent's remaining, `depth` is decremented per generation and `fan_out` is decremented on the parent as each child is issued.",
+              "properties": {
+                "steps": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Maximum tool calls or turns.",
+                  "maximum": 9007199254740991
+                },
+                "wall_clock_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Maximum lifetime in milliseconds; the lease expires when it is spent.",
+                  "maximum": 9007199254740991
+                },
+                "tokens": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Maximum model tokens, input plus output.",
+                  "maximum": 9007199254740991
+                },
+                "cost_usd": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Maximum spend in US dollars."
+                },
+                "depth": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "How many generations of child lease may be issued beneath this one. Zero means no children. At most 16: the reference root policy allows 4, and a declaration above the ceiling is nonsense rather than something to clamp.",
+                  "maximum": 16
+                },
+                "fan_out": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "How many child leases may be live under this one at once. At most 256: the reference root policy allows 8.",
+                  "maximum": 256
+                }
+              },
+              "additionalProperties": true
+            },
+            "approvals": {
+              "type": "array",
+              "description": "Action names that need a human before the agent may perform them, under the same identifier rule as tool names. Required and may be empty.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                "description": "An action that needs a human first; the same identifier rule as a tool name. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+              }
+            },
+            "attestation": {
+              "type": "object",
+              "description": "Who vouches for the declaration. Optional: an agent presenting its own manifest has nothing to sign with, and the bridge or harness signs on its behalf.",
+              "required": [
+                "issuer"
+              ],
+              "properties": {
+                "issuer": {
+                  "type": "string",
+                  "enum": [
+                    "agent",
+                    "bridge",
+                    "harness",
+                    "plugin"
+                  ],
+                  "description": "Which party produced the declaration."
+                },
+                "signature": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$",
+                  "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign: 64 hex characters, which is HMAC-SHA256 like the lease's own signature. An odd-length or longer value is not a signature this contract defines."
+                },
+                "key_fingerprint": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Fingerprint of the key that produced `signature`. Never the key."
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "type": "object",
+      "required": [
+        "schema_version",
+        "lease_id",
+        "manifest",
+        "declared_hash",
+        "issued_at",
+        "expires_at",
+        "issuer_session_id",
+        "key_fingerprint",
+        "signature"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+        },
+        "lease_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "description": "The grant's identity. Lower-case UUID, the same shape as a capability token id."
+        },
+        "manifest": {
+          "$ref": "#/definitions/grantedManifest"
+        },
+        "declared_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256, lower-case hex, of the canonical bytes of the manifest as DECLARED, before narrowing."
+        },
+        "parent_lease_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "description": "The lease this one was issued under. Absent for a root lease."
+        },
+        "issued_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+          "description": "When the lease was issued. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
+        },
+        "expires_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+          "description": "When the lease stops opening anything, whatever its recorded status; fixed at issue. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
+        },
+        "issuer_session_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The kernel session that issued the lease."
+        },
+        "key_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Fingerprint of the signing key. Never the key."
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "HMAC-SHA256, lower-case hex, over the canonical bytes of every field except this one."
+        }
+      },
+      "additionalProperties": true
+    },
+    "tests": [
+      {
+        "description": "agent-lease.minimal validates",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "expires_at": "2026-09-15T10:15:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055"
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease.populated validates",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "3e7a9c5d-1b2f-4a8e-9c6d-5b4a3f2e1d0c",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "implementer worker 2",
+              "kind": "delegated-cli",
+              "runtime_agent": "claude-code",
+              "provider": "anthropic",
+              "model": {
+                "vendor": "anthropic",
+                "family": "claude",
+                "version": "5"
+              },
+              "harness_version": "2.67.0"
+            },
+            "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+            "intent": {
+              "spec_slug": "demo",
+              "task_id": "1.1",
+              "purpose": "Implement task 1.1 of demo within its file scope."
+            },
+            "allow": {
+              "tools": [
+                "cdf_write_artefact",
+                "cdf_update_task_status",
+                "cdf_record_provenance"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [
+                "src/demo/**",
+                "test/unit/demo*.test.ts"
+              ],
+              "hosts": [],
+              "commands": [
+                "claude"
+              ]
+            },
+            "deny": {
+              "commands": [
+                "sudo",
+                "su",
+                "docker",
+                "ssh",
+                "curl",
+                "wget",
+                "launchctl",
+                "systemctl"
+              ],
+              "paths": [
+                ".cdf/audit/**",
+                ".cdf/runtime/**",
+                ".env",
+                "~/.ssh/**",
+                "~/.aws/**"
+              ],
+              "hosts": [
+                "*.internal.example"
+              ]
+            },
+            "budget": {
+              "steps": 200,
+              "wall_clock_ms": 900000,
+              "tokens": 250000,
+              "cost_usd": 3,
+              "depth": 1,
+              "fan_out": 0
+            },
+            "approvals": [
+              "external.write",
+              "phase.advance"
+            ],
+            "attestation": {
+              "issuer": "bridge",
+              "signature": "9f2c4b7a1e3d5c6b8a0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3",
+              "key_fingerprint": "sha256:3b1f0e"
+            }
+          },
+          "declared_hash": "a4a9b3126f04364f4c749ffc3f7935f2900c788d2c07b518c2f37deb71b59be0",
+          "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "expires_at": "2026-09-15T10:15:00.000Z",
+          "issuer_session_id": "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "f06fb2fb5ecbf39be9df699952454ef5eee8dcb9f65fa8e578ed654b4a80cc35"
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease.root validates",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "5a1d2c3b-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "worker",
+              "kind": "delegated-cli",
+              "runtime_agent": "claude-code"
+            },
+            "intent": {
+              "purpose": "Implement task 1.1 within its file scope."
+            },
+            "allow": {
+              "tools": [
+                "cdf_write_artefact",
+                "cdf_read_steering"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [
+                "**"
+              ],
+              "hosts": [
+                "api.anthropic.com"
+              ],
+              "commands": []
+            },
+            "deny": {
+              "commands": [
+                "sudo",
+                "su",
+                "docker",
+                "ssh",
+                "curl",
+                "wget"
+              ],
+              "paths": [
+                ".cdf/runtime/lease-signing.key",
+                ".cdf/steering/**"
+              ],
+              "hosts": []
+            },
+            "budget": {
+              "tokens": 1000000,
+              "depth": 3,
+              "fan_out": 8
+            },
+            "approvals": []
+          },
+          "declared_hash": "75ea526d62c73a2455e61eb014629e62c466206900ea9775f1f11d33cd2c3099",
+          "issued_at": "2026-10-05T06:00:00.000Z",
+          "expires_at": "2026-10-05T06:15:00.000Z",
+          "issuer_session_id": "conformance",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "38a1acc9290eb1e144fbfee3251a9e3d5ee3b26618c9b92bee5c1f8533b38684"
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease.bad-signature-shape is refused",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "expires_at": "2026-09-15T10:15:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:3b1f0e",
+          "signature": "not-a-hex-signature"
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease.missing-expiry is refused",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:3b1f0e",
+          "signature": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease.offset-timestamp is refused",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+          "issued_at": "2026-09-15T11:00:00+01:00",
+          "expires_at": "2026-09-15T10:15:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055"
+        },
+        "valid": false
+      },
+      {
+        "description": "agent-lease.Expired is schema-valid and refused by SPEC §6 rule L1, which the schema cannot state",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+          "issued_at": "2026-09-15T10:15:00.000Z",
+          "expires_at": "2026-09-15T10:00:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055"
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease.SelfParent is schema-valid and refused by SPEC §6 rule L2, which the schema cannot state",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "expires_at": "2026-09-15T10:15:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055",
+          "parent_lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a"
+        },
+        "valid": true
+      },
+      {
+        "description": "agent-lease.TooEarly is schema-valid and refused by SPEC §6 rule L1, which the schema cannot state",
+        "data": {
+          "schema_version": "1.0",
+          "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+          "manifest": {
+            "schema_version": "1.0",
+            "agent": {
+              "name": "reviewer",
+              "kind": "native",
+              "runtime_agent": "unknown"
+            },
+            "intent": {
+              "purpose": "Review the diff for task 1.1."
+            },
+            "allow": {
+              "tools": [
+                "cdf_read_code_map"
+              ],
+              "read_paths": [
+                "**"
+              ],
+              "write_paths": [],
+              "hosts": [],
+              "commands": []
+            },
+            "deny": {
+              "commands": [],
+              "paths": [],
+              "hosts": []
+            },
+            "budget": {},
+            "approvals": []
+          },
+          "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+          "issued_at": "2026-09-15T10:00:00.000Z",
+          "expires_at": "2026-09-15T10:00:00.000Z",
+          "issuer_session_id": "s1",
+          "key_fingerprint": "sha256:9d12c441941d9b5e",
+          "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055"
+        },
+        "valid": true
+      }
+    ]
+  }
+]

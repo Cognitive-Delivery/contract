@@ -937,6 +937,42 @@
       "reason": "SPEC 6.2 (1.2): schema_version is major.minor on every schema, compared on the major; the inlined lease and manifest copies carry the same rule as their sources. Every real record is 1.0; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/audit-event.schema-version-major-only.json"
+    },
+    {
+      "finding": "FIELD_REMOVED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#componentSource",
+      "after": "removed",
+      "reason": "An orphan definition: nothing referred to componentSource once hooks and mcpServers gained typed sources in 1.2 (lspServers has its own definition), so no instance path and no reader is affected; found by Sourcemeta lint (orphan_definitions). The Claude Code reference fixtures still validate; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-manifest.claude-code-reference.json"
+    },
+    {
+      "finding": "FIELD_REMOVED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#componentSource[]",
+      "after": "removed",
+      "reason": "An orphan definition: nothing referred to componentSource once hooks and mcpServers gained typed sources in 1.2 (lspServers has its own definition), so no instance path and no reader is affected; found by Sourcemeta lint (orphan_definitions). The Claude Code reference fixtures still validate; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-manifest.claude-code-reference.json"
+    },
+    {
+      "finding": "FIELD_REMOVED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#componentSource",
+      "after": "removed",
+      "reason": "An orphan definition: nothing referred to componentSource once hooks and mcpServers gained typed sources in 1.2 (lspServers has its own definition), so no instance path and no reader is affected; found by Sourcemeta lint (orphan_definitions). The Claude Code reference fixtures still validate; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-manifest.claude-code-reference.json"
+    },
+    {
+      "finding": "FIELD_REMOVED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#componentSource[]",
+      "after": "removed",
+      "reason": "An orphan definition: nothing referred to componentSource once hooks and mcpServers gained typed sources in 1.2 (lspServers has its own definition), so no instance path and no reader is affected; found by Sourcemeta lint (orphan_definitions). The Claude Code reference fixtures still validate; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-manifest.claude-code-reference.json"
     }
   ]
 }

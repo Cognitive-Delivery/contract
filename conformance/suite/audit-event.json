@@ -1,0 +1,529 @@
+[
+  {
+    "description": "CDF governance audit event (audit-event.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/audit-event.schema.json",
+      "title": "CDF governance audit event",
+      "description": "One line of the append-only governance journal. Rotated files carry the same shape. Deliberately holds a request hash rather than the request, and a sanitised summary rather than content: this file is retained indefinitely, so anything that reaches it is effectively permanent. CORRECTED against real artefacts: event_id and session_id are NOT required. A writer active between 2026-05-12 and 2026-05-15 emitted 61 codex.health.audit_probe records without them. The journal is append-only and retained indefinitely, so those records are permanent and a conformant reader will meet them. Rejecting real evidence would be worse than a slightly weaker schema. The current writer emits both.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "timestamp",
+        "event_type"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+        },
+        "timestamp": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "ISO 8601 with a timezone."
+        },
+        "event_id": {
+          "type": "string",
+          "description": "Optional for historical reasons only — see the schema description. Current writers emit it."
+        },
+        "event_type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+          "maxLength": 120,
+          "description": "What happened, as two or more lower-case dotted segments (`spec.created`, `codex.health.audit_probe`). OPEN, unlike the CDI signal vocabulary: a product may record its own kinds of event. The reference writer's first segments are reserved for its vocabulary (agent, architecture, artefact, audit, break_glass, cdi, chat, codex, config, decision, deploy, enforcement, evidence, execution, fg, governance, integration, lease, memory, mode, phase, provenance, report, responsible_ai, review, roadmap, security, session, spec, steering, task, tool, ux, work, workbench, workspace); any other writer uses its vendor name as the first segment. Empty, upper case, whitespace and a single segment are refused (schema set 1.2): every one of the 33,608 real records already conformed."
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Optional for historical reasons only — see the schema description. Current writers emit it."
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "spec_slug": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string",
+          "description": "An OPEN string. This field previously carried a closed six-value software lifecycle union, which meant a product with a different lifecycle could not record its own phase in the shared journal without lying. A reader must tolerate an unrecognised value: not throw, not coerce it to a known one, not drop it."
+        },
+        "actor": {
+          "type": "object",
+          "description": "Who or what acted. Records the KIND of actor and the model, never a person's name, email or git identity.",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent",
+                "system"
+              ]
+            },
+            "runtime": {
+              "type": "string",
+              "description": "The client that acted, as a label: the reference deployment has written `vscode`, `claude-code`, `codex-cli`, `GitHub Copilot` and others. Deliberately OPEN: closing it would reject real evidence. Identity is `runtime_agent`."
+            },
+            "model_vendor": {
+              "type": "string"
+            },
+            "model_family": {
+              "type": "string"
+            },
+            "model_version": {
+              "type": "string"
+            },
+            "runtime_agent": {
+              "type": "string",
+              "enum": [
+                "codex-cli",
+                "claude-code",
+                "gemini-code-assist",
+                "github-copilot",
+                "cdf-native",
+                "unknown"
+              ],
+              "description": "The closed agent identity vocabulary the lease carries, so an audit event keys to the same identity (schema set 1.2, optional; a 1.2 writer records it on every agent-kind event). `unknown` is a first-class value."
+            }
+          },
+          "additionalProperties": true
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text. No control character (`\\p{Cc}`), tab and newline included: the reference writer replaces them with a space before write.",
+          "allOf": [
+            {
+              "not": {
+                "pattern": "\\p{Cc}"
+              }
+            }
+          ]
+        },
+        "reasoning": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Why the agent chose this action, at most 500 characters: the reference writer's own cap. Never prompt text. No control character, as `summary`.",
+          "allOf": [
+            {
+              "not": {
+                "pattern": "\\p{Cc}"
+              }
+            }
+          ]
+        },
+        "request_hash": {
+          "type": "string",
+          "description": "SHA-256 of the request, lower-case hex. NEVER the request itself; the pattern refuses anything that is not a 64-character digest.",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure",
+            "partial"
+          ]
+        },
+        "details": {
+          "type": "object",
+          "description": "Flat scalars only, and keys are filtered by name: a key whose segment is authorization, content, file, password, path, payload, prompt, request, secret or token is refused by the schema, mirroring the reference writer, which drops it before write. Do not defeat this by renaming a sensitive field.",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ],
+            "maxLength": 200,
+            "description": "A flat scalar; a string value is at most 200 characters, the reference writer's own cap, because `details` reaches a permanent record."
+          },
+          "propertyNames": {
+            "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of eleven words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "(^|[^A-Za-z0-9])(authorization|content|file|password|path|payload|prompt|request|secret|token)([^A-Za-z0-9]|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "[a-z0-9](Authorization|Content|File|Password|Path|Payload|Prompt|Request|Secret|Token)([^a-z]|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^(authorization|content|file|password|path|payload|prompt|request|secret|token)[A-Z]"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "tests": [
+      {
+        "description": "audit-event.minimal validates",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "spec.created"
+        },
+        "valid": true
+      },
+      {
+        "description": "audit-event.populated validates",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "task.status_updated",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "audit-event.runtime-agent validates",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "vendor_example.review.recorded",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5",
+            "runtime_agent": "claude-code"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "audit-event.bad-actor-kind is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "spec.created",
+          "actor": {
+            "kind": "robot"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.bad-timestamp is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "yesterday",
+          "event_type": "spec.created"
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.control-char-summary is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "task.status_updated",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "phase advanced\u0007to Design",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.details-key-camel-case is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "task.status_updated",
+          "details": {
+            "filePath": "ignored",
+            "tokenCount": 12
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.details-key-token is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "task.status_updated",
+          "details": {
+            "api_token": "sk-live-not-really",
+            "count": 3
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.details-value-too-long is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "task.status_updated",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4,
+            "note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.empty-event-type is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.nested-details is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "spec.created",
+          "details": {
+            "nested": {
+              "a": 1
+            }
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.no-timestamp is refused",
+        "data": {
+          "schema_version": "1.0",
+          "event_type": "spec.created"
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.request-hash-not-sha256 is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "task.status_updated",
+          "request_hash": "please update the task status for 1.1 and mark it complete"
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.schema-version-major-only is refused",
+        "data": {
+          "schema_version": "1",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "task.status_updated",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.summary-too-long is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_type": "task.status_updated",
+          "summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.unknown-runtime-agent is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "task.status_updated",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5",
+            "runtime_agent": "copilot"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "audit-event.uppercase-event-type is refused",
+        "data": {
+          "schema_version": "1.0",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "event_id": "e1",
+          "event_type": "Spec.Created",
+          "session_id": "s1",
+          "request_id": "r1",
+          "spec_slug": "demo",
+          "task_id": "1.1",
+          "phase": "InProgress",
+          "actor": {
+            "kind": "agent",
+            "runtime": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "model_version": "5"
+          },
+          "summary": "Marked 1.1 complete.",
+          "reasoning": "Task finished.",
+          "request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "success",
+          "details": {
+            "task_id": "1.1",
+            "count": 3,
+            "verified": true,
+            "estimated_files_touched": 4
+          }
+        },
+        "valid": false
+      }
+    ]
+  }
+]

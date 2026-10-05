@@ -4120,23 +4120,6 @@
         "type": "string",
         "minLength": 1
       },
-      "#componentSource": {
-        "required": false,
-        "anyOf": 3,
-        "anyOfTypes": [
-          "array",
-          "object",
-          "string"
-        ]
-      },
-      "#componentSource[]": {
-        "required": false,
-        "anyOf": 2,
-        "anyOfTypes": [
-          "object",
-          "string"
-        ]
-      },
       "#contributes": {
         "required": false,
         "type": "object",
@@ -8307,23 +8290,6 @@
         "required": false,
         "type": "string",
         "minLength": 1
-      },
-      "#componentSource": {
-        "required": false,
-        "anyOf": 3,
-        "anyOfTypes": [
-          "array",
-          "object",
-          "string"
-        ]
-      },
-      "#componentSource[]": {
-        "required": false,
-        "anyOf": 2,
-        "anyOfTypes": [
-          "object",
-          "string"
-        ]
       },
       "#credentialFree": {
         "required": false,

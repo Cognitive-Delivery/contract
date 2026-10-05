@@ -1,0 +1,2155 @@
+[
+  {
+    "description": "CDF Plugin Marketplace (plugin-marketplace.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
+      "title": "CDF Plugin Marketplace",
+      "description": "A marketplace's `marketplace.json`, read from `.claude-plugin/marketplace.json`. Models every key the Claude Code plugin manifest and marketplace references, read 2026-10-05 document: owner, metadata, renames, forceRemoveDeletedPlugins, allowCrossMarketplaceDependenciesOn and the `plugins[]` entries with Claude Code's seven `source` forms, plus two CDF extensions the README names: a `local` source form for a marketplace that lists plugins already on disk, and an optional per-entry `cdf` block carrying a declared digest and the capabilities the entry expects. Every source form is DECLARED here, including the three the harness cannot yet fetch, because a marketplace that uses one must parse and be reported rather than fail to load. A listing is not an installation, and a declared digest is a claim to be checked, never a verdict.",
+      "definitions": {
+        "author": {
+          "description": "Who publishes the plugin. An object is the documented form; a bare string is accepted because marketplaces in the wild carry one, and a reader that refused it would refuse a real plugin.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "email": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+          ]
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "What the plugin's own code asks to be allowed when the harness runs it out of process. This is the lease manifest's `allow` shape, property for property, because a plugin worker's lease is generated from it and narrowed against the workspace root policy. It is deliberately NOT the store-listing `interface.capabilities` vocabulary a plugin may also carry: that is a shelf label, this is an authorisation request. Every list is optional here — an absent list is a plugin that asks for nothing, which is the correct default — whereas the granted manifest requires all five.",
+          "properties": {
+            "tools": {
+              "type": "array",
+              "description": "Governed tool names the agent may call.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+                "description": "A governed tool name the plugin asks to call. At most 128 characters of letters, digits, `_`, `.`, `:`, `/` and `-`, so a governed `cdf_` name and a `<server>/<tool>` pair both fit. `*` is refused: a lease that names every tool has not named one, and SPEC §5.2 R2 exists because a grant must say what it opens. Whitespace is refused."
+              }
+            },
+            "read_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              }
+            },
+            "write_paths": {
+              "type": "array",
+              "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "allOf": [
+                  {
+                    "not": {
+                      "pattern": "^/"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "(^|/)\\.\\.(/|$)"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^~"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "^[A-Za-z]:"
+                    }
+                  },
+                  {
+                    "not": {
+                      "pattern": "\\\\"
+                    }
+                  }
+                ]
+              }
+            },
+            "hosts": {
+              "type": "array",
+              "description": "Hostnames the agent may reach, with an optional leading wildcard label (`*.example.com`). Enforced by the egress proxy once it keys off the lease.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 253,
+                "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+                "description": "A host the plugin asks to reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+              }
+            },
+            "commands": {
+              "type": "array",
+              "description": "Executable names the agent may run.",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+                "description": "An executable the plugin asks to run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "componentPath": {
+          "description": "A component directory or file, or a list of them. Claude Code accepts a single string or an array of strings for `skills`, `commands`, `agents`, `outputStyles`, `workflows` and `experimental.themes`, and scans the default folder when the key is absent, so an absent key is not an empty contribution. Every path starts with `./` (`skills` also accepts `\".\"`). Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          ]
+        },
+        "entry": {
+          "type": "object",
+          "description": "One plugin listed by the marketplace. `name` and `source` are required: a listing that names nothing cannot be addressed, and one that resolves to nothing cannot be fetched. Every other key overrides or supplements what the fetched manifest says.",
+          "required": [
+            "name",
+            "source"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+            },
+            "source": {
+              "$ref": "#/definitions/source"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "author": {
+              "$ref": "#/definitions/author"
+            },
+            "homepage": {
+              "type": "string"
+            },
+            "repository": {
+              "$ref": "#/definitions/repository"
+            },
+            "license": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "category": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "defaultEnabled": {
+              "type": "boolean"
+            },
+            "strict": {
+              "type": "boolean",
+              "description": "Whether the entry must match the fetched manifest exactly. Absent means true: the stricter reading is the default, so a marketplace relaxes it deliberately."
+            },
+            "skills": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "commands": {
+              "$ref": "#/definitions/commands"
+            },
+            "agents": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "hooks": {
+              "$ref": "#/definitions/hooksSource"
+            },
+            "mcpServers": {
+              "$ref": "#/definitions/mcpServersSource"
+            },
+            "lspServers": {
+              "$ref": "#/definitions/lspServers"
+            },
+            "headers": {
+              "type": "object",
+              "description": "Request headers for an archive or url source. Never credentials: a value that needs a secret belongs in `headersHelper`, which the host runs and whose output the marketplace file never sees.",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              },
+              "propertyNames": {
+                "not": {
+                  "pattern": "^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$"
+                },
+                "description": "An `authorization` header, in any case, is refused: its value would be a credential in a file everyone reads. `headersHelper` is the route."
+              }
+            },
+            "headersHelper": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A path or command that produces this entry's archive-download headers at fetch time. Claude Code requires the entry to set `\"strict\": false`, and the schema enforces that with if/then. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+            },
+            "relevance": {
+              "$ref": "#/definitions/relevance"
+            },
+            "dependencies": {
+              "$ref": "#/definitions/dependencies"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Free-form publisher metadata on the entry. Carried, never interpreted."
+            },
+            "settings": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "userConfig": {
+              "$ref": "#/definitions/userConfig"
+            },
+            "channels": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/channel"
+              }
+            },
+            "outputStyles": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "workflows": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "themes": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "experimental": {
+              "$ref": "#/definitions/experimental"
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "allOf": [
+                {
+                  "not": {
+                    "pattern": "^/"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(^|/)\\.\\.(/|$)"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^~"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^[A-Za-z]:"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "\\\\"
+                  }
+                }
+              ]
+            },
+            "cdf": {
+              "$ref": "#/definitions/entryCdf"
+            }
+          },
+          "additionalProperties": true,
+          "if": {
+            "required": [
+              "headersHelper"
+            ]
+          },
+          "then": {
+            "required": [
+              "strict"
+            ],
+            "properties": {
+              "strict": {
+                "const": false
+              }
+            }
+          }
+        },
+        "entryCdf": {
+          "type": "object",
+          "description": "The additive CDF block for one entry. Absent in a plain Claude Code marketplace.",
+          "properties": {
+            "digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "The sha256 the fetched tree must hash to, lower-case hex. A claim the loader checks; a mismatch is a refusal with both digests named, never a warning."
+            },
+            "capabilities": {
+              "$ref": "#/definitions/capabilities"
+            }
+          },
+          "additionalProperties": true
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Marketplace-wide defaults.",
+          "properties": {
+            "pluginRoot": {
+              "type": "string",
+              "description": "The directory relative paths in `source` resolve from."
+            },
+            "description": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "owner": {
+          "type": "object",
+          "description": "Who publishes the marketplace. Required: a marketplace with no owner is an anonymous list of things to execute.",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "repository": {
+          "description": "The source repository, as a URL string or as an object carrying one.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "source": {
+          "description": "Where a listed plugin comes from: a relative path inside the marketplace, or one of the seven object forms. The harness fetches `local`, `github`, `url` and `git-subdir` in v1; `npm`, `archive` and `command` parse and are reported as an unsupported source form, because a reader that threw on them would refuse a whole marketplace over one entry it could not fetch.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "$ref": "#/definitions/sourceLocal"
+            },
+            {
+              "$ref": "#/definitions/sourceGithub"
+            },
+            {
+              "$ref": "#/definitions/sourceUrl"
+            },
+            {
+              "$ref": "#/definitions/sourceGitSubdir"
+            },
+            {
+              "$ref": "#/definitions/sourceNpm"
+            },
+            {
+              "$ref": "#/definitions/sourceArchive"
+            },
+            {
+              "$ref": "#/definitions/sourceCommand"
+            }
+          ]
+        },
+        "sourceArchive": {
+          "type": "object",
+          "description": "A downloadable archive. Declared, not fetched in v1: no archive reader exists, and hand-rolling one is where path traversal, absolute entries, symlinks and zip-slip get written wrong.",
+          "required": [
+            "source",
+            "url"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "archive"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{64}$",
+              "description": "The archive digest as 64 hex characters, upper or lower case as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceCommand": {
+          "type": "object",
+          "description": "A command the host runs to produce the plugin. Declared, not fetched in v1: the harness does not run a marketplace-supplied command to obtain code it is about to run.",
+          "required": [
+            "source",
+            "command"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "command"
+              ]
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600,
+              "description": "Seconds, 1 to 600; Claude Code defaults to 60. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "copy",
+                "link"
+              ],
+              "description": "`copy` (default) copies the printed directory; `link` loads it in place. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceGitSubdir": {
+          "type": "object",
+          "description": "One directory of a git repository. `path` is repository-relative and may not escape it.",
+          "required": [
+            "source",
+            "url",
+            "path"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "git-subdir"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "allOf": [
+                {
+                  "not": {
+                    "pattern": "^/"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "(^|/)\\.\\.(/|$)"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^~"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "^[A-Za-z]:"
+                  }
+                },
+                {
+                  "not": {
+                    "pattern": "\\\\"
+                  }
+                }
+              ]
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A branch, tag or other revision. A branch is not a pin."
+            },
+            "sha": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{7,40}$",
+              "description": "A commit sha. The only ref that cannot move."
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceGithub": {
+          "type": "object",
+          "description": "A GitHub repository.",
+          "required": [
+            "source",
+            "repo"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "github"
+              ]
+            },
+            "repo": {
+              "type": "string",
+              "pattern": "^[^/\\s]+/[^/\\s]+$",
+              "description": "owner/repo."
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A branch, tag or other revision. A branch is not a pin."
+            },
+            "sha": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{7,40}$",
+              "description": "A commit sha. The only ref that cannot move."
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceLocal": {
+          "type": "object",
+          "description": "A path already on disk. A CDF extension, not a Claude Code source form: Claude Code's only local form is the relative-path string. CDF's own marketplace lists first-party plugins that ship in the repository, and a local source is the one with nothing to fetch and nothing to pin. The README names it as such.",
+          "required": [
+            "source",
+            "path"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "local"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceNpm": {
+          "type": "object",
+          "description": "An npm package. Declared, not fetched in v1: the same missing archive reader, plus a registry the egress policy would have to permit.",
+          "required": [
+            "source",
+            "package"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "npm"
+              ]
+            },
+            "package": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string"
+            },
+            "registry": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "sourceUrl": {
+          "type": "object",
+          "description": "A git repository at an arbitrary URL.",
+          "required": [
+            "source",
+            "url"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "url"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A branch, tag or other revision. A branch is not a pin."
+            },
+            "sha": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{7,40}$",
+              "description": "A commit sha. The only ref that cannot move."
+            }
+          },
+          "additionalProperties": true
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Plugins that must be enabled for this one to work. Each entry is `\"name\"`, `\"name@marketplace\"`, or an object with `name`, `marketplace` and `version`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "marketplace": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "userConfigOption": {
+          "type": "object",
+          "description": "One user-configuration option. A STRICT object in Claude Code: an unknown key stops the plugin loading, so the contract refuses it too, which is the one place the contract closes a content model to mean what Claude Code means. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "type",
+            "title",
+            "description"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "directory",
+                "file"
+              ]
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "default": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "multiple": {
+              "type": "boolean"
+            },
+            "sensitive": {
+              "type": "boolean"
+            },
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "userConfig": {
+          "type": "object",
+          "description": "Values Claude Code prompts the user for when the plugin is enabled. Keys are identifiers of letters, digits and underscores not starting with a digit. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/userConfigOption"
+          }
+        },
+        "channel": {
+          "type": "object",
+          "description": "A message channel bound to one of the plugin's MCP servers. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "server"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "userConfig": {
+              "$ref": "#/definitions/userConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lspServer": {
+          "type": "object",
+          "description": "One language server. A STRICT object in Claude Code: `command` and `extensionToLanguage` are required and an unknown key fails validation. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "command",
+            "extensionToLanguage"
+          ],
+          "properties": {
+            "command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "extensionToLanguage": {
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^\\."
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "transport": {
+              "type": "string",
+              "enum": [
+                "stdio",
+                "socket"
+              ]
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "initializationOptions": {
+              "type": "object"
+            },
+            "settings": {
+              "type": "object"
+            },
+            "workspaceFolder": {
+              "type": "string"
+            },
+            "startupTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "shutdownTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "requestTimeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "restartOnCrash": {
+              "type": "boolean"
+            },
+            "maxRestarts": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "diagnostics": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lspServers": {
+          "description": "`.json` LSP config files, an inline map of server name to config, or an array of either. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/lspServer"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/definitions/lspServer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "commandEntry": {
+          "type": "object",
+          "description": "One command in the `commands` object map. Exactly one of `source` (a path) or `content` (inline Markdown) is set. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "properties": {
+            "source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "content": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "argumentHint": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "allowedTools": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "source"
+              ]
+            },
+            {
+              "required": [
+                "content"
+              ]
+            }
+          ],
+          "additionalProperties": true
+        },
+        "commands": {
+          "description": "Flat `.md` command files, directories of them, or an object map of command name to `source` or `content`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/commandEntry"
+              }
+            }
+          ]
+        },
+        "monitor": {
+          "type": "object",
+          "description": "One background monitor. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "required": [
+            "name",
+            "command",
+            "description"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "when": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "experimental": {
+          "type": "object",
+          "description": "Container for `themes`, `monitors` and `evals`, whose manifest shape Claude Code says may still change. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "properties": {
+            "themes": {
+              "$ref": "#/definitions/componentPath"
+            },
+            "monitors": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/monitor"
+                  }
+                }
+              ]
+            },
+            "evals": {
+              "$ref": "#/definitions/componentPath"
+            }
+          },
+          "additionalProperties": true
+        },
+        "relevance": {
+          "type": "object",
+          "description": "Signals that tell Claude Code when to suggest the plugin: `topic` and `signals`. Carried, not interpreted. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+          "properties": {
+            "topic": {
+              "type": "string"
+            },
+            "signals": {
+              "description": "Relevance signals as the marketplace reference leaves them: any value, not modelled."
+            }
+          },
+          "additionalProperties": true
+        },
+        "credentialFree": {
+          "type": "string",
+          "description": "A string that is not a credential. Refuses the seven shapes the reference evidence sanitiser refuses — a private key block, an AWS access key id, a GitHub token, an OpenAI key, a Slack token, a literal bearer token and a JWT — each as an I-Regexp without lookahead or word boundaries. A detector, not a guarantee: it catches these shapes and nothing else, and the documented route for a secret remains the host's own environment (`$VAR` interpolation) or `headersHelper`.",
+          "allOf": [
+            {
+              "not": {
+                "pattern": "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])AKIA[0-9A-Z]{16}([^A-Za-z0-9]|$)"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{36,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|[^A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "Bearer +[A-Za-z0-9._~+/-]{16,}"
+              }
+            },
+            {
+              "not": {
+                "pattern": "eyJ[A-Za-z0-9_-]{8,}\\.eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}"
+              }
+            }
+          ]
+        },
+        "hookHandler": {
+          "description": "One hook, discriminated by `type`, after the Claude Code settings schema on SchemaStore (read 2026-10-05). The five types are closed because a handler of unknown type is one the harness cannot vet; each type's own fields stay open because Claude Code adds fields between releases and a plugin that uses one must not stop validating here.",
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "command"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "command"
+                  ]
+                },
+                "command": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A shell command, or with `args` an executable run without a shell."
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "async": {
+                  "type": "boolean"
+                },
+                "asyncRewake": {
+                  "type": "boolean"
+                },
+                "shell": {
+                  "type": "string",
+                  "enum": [
+                    "bash",
+                    "powershell"
+                  ]
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds."
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches."
+                },
+                "statusMessage": {
+                  "type": "string"
+                },
+                "once": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Runs a command."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "prompt"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "prompt"
+                  ]
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "model": {
+                  "type": "string"
+                },
+                "continueOnBlock": {
+                  "type": "boolean"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds."
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches."
+                },
+                "statusMessage": {
+                  "type": "string"
+                },
+                "once": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Asks the model a single-turn question."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "prompt"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "agent"
+                  ]
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "model": {
+                  "type": "string"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds."
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches."
+                },
+                "statusMessage": {
+                  "type": "string"
+                },
+                "once": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Runs a subagent with tools."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "http"
+                  ]
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Where the hook input is POSTed."
+                },
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/definitions/credentialFree"
+                  },
+                  "description": "Request headers. Values may interpolate `$VAR` from `allowedEnvVars`; a literal credential is refused."
+                },
+                "allowedEnvVars": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds."
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches."
+                },
+                "statusMessage": {
+                  "type": "string"
+                },
+                "once": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true,
+              "description": "POSTs the hook input to a URL."
+            },
+            {
+              "type": "object",
+              "required": [
+                "type",
+                "server",
+                "tool"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "mcp_tool"
+                  ]
+                },
+                "server": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A configured MCP server."
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "input": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Seconds."
+                },
+                "if": {
+                  "type": "string",
+                  "description": "A permission-rule filter; the hook runs only when it matches."
+                },
+                "statusMessage": {
+                  "type": "string"
+                },
+                "once": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true,
+              "description": "Calls a tool on a connected MCP server."
+            }
+          ]
+        },
+        "hookMatcher": {
+          "type": "object",
+          "required": [
+            "hooks"
+          ],
+          "properties": {
+            "matcher": {
+              "type": "string",
+              "description": "A pattern matched against the event context; absent means every occurrence."
+            },
+            "hooks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/hookHandler"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "hooksMap": {
+          "type": "object",
+          "description": "The event map: event name to matchers. The event names are the thirty-three the Claude Code hooks reference lists (read 2026-10-05); an unknown event is refused because nothing would ever fire it.",
+          "propertyNames": {
+            "enum": [
+              "PreToolUse",
+              "PostToolUse",
+              "PostToolUseFailure",
+              "PermissionRequest",
+              "Notification",
+              "UserPromptSubmit",
+              "Stop",
+              "StopFailure",
+              "SubagentStart",
+              "SubagentStop",
+              "PreCompact",
+              "PostCompact",
+              "Elicitation",
+              "ElicitationResult",
+              "TeammateIdle",
+              "TaskCompleted",
+              "Setup",
+              "InstructionsLoaded",
+              "CwdChanged",
+              "FileChanged",
+              "ConfigChange",
+              "WorktreeCreate",
+              "WorktreeRemove",
+              "SessionStart",
+              "SessionEnd",
+              "PostToolBatch",
+              "TaskCreated",
+              "PermissionDenied",
+              "UserPromptExpansion",
+              "MessageDisplay",
+              "DirectoryAdded",
+              "PreModelSwitch",
+              "PostModelSwitch"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/hookMatcher"
+            }
+          }
+        },
+        "hooksSource": {
+          "description": "Hooks declared inline as the event map, as a path to a `.json` file that declares them (wrapped in a top-level `hooks` key), or as an array mixing both. Claude Code accepts all three.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/hooksMap"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/hooksMap"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "mcpServer": {
+          "type": "object",
+          "description": "One MCP server config, keyed by name in `mcpServers`, after the Claude Code `.mcp.json` reference (read 2026-10-05). `stdio` needs `command`; `http`, `sse`, `ws` and `streamable-http` need `url`; an entry with no `type` is left as the reference leaves it. `env` and `headers` values are credential-free: a literal secret in a plugin manifest ships to everyone who installs it, and `${VAR}` interpolation or `headersHelper` is the route.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "stdio",
+                "http",
+                "sse",
+                "ws",
+                "streamable-http"
+              ]
+            },
+            "command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              }
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/credentialFree"
+              }
+            },
+            "headersHelper": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "alwaysLoad": {
+              "type": "boolean"
+            },
+            "oauth": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "stdio"
+                    ]
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "command"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "http",
+                      "sse",
+                      "ws",
+                      "streamable-http"
+                    ]
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          ]
+        },
+        "mcpServersMap": {
+          "type": "object",
+          "description": "Server name to config.",
+          "additionalProperties": {
+            "$ref": "#/definitions/mcpServer"
+          }
+        },
+        "mcpServersSource": {
+          "description": "MCP servers declared inline keyed by name, as a path to a `.json` config, an `.mcpb` or `.dxt` bundle path, an `https://` bundle URL, or an array mixing these. Claude Code accepts all of them.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/mcpServersMap"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/mcpServersMap"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "owner",
+        "plugins"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "description": "The marketplace id: letters, digits, `.`, `_` and `-`, starting with a letter or digit, no `..`, as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+        },
+        "owner": {
+          "$ref": "#/definitions/owner"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/metadata"
+        },
+        "allowCrossMarketplaceDependenciesOn": {
+          "type": "array",
+          "description": "Marketplace names this one permits its plugins to depend on. Absent means none.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "renames": {
+          "type": "object",
+          "description": "Old plugin name to new name, or to null when the plugin is withdrawn. A rename does not carry a decision forward: the subject hash changes and the plugin is undecided again.",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "plugins": {
+          "type": "array",
+          "description": "The listed plugins. Required, and may be empty: an empty marketplace is a marketplace that lists nothing, not a malformed one.",
+          "items": {
+            "$ref": "#/definitions/entry"
+          }
+        },
+        "forceRemoveDeletedPlugins": {
+          "type": "boolean",
+          "description": "When true, a plugin removed from `plugins` is uninstalled on users' machines. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+        }
+      },
+      "additionalProperties": true
+    },
+    "tests": [
+      {
+        "description": "plugin-marketplace.claude-code validates",
+        "data": {
+          "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+          "name": "claude-code-plugins",
+          "version": "1.0.0",
+          "description": "Bundled plugins for Claude Code including Agent SDK development tools, PR review toolkit, and commit workflows",
+          "owner": {
+            "name": "Anthropic",
+            "email": "support@anthropic.com"
+          },
+          "plugins": [
+            {
+              "name": "agent-sdk-dev",
+              "description": "Development kit for working with the Claude Agent SDK",
+              "source": "./plugins/agent-sdk-dev",
+              "category": "development"
+            },
+            {
+              "name": "claude-opus-4-5-migration",
+              "description": "Migrate your code and prompts from Sonnet 4.x and Opus 4.1 to Opus 4.5.",
+              "version": "1.0.0",
+              "author": {
+                "name": "William Hu"
+              },
+              "source": "./plugins/claude-opus-4-5-migration",
+              "category": "development"
+            },
+            {
+              "name": "code-review",
+              "description": "Automated code review for pull requests using multiple specialized agents with confidence-based scoring to filter false positives",
+              "version": "1.0.0",
+              "author": {
+                "name": "Boris Cherny"
+              },
+              "source": "./plugins/code-review",
+              "category": "productivity"
+            },
+            {
+              "name": "commit-commands",
+              "description": "Commands for git commit workflows including commit, push, and PR creation",
+              "version": "1.0.0",
+              "author": {
+                "name": "Anthropic"
+              },
+              "source": "./plugins/commit-commands",
+              "category": "productivity"
+            },
+            {
+              "name": "explanatory-output-style",
+              "description": "Adds educational insights about implementation choices and codebase patterns (mimics the deprecated Explanatory output style)",
+              "version": "1.0.0",
+              "author": {
+                "name": "Dickson Tsai"
+              },
+              "source": "./plugins/explanatory-output-style",
+              "category": "learning"
+            },
+            {
+              "name": "feature-dev",
+              "description": "Comprehensive feature development workflow with specialized agents for codebase exploration, architecture design, and quality review",
+              "version": "1.0.0",
+              "author": {
+                "name": "Siddharth Bidasaria"
+              },
+              "source": "./plugins/feature-dev",
+              "category": "development"
+            },
+            {
+              "name": "frontend-design",
+              "description": "Create distinctive, production-grade frontend interfaces with high design quality. Generates creative, polished code that avoids generic AI aesthetics.",
+              "version": "1.1.0",
+              "author": {
+                "name": "Prithvi Rajasekaran & Alexander Bricken"
+              },
+              "source": "./plugins/frontend-design",
+              "category": "development"
+            },
+            {
+              "name": "hookify",
+              "description": "Easily create custom hooks to prevent unwanted behaviors by analyzing conversation patterns or from explicit instructions. Define rules via simple markdown files.",
+              "version": "0.1.0",
+              "author": {
+                "name": "Daisy Hollman"
+              },
+              "source": "./plugins/hookify",
+              "category": "productivity"
+            },
+            {
+              "name": "learning-output-style",
+              "description": "Interactive learning mode that requests meaningful code contributions at decision points (mimics the unshipped Learning output style)",
+              "version": "1.0.0",
+              "author": {
+                "name": "Boris Cherny"
+              },
+              "source": "./plugins/learning-output-style",
+              "category": "learning"
+            },
+            {
+              "name": "plugin-dev",
+              "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 7 expert skills covering hooks, MCP integration, commands, agents, and best practices. AI-assisted plugin creation and validation.",
+              "version": "0.1.0",
+              "author": {
+                "name": "Daisy Hollman"
+              },
+              "source": "./plugins/plugin-dev",
+              "category": "development"
+            },
+            {
+              "name": "pr-review-toolkit",
+              "description": "Comprehensive PR review agents specializing in comments, tests, error handling, type design, code quality, and code simplification",
+              "version": "1.0.0",
+              "author": {
+                "name": "Anthropic"
+              },
+              "source": "./plugins/pr-review-toolkit",
+              "category": "productivity"
+            },
+            {
+              "name": "ralph-wiggum",
+              "description": "Interactive self-referential AI loops for iterative development. Claude works on the same task repeatedly, seeing its previous work, until completion.",
+              "version": "1.0.0",
+              "author": {
+                "name": "Daisy Hollman"
+              },
+              "source": "./plugins/ralph-wiggum",
+              "category": "development"
+            },
+            {
+              "name": "security-guidance",
+              "description": "Security reminder hook that warns about potential security issues when editing files, including command injection, XSS, and unsafe code patterns",
+              "version": "1.0.0",
+              "author": {
+                "name": "David Dworken"
+              },
+              "source": "./plugins/security-guidance",
+              "category": "security"
+            }
+          ]
+        },
+        "valid": true
+      },
+      {
+        "description": "plugin-marketplace.minimal validates",
+        "data": {
+          "name": "minimal-marketplace",
+          "owner": {
+            "name": "Example Owner"
+          },
+          "plugins": []
+        },
+        "valid": true
+      },
+      {
+        "description": "plugin-marketplace.populated validates",
+        "data": {
+          "$schema": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
+          "name": "cdf-first-party",
+          "owner": {
+            "name": "Cognitive Delivery",
+            "email": "contact@example.com",
+            "url": "https://example.com"
+          },
+          "description": "The first-party CDF plugins, plus three listed from elsewhere.",
+          "version": "1.0.0",
+          "metadata": {
+            "pluginRoot": "./plugins",
+            "description": "Plugins that ship in this repository.",
+            "version": "1.0.0"
+          },
+          "allowCrossMarketplaceDependenciesOn": [
+            "cdf-community"
+          ],
+          "renames": {
+            "cdf-checks": "cdf-data-checks",
+            "cdf-legacy-mirror": null
+          },
+          "plugins": [
+            {
+              "name": "cdf-governance",
+              "source": {
+                "source": "local",
+                "path": "./plugins/cdf-governance"
+              },
+              "displayName": "CDF Governance",
+              "description": "Governed delivery tools, already in this repository: nothing to fetch and nothing to pin.",
+              "category": "Productivity",
+              "defaultEnabled": true,
+              "strict": true
+            },
+            {
+              "name": "cdf-data-checks",
+              "source": {
+                "source": "github",
+                "repo": "cognitive-delivery/cdf-data-checks",
+                "ref": "v1.2.0",
+                "sha": "5b1e0c9a4d3f2e1b0a9c8d7e6f5a4b3c2d1e0f9a"
+              },
+              "displayName": "CDF Data Checks",
+              "version": "1.2.0",
+              "license": "PolyForm-Noncommercial-1.0.0",
+              "keywords": [
+                "data",
+                "quality"
+              ],
+              "tags": [
+                "first-party"
+              ],
+              "author": {
+                "name": "Cognitive Delivery"
+              },
+              "cdf": {
+                "digest": "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea",
+                "capabilities": {
+                  "read_paths": [
+                    "models/**"
+                  ],
+                  "write_paths": [
+                    ".cdf/checks/**"
+                  ],
+                  "hosts": [],
+                  "commands": [
+                    "node"
+                  ]
+                }
+              },
+              "relevance": {
+                "topic": "data quality",
+                "signals": {
+                  "files": [
+                    "models/**/*.sql"
+                  ]
+                }
+              },
+              "dependencies": [
+                "cdf-governance"
+              ]
+            },
+            {
+              "name": "cdf-doc-packs",
+              "source": {
+                "source": "git-subdir",
+                "url": "https://example.com/cdf-monorepo.git",
+                "path": "packages/doc-packs",
+                "ref": "main"
+              },
+              "description": "One directory of a monorepo. The ref is a branch, so this entry is not pinned and the loader says so before a human decides.",
+              "skills": [
+                "./skills"
+              ],
+              "commands": "./commands",
+              "strict": false
+            },
+            {
+              "name": "example-archive-plugin",
+              "source": {
+                "source": "archive",
+                "url": "https://example.com/downloads/example-plugin-2.0.0.tgz",
+                "sha256": "2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE"
+              },
+              "headers": {
+                "X-Registry-Channel": "stable"
+              },
+              "headersHelper": "./scripts/registry-headers.mjs",
+              "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace.",
+              "strict": false
+            },
+            {
+              "name": "example-relative-plugin",
+              "source": "./plugins/example-relative-plugin",
+              "author": "Example Maintainers",
+              "homepage": "https://example.com/example-relative-plugin"
+            },
+            {
+              "name": "npm_listed.plugin",
+              "source": {
+                "source": "npm",
+                "package": "@example/listed",
+                "version": "^1.0.0",
+                "registry": "https://npm.example.com"
+              },
+              "description": "A name Claude Code accepts (letters, digits, dot, underscore) that the old kebab-only rule refused."
+            },
+            {
+              "name": "rendered-by-tool",
+              "source": {
+                "source": "command",
+                "command": "my-tool claude-plugin-path",
+                "timeout": 120,
+                "mode": "link"
+              },
+              "description": "A command source with the documented timeout and mode fields."
+            }
+          ],
+          "forceRemoveDeletedPlugins": false
+        },
+        "valid": true
+      },
+      {
+        "description": "plugin-marketplace.bad-digest is refused",
+        "data": {
+          "name": "bad-digest",
+          "owner": {
+            "name": "Example Owner"
+          },
+          "plugins": [
+            {
+              "name": "some-plugin",
+              "source": {
+                "source": "local",
+                "path": "./plugins/some-plugin"
+              },
+              "cdf": {
+                "digest": "not-a-sha256"
+              }
+            }
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "plugin-marketplace.bad-source-form is refused",
+        "data": {
+          "name": "bad-source-form",
+          "owner": {
+            "name": "Example Owner"
+          },
+          "plugins": [
+            {
+              "name": "ftp-plugin",
+              "source": {
+                "source": "ftp",
+                "url": "ftp://example.com/plugin.tgz"
+              }
+            }
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "plugin-marketplace.command-mode-unknown is refused",
+        "data": {
+          "name": "m",
+          "owner": {
+            "name": "o"
+          },
+          "plugins": [
+            {
+              "name": "p",
+              "source": {
+                "source": "command",
+                "command": "my-tool claude-plugin-path",
+                "mode": "symlink"
+              }
+            }
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "plugin-marketplace.headers-authorization is refused",
+        "data": {
+          "$schema": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
+          "name": "cdf-first-party",
+          "owner": {
+            "name": "Cognitive Delivery",
+            "email": "contact@example.com",
+            "url": "https://example.com"
+          },
+          "description": "The first-party CDF plugins, plus three listed from elsewhere.",
+          "version": "1.0.0",
+          "metadata": {
+            "pluginRoot": "./plugins",
+            "description": "Plugins that ship in this repository.",
+            "version": "1.0.0"
+          },
+          "allowCrossMarketplaceDependenciesOn": [
+            "cdf-community"
+          ],
+          "renames": {
+            "cdf-checks": "cdf-data-checks",
+            "cdf-legacy-mirror": null
+          },
+          "plugins": [
+            {
+              "name": "cdf-governance",
+              "source": {
+                "source": "local",
+                "path": "./plugins/cdf-governance"
+              },
+              "displayName": "CDF Governance",
+              "description": "Governed delivery tools, already in this repository: nothing to fetch and nothing to pin.",
+              "category": "Productivity",
+              "defaultEnabled": true,
+              "strict": true
+            },
+            {
+              "name": "cdf-data-checks",
+              "source": {
+                "source": "github",
+                "repo": "cognitive-delivery/cdf-data-checks",
+                "ref": "v1.2.0",
+                "sha": "5b1e0c9a4d3f2e1b0a9c8d7e6f5a4b3c2d1e0f9a"
+              },
+              "displayName": "CDF Data Checks",
+              "version": "1.2.0",
+              "license": "PolyForm-Noncommercial-1.0.0",
+              "keywords": [
+                "data",
+                "quality"
+              ],
+              "tags": [
+                "first-party"
+              ],
+              "author": {
+                "name": "Cognitive Delivery"
+              },
+              "cdf": {
+                "digest": "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea",
+                "capabilities": {
+                  "read_paths": [
+                    "models/**"
+                  ],
+                  "write_paths": [
+                    ".cdf/checks/**"
+                  ],
+                  "hosts": [],
+                  "commands": [
+                    "node"
+                  ]
+                }
+              },
+              "relevance": {
+                "topic": "data quality",
+                "signals": {
+                  "files": [
+                    "models/**/*.sql"
+                  ]
+                }
+              },
+              "dependencies": [
+                "cdf-governance"
+              ]
+            },
+            {
+              "name": "cdf-doc-packs",
+              "source": {
+                "source": "git-subdir",
+                "url": "https://example.com/cdf-monorepo.git",
+                "path": "packages/doc-packs",
+                "ref": "main"
+              },
+              "description": "One directory of a monorepo. The ref is a branch, so this entry is not pinned and the loader says so before a human decides.",
+              "skills": [
+                "./skills"
+              ],
+              "commands": "./commands",
+              "strict": false
+            },
+            {
+              "name": "example-archive-plugin",
+              "source": {
+                "source": "archive",
+                "url": "https://example.com/downloads/example-plugin-2.0.0.tgz",
+                "sha256": "2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE"
+              },
+              "headers": {
+                "Authorization": "Basic abc",
+                "X-Trace": "cdf"
+              },
+              "headersHelper": "./scripts/registry-headers.mjs",
+              "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace.",
+              "strict": false
+            },
+            {
+              "name": "example-relative-plugin",
+              "source": "./plugins/example-relative-plugin",
+              "author": "Example Maintainers",
+              "homepage": "https://example.com/example-relative-plugin"
+            },
+            {
+              "name": "npm_listed.plugin",
+              "source": {
+                "source": "npm",
+                "package": "@example/listed",
+                "version": "^1.0.0",
+                "registry": "https://npm.example.com"
+              },
+              "description": "A name Claude Code accepts (letters, digits, dot, underscore) that the old kebab-only rule refused."
+            },
+            {
+              "name": "rendered-by-tool",
+              "source": {
+                "source": "command",
+                "command": "my-tool claude-plugin-path",
+                "timeout": 120,
+                "mode": "link"
+              },
+              "description": "A command source with the documented timeout and mode fields."
+            }
+          ],
+          "forceRemoveDeletedPlugins": false
+        },
+        "valid": false
+      },
+      {
+        "description": "plugin-marketplace.headers-helper-without-strict-false is refused",
+        "data": {
+          "name": "m",
+          "owner": {
+            "name": "o"
+          },
+          "plugins": [
+            {
+              "name": "p",
+              "source": {
+                "source": "archive",
+                "url": "https://example.com/p.zip"
+              },
+              "headersHelper": "./scripts/headers.mjs"
+            }
+          ]
+        },
+        "valid": false
+      },
+      {
+        "description": "plugin-marketplace.missing-owner is refused",
+        "data": {
+          "name": "anonymous-marketplace",
+          "plugins": [
+            {
+              "name": "some-plugin",
+              "source": "./plugins/some-plugin"
+            }
+          ]
+        },
+        "valid": false
+      }
+    ]
+  }
+]
