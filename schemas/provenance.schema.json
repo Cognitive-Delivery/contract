@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/provenance.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/provenance.schema.json",
   "title": "CDF provenance",
   "description": "What produced a governed artefact. CORRECTED against real artefacts: the record is never written bare. It is wrapped under a `cdf` key in Markdown front-matter, and wrapped again as {artefact_path, cdf} in .cdf/specs/<slug>/provenance.jsonl. The TypeScript interface describes only the inner record, and nothing in the type system said so. Validate a front-matter block against #/definitions/frontMatter, a journal line against #/definitions/journalEntry, and the inner object against #/definitions/record. anyOf, not oneOf: a journal entry also satisfies the front-matter shape, since that only requires `cdf`. Prefer validating against the precise definition you expect.",
   "definitions": {
@@ -25,7 +25,7 @@
       "properties": {
         "schema_version": {
           "type": "string",
-          "description": "Contract version this record was written against. Absent is read as 1.0."
+          "description": "Contract version this record was written against. Required: a conformant writer always writes it. A reader meeting a pre-contract artefact without it MAY read it as 1.0; it must not emit one."
         },
         "spec": {
           "type": "string",
@@ -62,18 +62,23 @@
             3,
             4
           ],
-          "description": "How much governance this workspace has adopted. Closed: the tiers are the framework."
+          "description": "How much governance this workspace has adopted. Closed: the tiers are the framework.",
+          "maximum": 9007199254740991
         },
         "prompt_hash": {
           "type": "string",
-          "description": "SHA-256 of the request. NEVER the request itself."
+          "description": "SHA-256 of the request, lower-case hex. NEVER the request itself; the pattern refuses anything that is not a 64-character digest.",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "steering_hash": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the steering the artefact was produced under, lower-case hex. A writer that cannot compute it writes 64 zeros, which the reference deployment did for 4,524 of 4,535 records; the shape is still a digest."
         },
         "content_hash": {
           "type": "string",
-          "description": "SHA-256 of the artefact body only, excluding this front-matter block."
+          "description": "SHA-256 of the artefact body only, excluding this front-matter block, lower-case hex.",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "timestamp": {
           "type": "string",
@@ -112,7 +117,8 @@
                 "type": "string"
               },
               "line": {
-                "type": "integer"
+                "type": "integer",
+                "maximum": 9007199254740991
               }
             },
             "additionalProperties": true
@@ -124,7 +130,7 @@
     },
     "frontMatter": {
       "type": "object",
-      "description": "The front-matter form: the record under a `cdf` key. No artefact_path \u2014 the file is the artefact.",
+      "description": "The front-matter form: the record under a `cdf` key. No artefact_path — the file is the artefact.",
       "required": [
         "cdf"
       ],

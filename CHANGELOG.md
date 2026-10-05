@@ -15,15 +15,31 @@ tooling in this repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.1.0] — 2026-10-05
+
+The first release after the review of 4 October 2026 (CDF spec `contract-fix-batch-one-4`,
+DR-182). Five of the review's ten improvements, in the order the guard first so every tightening
+that follows is classified and allow-listed by name. **Additive within 1.x by the contract's own
+rule, mechanically checked**: against 1.0.2 the guard reports 46 allow-listed tightenings, each
+with the fixture or real-data count that proves no conformant writer ever produced what it now
+refuses, and every real journal in the reference deployment (33,557 audit records, 5,652 signals,
+4,535 provenance lines) validates with zero rejections. No existing hash or signature changes.
+
 ### Added
 
-- **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 2). The lock
+- **The additive-only guard sees tightenings** (`schemas.lock.json` is now lock format 3). The lock
   records, per property path, `pattern`, the `allOf[].not.pattern` set, `minLength`, `maxLength`,
   `minimum`, `maximum`, `additionalProperties` and the number of `anyOf` branches, and per schema
   whether its root is open or closed; enum values keep their JSON type instead of being
   stringified. `check-additive.mjs` reports named findings (`PATTERN_TIGHTENED`,
   `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` beside the four it already knew) and
-  says plainly when a baseline predates the format and those four cannot be compared.
+  says plainly when a baseline predates the format and those four cannot be compared. A
+  `--baseline-ref` baseline is digested from the schemas as they were at that ref with the current
+  generator, so two lock formats are never compared; the committed lock stays the drift record for
+  its own commit. Format 3 records a union's branch types and patterns on the parent entry, and
+  `propertyNames` refusals, both of which format 2 lost.
 
   Until now a pattern could be tightened inside 1.x and the guard would print "additive only",
   which is the class of change the 4 October 2026 review found it blind to. Nothing in the
@@ -37,6 +53,146 @@ tooling in this repository.
 - **The guard's own tests** run in `npm test` (`conformance/guard-tests.mjs`): 27 scenarios in
   which every finding is seen to fire, every additive change is seen to pass, and the allow-list is
   seen to refuse an entry without evidence.
+
+- **Three checks the contract's own CI now holds** (`conformance/schema-checks.mjs`, in `npm test`):
+  every schema compiles under Ajv strict mode; the granted manifest inlined in
+  `agent-lease.schema.json` is byte-for-byte the manifest schema dereferenced (this check used to
+  live only in the consuming harness, so the contract could not fail on its own drift); and
+  `package.json`'s `cdfContract.schemaSetVersion` matches the package version.
+
+- **A regex-portability job.** `tooling/regex-portability` compiles every `pattern` in every schema
+  with Go's `regexp` (RE2: no lookahead, no backreferences), because Go validators use it
+  unconditionally and a pattern RE2 rejects is a schema set a Go implementation cannot load. The
+  job is expected to fail until the path patterns are rewritten without lookahead in the next
+  change, and is made a required check then.
+
+### Added
+
+- **Narrowing vectors** (`conformance/narrowing-vectors.json`). SPEC §9 called narrowing "the heart
+  of the specification" and left it to each implementation's own tests. The corpus now carries
+  declared-and-parent pairs with the granted manifest or the refusal codes narrowing must produce:
+  every row of the §5 table, every containment row of §5.1 (including `src/*.ts` not containing
+  `src/a.ts`), every refusal of §5.2, `unknown` accepted for `external` and refused for `native`, an
+  escaping path refusing the whole manifest, and a root manifest narrowed against a root policy.
+  The vectors were generated from the reference implementation's `narrowManifest` and committed. An
+  adapter supplies `narrow(declared, parent)` and the runner compares granted manifests by canonical
+  bytes and refusal sets exactly; one that does not is reported as not checked. Every adapter has
+  the vectors checked for shape. §5.2's six conditions gain stable identifiers R1 to R6.
+
+- **A published test key, verifiable signed fixtures and signature vectors**
+  (`conformance/test-key.txt`, `conformance/signature-vectors.json`). The lease fixtures carried
+  `cccc…` and `dddd…` for `declared_hash` and `signature`, so no verifier could be tested against the
+  corpus. They are re-signed under a public test key (which a verifier must refuse outside a
+  conformance run), a root lease fixture is added, and an adapter offering `hash` and `verify` is
+  checked for matching `declared_hash`, acceptance, and refusal when one byte of the signature or
+  of the granted manifest changes. The reference adapter implements the reference HMAC-SHA256.
+
+- **Every invalid fixture carries an `.expect.json`** naming the instance path the rejection must be
+  reported at, and the runner checks it when the adapter reports its errors. Adding them found two
+  fixtures (`cdi-signal.bad-outcome`, `cdi-signal.unknown-event`) that this release's `workspace_id`
+  shape had started rejecting first for the wrong reason; both now carry a digest-shaped
+  `workspace_id` so they fail only for the reason their `.reason` states. The unknown-field round
+  trip now plants the field inside the first nested object as well as at the top level.
+
+- **Every key the Claude Code plugin and marketplace references document** (read 2026-10-05) is
+  modelled: `$schema`, `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl`,
+  `termsOfServiceUrl`, `dependencies` (string, `name@marketplace` or object), `settings`,
+  `userConfig` (strict options: `type`, `title`, `description` required; `required`, `default`,
+  `options`, `multiple`, `sensitive`, `min`, `max`), `types`, `channels` (strict), `commands` as an
+  object map of `source`-or-`content` entries, `hooks`/`mcpServers`/`lspServers` as path, inline or a
+  mixed array (with `.mcpb`, `.dxt` and `https://` bundles), strict `lspServers` entries with
+  `command` and `extensionToLanguage` required, `outputStyles`, `workflows`, top-level `themes`
+  (deprecated, still loaded) and `experimental` (`themes`, `monitors` as strict entries, `evals`);
+  marketplace `forceRemoveDeletedPlugins`, entry `relevance` and `dependencies` and every
+  manifest field an entry may carry; `command` source `timeout` (1 to 600) and `mode` (`copy` or
+  `link`); `archive` `sha256` in either case; and the if/then rule that `headersHelper` requires
+  `"strict": false`. Names follow Claude Code's rule (letters, digits, `.`, `_`, `-`, leading
+  alphanumeric) instead of kebab-case only. Where Claude Code's object is strict the contract's is
+  too, because honouring a key "with the same meaning" there means refusing an unknown one.
+
+  Two fixtures carry the evidence: the manifest reference's own example manifest, and Anthropic's
+  marketplace for its bundled plugins (`anthropics/claude-code` at a pinned commit, author emails
+  removed). Four invalid fixtures pin the strict shapes. The `local` source form and plugin-level
+  `category` stay as CDF extensions, named as such in the schema descriptions and, in the next
+  change, the README.
+
+### Changed
+
+- **The README no longer claims the plugin schemas contain every key Claude Code has.** The
+  sentence was true at 1.0.0 and stopped being true as Claude Code grew; a standing superlative
+  about a moving target is the kind of sentence this contract exists to refuse. The README now says
+  what is modelled and as of which date, names the two CDF extensions (`cdf`; the `local` source
+  form; plugin-level `category`) so nobody mistakes them for Claude Code's, and the old wording is
+  a banned claim in the reference implementation's documentation gate.
+
+- **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes
+  are the RFC 8785 (JSON Canonicalization Scheme) serialisation after removing absent members, with
+  the field-by-field rules kept as an informative restatement. The restatement was already RFC 8785
+  (the reference canonicaliser passes RFC 8785's own vectors unchanged), so no existing hash or
+  signature changes; what changes is that an implementer in Go, Java, Python, Rust or .NET can use
+  an existing JCS library and check it against the corpus, which now carries RFC 8785's six
+  reference vectors (`conformance/jcs/`, vendored at a pinned commit under Apache-2.0 with its
+  source recorded) beside the contract's nine. Every `integer` field is bounded at 2^53 − 1 because
+  RFC 8785 presumes I-JSON; the ten `BOUND_TIGHTENED` findings are allow-listed with a fixture.
+
+- **The privacy properties are enforced by shape, not prose.** `request_hash`, `prompt_hash`,
+  `steering_hash` and `content_hash` require a 64-character lower-case hex digest; `details` on the
+  audit event and the CDI signal refuses by `propertyNames` any key whose segment is one of the
+  reference writer's eleven words (`authorization`, `content`, `file`, `password`, `path`, `payload`,
+  `prompt`, `request`, `secret`, `token`), split on non-alphanumerics and camelCase boundaries
+  exactly as the writer does; `summary` is capped at 300 characters and `reasoning` at 500, the
+  writer's own caps. Before this a raw prompt in `request_hash` validated, which SECURITY.md itself
+  calls a security issue. Each tightening is allow-listed with its fixture; the check against the
+  reference deployment's journals (33,538 audit records, 5,634 signals, 4,535 provenance lines) rejects
+  nothing.
+
+- **`workspace_id` is widened, and its description corrected.** It accepts a SHA-256 digest or a
+  lower-case UUID, because the collector writes a per-checkout UUID when the workspace has no git
+  remote and 4,910 of the reference deployment's 5,634 signals carry one. The description said
+  "SHA-256 of the git remote URL" and was false against real artefacts.
+
+- **`schema_version` stays required and the prose stops saying otherwise.** The README and the
+  provenance description said an absent value "is read as 1.0"; the schemas required it, and zero
+  real records lack it. A writer always writes it; a reader may read a pre-contract artefact as 1.0.
+
+- **Path rules are written without lookahead, and refuse three forms they used to accept.** Every
+  `read_paths`, `write_paths`, `deny.paths`, plugin `worker`, `docPacks` and `git-subdir` `path`
+  rule is now `allOf` of `not`/`pattern` clauses in the RFC 9485 I-Regexp subset. Go's `regexp`
+  (RE2) and the validators built on it could not load the old `(?!…)` rule at all, so the README's
+  "an implementation in another language needs nothing else" was false for Go; the new
+  `regex portability (RE2)` CI job now passes and is required. An `allow` path additionally refuses
+  a leading `~`, a drive-letter prefix and any backslash, which SPEC §5.2 already required and the
+  reference implementation already did; six new invalid fixtures prove each form. A `deny` path may
+  be home-relative (`~/.ssh/**`), because the reference implementation's own root policy denies
+  exactly that and refusing a path outside the workspace is meaningful. Each tightening is
+  allow-listed with its fixture as evidence; no real lease in the reference deployment carried a
+  refused `allow` form.
+
+- **The push baseline is the pushed-from commit.** The additive guard compared a push against
+  `HEAD^`, so a three-commit push whose first commit broke the rule was compared only against its
+  own second commit and passed. It now compares against `github.event.before`, falling back to the
+  merge base with `main` on a brand-new branch. Pull requests still compare against the base branch.
+
+### Fixed
+
+- **Every `$id` resolves.** The schemas named `https://cognitivedelivery.co.uk/contract/1.0.0/…`,
+  which redirected to `www` and returned 404 for the life of 1.0.x: a dangling identifier in a
+  contract about recording things verifiably. Each `$id` is now
+  `https://cognitive-delivery.github.io/contract/1.x/<file>`, served by GitHub Pages from the
+  `schemas/` directory at the deployed commit (`pages.yml`; no copy is committed, so nothing can
+  drift) and checked byte for byte against the tag on every release. `1.x`, not `1.0.3`: an
+  identifier that changed on every minor release would be a version number with extra steps, and
+  the version a document was written against is its own `schema_version`. Nothing resolved the old
+  URL, so the change costs no reader anything. Pages must be enabled on the repository (source
+  "GitHub Actions") for the URLs to serve; until then the release job warns rather than fails.
+
+- **One version source.** `tooling/sync-version.mjs` writes the version from `package.json` into
+  `cdfContract.schemaSetVersion`, the README's version line, every schema's `$id` major and any
+  fixture's `$schema`; `npm run lock` runs it first, and `npm test` checks all of them plus the
+  CHANGELOG, the lock and the SPEC header, and refuses any remaining reference to the old host.
+
+- **`package.json` said `schemaSetVersion` 1.0.0.** It had been stale since 1.0.1, and the version
+  currency check added in 1.0.2 did not read it. It now reads it.
 
 ## [1.0.2] — 2026-09-19
 
@@ -144,7 +300,8 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.1.0
 [1.0.2]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.0

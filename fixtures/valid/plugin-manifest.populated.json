@@ -34,7 +34,10 @@
       "command": "example-lsp",
       "args": [
         "--stdio"
-      ]
+      ],
+      "extensionToLanguage": {
+        ".example": "example"
+      }
     }
   },
   "cdf": {

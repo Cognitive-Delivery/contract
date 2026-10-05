@@ -1,0 +1,10 @@
+{
+  "name": "x-plugin",
+  "userConfig": {
+    "api_token": {
+      "type": "string",
+      "description": "Token",
+      "sensitive": true
+    }
+  }
+}

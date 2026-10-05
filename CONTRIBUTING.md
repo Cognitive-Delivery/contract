@@ -17,8 +17,9 @@ round trip that must not lose an unknown field, and the canonical-bytes vectors 
 in `package.json` matches the one stated in the README, the CHANGELOG and `schemas.lock.json` —
 added because the lock silently kept the previous version through a release.
 
-`npm run check:additive` compares the schema set against the shape it had before your change; in
-CI the baseline is the branch you are merging into. It reports named findings in the style of
+`npm run check:additive -- --baseline-ref origin/main` compares the schema set against the shape
+it had at that ref, digesting the baseline's schemas with the current generator; in CI the baseline
+is the branch you are merging into, or the pushed-from commit. It reports named findings in the style of
 `buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`,
 `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
 `SCHEMA_REMOVED`. The last four need a baseline in lock format 2 (`lockFormat` in
@@ -47,10 +48,12 @@ repository loses a record it depends on, and it is reviewed like a schema change
 to disagree with it. If a change makes the two say different things, one of them is wrong and
 the pull request has to say which.
 
-Section 7 — canonical bytes — is the part to be most careful with. Every hash in this contract
-is taken over those bytes, so a change there silently invalidates every signature anyone has
-ever produced. Any change to it needs a matching change to `conformance/canonical-vectors.json`
-and, realistically, a major version.
+Section 7 — canonical bytes — does not change within a major version. Every hash in this
+contract is taken over those bytes, so a change there silently invalidates every signature anyone
+has ever produced. Since 1.1 the section says canonical bytes are RFC 8785 after
+undefined-removal, and the corpus carries RFC 8785's own vectors (`conformance/jcs/`, vendored at
+a pinned commit with its licence and source recorded) beside the contract's nine; a pull request
+that touches §7, `canonical-vectors.json` or `jcs/` is a 2.0 pull request, whatever else it says.
 
 ## Changing a schema
 
@@ -77,8 +80,14 @@ Index measures. That is a contract change and is governed by ADR-013.
 **A reader that throws on something it does not recognise.** `phase` is an open string, unknown
 source forms are reported rather than rejected, and unknown fields survive a round trip.
 
-**A fixture under `invalid/` with no `.reason` file beside it.** "This should fail" with no
-reason is untestable folklore, and the runner fails the build for it.
+**A fixture under `invalid/` with no `.reason` file and no `.expect.json` beside it.** "This should
+fail" with no reason is untestable folklore, and "this should fail" with no place is a rejection
+that can happen for the wrong reason and pass; the runner fails the build for either. The
+`.expect.json` is `{ "path": "/where", "keyword": "why" }`: `path` must match an error the
+implementation reports, `keyword` is informative.
+
+**A signed fixture that does not verify under `conformance/test-key.txt`.** Re-sign it with the
+test key; never commit a lease signed with a real key, and never commit a real key.
 
 **Anything that widens what may reach a permanent record.** See [SECURITY.md](SECURITY.md).
 

@@ -1,0 +1,1 @@
+`commands.about` sets both `source` and `content`. Claude Code requires exactly one: a command body comes from a file or from inline Markdown, and an entry that sets both or neither fails validation there, so it fails here.

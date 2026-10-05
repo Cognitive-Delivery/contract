@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "workspace_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "event_type": "spec.created",
+  "adoption_tier": 2,
+  "prompt_hash": "write me a spec for the login page"
+}

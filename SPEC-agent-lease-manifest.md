@@ -1,6 +1,6 @@
 # The Agent Lease Manifest
 
-**Version 1.0 · Schema set 1.0 · 2026-09-19**
+**Version 1.1 · Schema set 1.1 · 2026-10-05**
 
 A portable way for a software agent to declare what it needs, for a host to answer with a signed
 grant that is never wider than what it was given, and for both halves to be recorded so a third
@@ -112,11 +112,31 @@ each of which **MAY** be empty.
 
 `deny` **MUST** carry `commands`, `paths` and `hosts`, each of which **MAY** be empty.
 
-Paths **MUST** be workspace-relative POSIX globs. An implementation **MUST** reject any path that is
-absolute or contains a `..` segment, and **MUST** re-check the resolved path against the workspace
-root rather than relying on the pattern alone. Rejecting the pattern is not sufficient: a symbolic
-link can carry a conforming relative path outside the root, so the check **MUST** be performed on the
-resolved path at use time.
+Paths **MUST** be workspace-relative POSIX globs. An implementation **MUST** reject an `allow` path
+that has any of these five forms, and the published schemas reject them too:
+
+| Form | Example | Why |
+|---|---|---|
+| a leading `/` | `/etc/passwd` | absolute |
+| any `..` segment | `../x`, `src/../x`, `a/..` | traversal |
+| a leading `~` | `~/x`, `~` | home-relative, outside the workspace |
+| a drive-letter prefix | `C:/Users/x` | absolute on Windows, invisible to a slash-only check |
+| any backslash | `..\x`, `C:\Users\x` | never a separator in a POSIX glob; refused rather than normalised |
+
+The schema expresses the rule as `allOf` of `not`/`pattern` clauses, each in the RFC 9485 I-Regexp
+subset, with no lookahead. That is deliberate: Go's `regexp` and every validator built on it reject
+lookahead, and a schema set a Go implementation cannot load is not portable whatever its README
+says. The contract's CI compiles every pattern under RE2. A `.` segment (`./x`, `src/./x`) and a
+percent-encoded sequence (`%2e%2e/x`) are **not** refused by pattern: a glob is not a URL, and the
+resolved-path check below is the control for anything a pattern cannot see.
+
+A `deny` path **MAY** be home-relative (`~/.ssh/**`), because refusing to touch a path outside the
+workspace is meaningful even though no `allow` could grant it; a leading `/`, any `..` segment and
+any backslash are refused in `deny` as well.
+
+An implementation **MUST** also re-check the resolved path against the workspace root at use time
+rather than relying on the pattern alone. Rejecting the pattern is not sufficient: a symbolic link
+can carry a conforming relative path outside the root.
 
 Hosts are hostnames, optionally with a single leading wildcard label. `*.example.com` **MUST** match
 `api.example.com` and **MUST NOT** match `example.com`; matching a bare parent domain requires
@@ -194,17 +214,19 @@ Consequences an implementation **MUST** preserve:
 
 ### 5.2 Refusal
 
-An issuer **MUST** refuse, rather than issue a lease, in each of these cases:
+An issuer **MUST** refuse, rather than issue a lease, in each of these cases. Each carries a stable
+identifier, R1 to R6, which is what a refusal record and the conformance vectors name.
 
-1. `intent.purpose` is absent or empty.
-2. Narrowing leaves `allow.tools` empty. A lease that opens nothing is indistinguishable in later
+1. **R1.** `intent.purpose` is absent or empty.
+2. **R2.** Narrowing leaves `allow.tools` empty. A lease that opens nothing is indistinguishable in later
    evidence from a lease that was never used, and those are different facts.
-3. Any declared `allow` path escapes the workspace — absolute, `~`-rooted, or containing `..`. The
-   escaping path **MUST** refuse the whole manifest rather than being silently dropped from it.
-   Dropping it would grant a narrower lease than was asked for without saying so.
-4. `agent.runtime_agent` is `unknown` for a `native` or `delegated-cli` agent (§4.2).
-5. The parent's `depth` is already zero.
-6. The parent's remaining `fan_out` is zero.
+3. **R3.** Any declared `allow` path escapes the workspace: a leading `/`, a `..` segment, a leading
+   `~`, a drive-letter prefix, or a backslash (§4.4). The escaping path **MUST** refuse the whole manifest
+   rather than being silently dropped from it. Dropping it would grant a narrower lease than was
+   asked for without saying so.
+4. **R4.** `agent.runtime_agent` is `unknown` for a `native` or `delegated-cli` agent (§4.2).
+5. **R5.** The parent's `depth` is already zero.
+6. **R6.** The parent's remaining `fan_out` is zero.
 
 Every refusal **MUST** be recorded with the same weight as a grant. An implementation that records
 grants but discards refusals does not conform: "the agent was not permitted to do that" is a fact,
@@ -229,7 +251,21 @@ recorded status.
 ## 7. Canonical bytes
 
 Normative, and the part on which interoperability depends. `declared_hash` and every signature are
-computed over **canonical bytes**, defined as follows.
+computed over **canonical bytes**.
+
+**Canonical bytes are the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) (JSON Canonicalization
+Scheme) serialisation of the value, after removing every member whose value is absent.** The
+removal is the one step outside RFC 8785, because JSON has no absent value and RFC 8785 therefore
+has nothing to say about one; an implementation whose data model has `undefined`, `None` or `nil`
+drops those members first and then canonicalises. An implementation **MAY** use any RFC 8785
+library for the second step, and the contract's corpus carries RFC 8785's own reference vectors
+(`conformance/jcs/`) beside its nine, so a library's conformance is checked rather than assumed.
+RFC 8785 presumes I-JSON (RFC 7493): every integer field in the schema set is bounded at
+2^53 − 1 so that a number can never canonicalise differently in two correct parsers.
+
+The rules below restate RFC 8785 for the reader who implements by hand, and name the two places
+implementations are known to diverge. Where this restatement and RFC 8785 could be read to differ,
+RFC 8785 governs.
 
 A value is serialised to UTF-8 with no insignificant whitespace, by these rules:
 
@@ -270,6 +306,12 @@ The reference implementation uses HMAC-SHA256 with a per-deployment key. This sp
 **not** require a particular algorithm, but an implementation **MUST** state which it uses, and
 **MUST NOT** accept a lease whose algorithm it cannot verify.
 
+The corpus publishes a **test key** (`conformance/test-key.txt`) and lease fixtures signed with it
+(`conformance/signature-vectors.json`), so that `declared_hash` and signature verification can be
+checked across implementations rather than asserted. The key is public by design. A verifier
+**MUST** refuse any lease signed with it outside a conformance run; the reference implementation
+holds its own per-deployment key and refuses every other.
+
 > **Known limitation.** A symmetric signature proves the lease was issued by a holder of the key,
 > which is the issuer itself. It does not let a third party verify a lease without being given that
 > key. An asymmetric scheme, with the public half published, is the obvious improvement and is not
@@ -277,7 +319,9 @@ The reference implementation uses HMAC-SHA256 with a per-deployment key. This sp
 
 ### 7.1 Test vectors
 
-Everything above is executable. `conformance/canonical-vectors.json` carries nine vectors — member
+Everything above is executable. `conformance/jcs/` carries RFC 8785's own six reference vectors
+(input and expected bytes, from the specification author's test suite at a pinned commit), and
+`conformance/canonical-vectors.json` carries nine vectors — member
 ordering, recursion, absent versus null, empty containers, the escape set, the literal set,
 unpaired surrogates, number forms, and UTF-16 versus code-point key order — each with its expected
 byte string and the SHA-256 of those bytes, plus two cases that **MUST** fail to serialise. An
@@ -321,16 +365,23 @@ What this specification defends against, and what it does not.
 An implementation claiming conformance with schema set 1.0 **MUST**:
 
 1. Validate every manifest and lease against the published schemas, and refuse what does not validate.
-2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant.
+2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant, and pass
+   every vector in `conformance/narrowing-vectors.json` by supplying `narrow` on its adapter.
 3. Record every issue, narrowing and refusal.
 4. Produce canonical bytes per §7 such that its `declared_hash` for a given declaration matches the
-   value another conforming implementation produces, and pass every vector in
-   `conformance/canonical-vectors.json` (§7.1). An implementation that only *reads* artefacts and
+   value another conforming implementation produces, pass every vector in
+   `conformance/canonical-vectors.json` and `conformance/jcs/` (§7.1), and, when it verifies
+   signatures, pass `conformance/signature-vectors.json` by supplying `hash` and `verify` on its
+   adapter: the fixtures verify under the published test key and stop verifying when one byte of
+   the signature or of the granted manifest changes. An implementation that only *reads* artefacts and
    never issues, signs or hashes one is exempt from this clause and **MUST** say so when it claims
    conformance, because the runner reports it as unchecked rather than as passed.
 5. Pass the published conformance corpus: accept every fixture under `fixtures/valid/` and reject
-   every fixture under `fixtures/invalid/`, each of which carries a `.reason` file stating what the
-   rejection is for.
+   every fixture under `fixtures/invalid/` **at the place its `.expect.json` names**. Each invalid
+   fixture carries a `.reason` file stating what the rejection is for and an `.expect.json` naming
+   the instance path the rejection must be reported at; an implementation that rejects a fixture
+   somewhere else has rejected it for the wrong reason, which is not conformance. The runner checks
+   the path when the adapter reports its errors, and says so when it cannot.
 6. State which signature algorithm it uses.
 
 An implementation **SHOULD** publish the result of running the corpus, so that the claim is evidence
@@ -355,8 +406,14 @@ statements are true at once.
 
 Conformance therefore has three halves, which is one more than the phrase allows and exactly the
 point: validate as the schemas say, canonicalise as §7 says, and issue or refuse as §4 and §5 say.
-The corpus checks the first two. The third is checked by the implementation's own tests, and a
-claim of conformance **SHOULD** say where those are.
+The corpus checks all three. `conformance/narrowing-vectors.json` carries declared-and-parent pairs
+with the granted manifest or the refusal codes narrowing **MUST** produce, covering every row of the
+§5 table, every containment row of §5.1 and every refusal of §5.2; an implementation runs them by
+supplying `narrow(declared, parent)` on its adapter, and one that does not is reported as unchecked
+rather than as passing. The vectors were generated from the reference implementation and committed,
+so the reference implementation is the oracle and the file is the contract: a second implementation
+that disagrees with a vector has found either its own defect or the reference's, and either is a
+finding the contract wants.
 
 ## 10. Compatibility
 
@@ -398,4 +455,8 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.1 | 2026-10-05 | §7 publishes a test key and signed fixtures so verification is checked across implementations; §9 requires a rejection to be reported at the place each invalid fixture's `.expect.json` names, and extends the round trip to a nested unknown field |
+| 1.1 | 2026-10-05 | §5.2 gives the six refusal conditions stable identifiers R1 to R6; §9 adds the narrowing vectors to the corpus, so the third half of conformance is checked by the corpus rather than left to each implementation's own tests |
+| 1.1 | 2026-10-05 | §7 states normatively that canonical bytes are RFC 8785 after undefined-removal, so existing JCS libraries and RFC 8785's own test vectors (now in the corpus) apply; the field-by-field rules become an informative restatement. Every integer field is bounded at 2^53 − 1 for I-JSON. No byte of any existing hash changes: the restatement was already RFC 8785, which is the point of saying so |
+| 1.1 | 2026-10-05 | §4.4 names the five refused `allow` path forms (adding a leading `~`, a drive-letter prefix and any backslash to the absolute and `..` forms) and permits a home-relative `deny` path; the schemas express the rule without lookahead so RE2 validators can load it. The reference implementation already refused all five; the schema and the text now agree with it |
 | 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time — the schemas had referred to "canonical bytes" in six descriptions without defining them anywhere — down to the closed escape set and UTF-16 key ordering, with executable test vectors at §7.1 |

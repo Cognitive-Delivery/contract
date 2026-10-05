@@ -30,10 +30,10 @@
     "budget": {},
     "approvals": []
   },
-  "declared_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
   "issued_at": "2026-09-15T10:00:00.000Z",
   "expires_at": "2026-09-15T10:15:00.000Z",
   "issuer_session_id": "s1",
-  "key_fingerprint": "sha256:3b1f0e",
-  "signature": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  "key_fingerprint": "sha256:9d12c441941d9b5e",
+  "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055"
 }

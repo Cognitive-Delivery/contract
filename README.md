@@ -3,7 +3,7 @@
 The artefact shapes any Cognitive Delivery implementation must read and write identically, plus
 a conformance corpus that proves it does.
 
-Version **1.0.2**, versioned independently of any product that implements it.
+Version **1.1.0**, versioned independently of any product that implements it.
 
 ## Why this exists
 
@@ -28,8 +28,8 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 | `config-core` | The part of `.cdf/config.yaml` every implementation must understand |
 | `agent-lease-manifest` | What an agent declares it needs before the harness lets it run. Specified normatively in [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) |
 | `agent-lease` | The signed grant the kernel answers with; the only key that opens anything |
-| `plugin-manifest` | A plugin's `plugin.json`: every Claude Code key, plus the additive `cdf` block |
-| `plugin-marketplace` | A marketplace's `marketplace.json`: every Claude Code key and all seven source forms, plus a per-entry declared digest |
+| `plugin-manifest` | A plugin's `plugin.json`: the keys the Claude Code manifest reference documents, as of 2026-10-05, plus two CDF extensions (`cdf`, plugin-level `category`) |
+| `plugin-marketplace` | A marketplace's `marketplace.json`: the keys and seven source forms the Claude Code marketplace reference documents, as of 2026-10-05, plus two CDF extensions (`local`, per-entry `cdf`) |
 
 ## What is deliberately not in it
 
@@ -43,20 +43,44 @@ written in another language reuses `fixtures/` unchanged and writes its own runn
 - **Implementation.** This is data and generated types. There is no logic here and no
   dependency on any product.
 
-## A superset is a compatibility promise, not a courtesy
+## What the plugin schemas model, and what they add
 
-`plugin-manifest` and `plugin-marketplace` are strict supersets of Claude Code's two formats.
-Every key Claude Code defines is honoured with the same meaning, so a plugin written for Claude
-Code validates here unchanged, and a plugin written for CDF remains a valid Claude Code plugin.
-The only addition is an optional `cdf` block.
+`plugin-manifest` and `plugin-marketplace` model the fields the Claude Code
+[manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference) and
+[marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference) document,
+**as read on 2026-10-05**, with the same meaning, and pass unknown keys through as Claude Code does
+(it strips an unknown top-level key with a warning). Where Claude Code's object is strict
+(`userConfig` options, `channels` entries, `lspServers` configs, monitors) the contract's is too,
+because honouring a key with the same meaning there means refusing an unknown one. The evidence is
+in the corpus: the manifest reference's own example manifest and Anthropic's marketplace for its
+bundled plugins both validate as fixtures.
 
-Two consequences follow, and both are deliberate:
+This is a dated statement, not a standing guarantee. The references change; a key added after that
+date validates here (the content model is open) but is not yet modelled, and the date in the schema
+descriptions says how current the modelling is. An earlier README promised more than a schema can
+keep about a moving target: that every key Claude Code would ever define was already here. That
+wording stopped being true as Claude Code grew, and it is now a banned claim in the reference
+implementation's documentation gate.
 
-- **All seven source forms are declared, including three the harness cannot fetch.** `npm`,
-  `archive` and `command` validate and are *reported* as an unsupported source form. A reader
-  that threw on them would refuse an entire marketplace over one entry nobody asked to install.
+**The contract has, Claude Code lacks.** Two extensions, both named here so no one mistakes them
+for Claude Code's:
+
+- **`cdf`** on a manifest and on a marketplace entry: what the harness alone understands
+  (contributions, capabilities, attestation, a declared digest).
+- **`local`** as a marketplace source form, for a marketplace that lists plugins already on disk.
+  Claude Code's only local form is the relative-path string; CDF's first-party marketplace ships
+  its plugins inside the repository and needs a form with nothing to fetch and nothing to pin.
+- **`category`** on a manifest. Claude Code documents `category` on a marketplace entry only and
+  strips it from `plugin.json` with a warning; CDF's plugin decision records key on it.
+
+Two consequences of following Claude Code's rules are deliberate:
+
+- **All seven Claude Code source forms are declared, including three the harness cannot fetch.**
+  `npm`, `archive` and `command` validate and are *reported* as an unsupported source form. A
+  reader that threw on them would refuse an entire marketplace over one entry nobody asked to
+  install.
 - **`name` is the only required key in a manifest.** That is Claude Code's rule, and adopting it
-  is what makes "validates unchanged" true rather than nearly true.
+  is what lets a Claude Code plugin validate here.
 
 ## Two closed vocabularies, and why
 
@@ -92,7 +116,9 @@ The comparison is against the shape *before* the change, not against the lock si
 schemas: a lock regenerated in the same commit agrees with whatever broke it. On a pull request
 the baseline is the branch being merged into; on a push it is the previous commit.
 
-Every artefact carries `schema_version`. One without it is read as `1.0.0`.
+Every artefact carries `schema_version`, and the schemas require it: a conformant writer always
+writes it. A reader meeting a pre-contract artefact without it may read it as `1.0`; it must not
+emit one.
 
 ## Installing
 
@@ -107,7 +133,10 @@ what produced its own.
 
 You can also use it straight from this repository, as a submodule or a clone pinned to a tag.
 `schemas/` and `fixtures/` are plain files and an implementation in another language needs
-nothing else.
+nothing else. Each schema is also served at its `$id`
+(`https://cognitive-delivery.github.io/contract/1.x/<file>`), so a validator that resolves
+identifiers finds the current 1.x schema there; the version a document was written against is its
+own `schema_version` field.
 
 ## A worked example
 
@@ -169,13 +198,34 @@ The full rules, including the six conditions that require a refusal, are in
 
 ```
 npm ci
-npm test                 # the corpus, against the reference adapter
+npm test                 # the corpus, the vectors and the guard's own tests, against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
-Both run in CI on every push and pull request, against Node 20 and 22. The point of a corpus is
-that a third party can check the claim, so the check has to be runnable by someone who has never
-seen the product.
+Both run in CI on every push and pull request, against Node 20 and 22, beside a job that compiles
+every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
+check has to be runnable by someone who has never seen the product.
+
+### Signature vectors and rejection places
+
+`conformance/signature-vectors.json` names lease fixtures signed with the published **test key**
+(`conformance/test-key.txt`) and the declarations they were issued from. Supply `hash(value)` and
+`verify(lease, keyHex)` on your adapter and the runner checks that your `declared_hash` matches,
+that the fixtures verify, and that they stop verifying when a byte of the signature or of the
+granted manifest changes. The key is public on purpose; a verifier must refuse it outside a
+conformance run. Every invalid fixture also carries an `.expect.json` naming the instance path its
+rejection must be reported at, and the runner checks it when your adapter reports its errors
+(`lastErrors`, Ajv's shape): rejecting a fixture for the wrong reason is not conformance.
+
+### Narrowing vectors
+
+`conformance/narrowing-vectors.json` is the third half of conformance made executable: a declared
+manifest and a parent grant, and either the granted manifest narrowing must produce or the refusal
+codes (R1 to R6 of SPEC §5.2) it must return. Supply `narrow(declared, parent)` on your adapter and
+the runner compares granted manifests by canonical bytes and refusal sets exactly; omit it and the
+run says **behaviour NOT CHECKED** while still checking every vector's shape. The vectors were
+generated from the reference implementation and committed, so a disagreement is a finding about one
+of the two implementations, and either kind is wanted.
 
 ### Canonical bytes
 
@@ -188,10 +238,14 @@ reject exactly the same artefacts and still produce different bytes for the same
 therefore be unable to verify a single one of each other's signatures. Everything looks correct
 right up until somebody else's hash arrives.
 
-`conformance/canonical-vectors.json` holds nine vectors with their expected byte strings and
-SHA-256 digests, plus two values that must *fail* to serialise. Supply a `canonicalise(value)`
-on your adapter and the runner checks them; omit it and the run reports **NOT CHECKED** rather
-than passing quietly. The rules themselves are section 7 of
+Canonical bytes are **RFC 8785 (JSON Canonicalization Scheme) after removing absent members**, so
+an implementation in another language can use an existing JCS library — Go, Java, Python, Rust,
+.NET and JavaScript all have one — rather than port the rules by hand. The corpus proves it either
+way: `conformance/jcs/` carries RFC 8785's own six reference vectors, and
+`conformance/canonical-vectors.json` nine more with their expected byte strings and SHA-256
+digests, plus two values that must *fail* to serialise. Supply a `canonicalise(value)` on your
+adapter and the runner checks all fifteen; omit it and the run reports **NOT CHECKED** rather than
+passing quietly. The restated rules are section 7 of
 [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) — the escape set is closed, keys sort
 by UTF-16 code unit, and an absent member is omitted rather than nulled.
 
@@ -200,13 +254,19 @@ by UTF-16 code unit, and an absent member is omitted rather than nulled.
 These are not stylistic. Audit and Index evidence is append-only and retained indefinitely, so
 anything that reaches it is effectively permanent.
 
-- Prompts are **never** recorded. `prompt_hash` and `request_hash` are SHA-256.
-- `workspace_id` is a hash of the git remote URL, not a person identifier.
+- Prompts are **never** recorded. `prompt_hash`, `request_hash`, `steering_hash` and `content_hash`
+  are SHA-256, and since 1.1 the schemas refuse anything that is not a 64-character lower-case hex
+  digest, so a writer that skipped the hashing cannot produce a valid record.
+- `workspace_id` is a hash of the git remote URL, or a per-checkout UUID when the workspace has no
+  remote. Either way it is not a person identifier and not reversible to one; the schema accepts
+  exactly those two shapes.
 - The actor records a **kind** — human, agent or system — and the model. Never a name, email or
   git identity.
-- `details` is sanitised before write: keys matching token, secret, password, authorization,
-  prompt, content, file or path are dropped. Renaming a sensitive field to evade that check
-  defeats the control.
+- `details` is sanitised before write, and the schema enforces the same rule: a key whose segment
+  (split on non-alphanumerics and camelCase boundaries) is `authorization`, `content`, `file`,
+  `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` is refused. Values are
+  flat scalars. `summary` is capped at 300 characters and `reasoning` at 500. Renaming a sensitive
+  field to evade the list defeats the control.
 
 ## Layout
 

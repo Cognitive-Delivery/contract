@@ -64,3 +64,31 @@ jobs:
       # configured per package and needs the package to exist). CI still attests
       # every release; a hand publish is now possible when it has to be.
       - run: npm publish --provenance
+
+      # Every `$id` must serve the bytes of the schema it names. Pages deploys from main on push,
+      # so at the tag the served file and the tagged file are the same commit's. A 404 means Pages
+      # is not enabled yet and is reported, not failed, because the owner enables it and a release
+      # is not the moment to discover that; a 200 with different bytes IS a failure, because a
+      # reader resolving the identifier would get a schema this release did not ship.
+      - name: Each $id serves the tagged schema
+        run: |
+          MAJOR="$(node -p "require('./package.json').version.split('.')[0]")"
+          status=0
+          for f in schemas/*.schema.json; do
+            name="$(basename "$f")"
+            url="https://cognitive-delivery.github.io/contract/${MAJOR}.x/${name}"
+            code="$(curl -s -o /tmp/served.json -w '%{http_code}' "$url")"
+            if [ "$code" = "404" ]; then
+              echo "::warning::${url} returned 404: GitHub Pages is not enabled on this repository yet (Settings → Pages → Source: GitHub Actions)."
+              continue
+            fi
+            if [ "$code" != "200" ]; then
+              echo "::error::${url} returned ${code}"; status=1; continue
+            fi
+            if ! cmp -s /tmp/served.json "$f"; then
+              echo "::error::${url} serves different bytes from ${f} at this tag"; status=1
+            else
+              echo "${url}: 200, bytes identical"
+            fi
+          done
+          exit $status

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/audit-event.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/audit-event.schema.json",
   "title": "CDF governance audit event",
   "description": "One line of the append-only governance journal. Rotated files carry the same shape. Deliberately holds a request hash rather than the request, and a sanitised summary rather than content: this file is retained indefinitely, so anything that reaches it is effectively permanent. CORRECTED against real artefacts: event_id and session_id are NOT required. A writer active between 2026-05-12 and 2026-05-15 emitted 61 codex.health.audit_probe records without them. The journal is append-only and retained indefinitely, so those records are permanent and a conformant reader will meet them. Rejecting real evidence would be worse than a slightly weaker schema. The current writer emits both.",
   "type": "object",
@@ -20,7 +20,7 @@
     },
     "event_id": {
       "type": "string",
-      "description": "Optional for historical reasons only \u2014 see the schema description. Current writers emit it."
+      "description": "Optional for historical reasons only — see the schema description. Current writers emit it."
     },
     "event_type": {
       "type": "string",
@@ -28,7 +28,7 @@
     },
     "session_id": {
       "type": "string",
-      "description": "Optional for historical reasons only \u2014 see the schema description. Current writers emit it."
+      "description": "Optional for historical reasons only — see the schema description. Current writers emit it."
     },
     "request_id": {
       "type": "string"
@@ -74,14 +74,19 @@
       "additionalProperties": true
     },
     "summary": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 300,
+      "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text."
     },
     "reasoning": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 500,
+      "description": "Why the agent chose this action, at most 500 characters: the reference writer's own cap. Never prompt text."
     },
     "request_hash": {
       "type": "string",
-      "description": "SHA-256 of the request. NEVER the request itself."
+      "description": "SHA-256 of the request, lower-case hex. NEVER the request itself; the pattern refuses anything that is not a 64-character digest.",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "outcome": {
       "type": "string",
@@ -93,12 +98,32 @@
     },
     "details": {
       "type": "object",
-      "description": "Sanitised before write: keys matching token, secret, password, authorization, prompt, content, file or path are dropped. Do not defeat this by renaming a sensitive field.",
+      "description": "Flat scalars only, and keys are filtered by name: a key whose segment is authorization, content, file, password, path, payload, prompt, request, secret or token is refused by the schema, mirroring the reference writer, which drops it before write. Do not defeat this by renaming a sensitive field.",
       "additionalProperties": {
         "type": [
           "string",
           "number",
           "boolean"
+        ]
+      },
+      "propertyNames": {
+        "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of eleven words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",
+        "allOf": [
+          {
+            "not": {
+              "pattern": "(^|[^A-Za-z0-9])(authorization|content|file|password|path|payload|prompt|request|secret|token)([^A-Za-z0-9]|$)"
+            }
+          },
+          {
+            "not": {
+              "pattern": "[a-z0-9](Authorization|Content|File|Password|Path|Payload|Prompt|Request|Secret|Token)([^a-z]|$)"
+            }
+          },
+          {
+            "not": {
+              "pattern": "^(authorization|content|file|password|path|payload|prompt|request|secret|token)[A-Z]"
+            }
+          }
         ]
       }
     }

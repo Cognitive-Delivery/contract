@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "timestamp": "2026-07-25T10:00:00.000Z",
+  "event_type": "task.status_updated",
+  "request_hash": "please update the task status for 1.1 and mark it complete"
+}

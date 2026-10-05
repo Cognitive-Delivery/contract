@@ -1,6 +1,6 @@
 {
   "name": "@cognitive-delivery/contract",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "The Cognitive Delivery governance contract: the artefact shapes any implementation must read and write identically, with a conformance corpus.",
   "license": "Apache-2.0",
   "author": "Jason Cruz Falzon <jason@cognitivedelivery.co.uk>",
@@ -50,13 +50,14 @@
   },
   "scripts": {
     "test": "node ./conformance/run.mjs",
-    "lock": "node ./generate-schemas-lock.mjs",
+    "lock": "node ./tooling/sync-version.mjs && node ./generate-schemas-lock.mjs",
     "check:additive": "node ./check-additive.mjs",
     "generate": "node ./generate-contract-types.mjs",
-    "check": "node ./generate-contract-types.mjs --check"
+    "check": "node ./generate-contract-types.mjs --check",
+    "version:sync": "node ./tooling/sync-version.mjs"
   },
   "cdfContract": {
-    "schemaSetVersion": "1.0.0",
+    "schemaSetVersion": "1.1.0",
     "compatibility": "Within 1.x, changes are additive only. New optional fields are allowed. Renaming, removing, narrowing or redefining a field requires 2.0.0 and a documented migration."
   },
   "devDependencies": {

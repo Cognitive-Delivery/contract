@@ -1,0 +1,3555 @@
+{
+  "_comment": [
+    "Narrowing vectors for SPEC-agent-lease-manifest.md section 5 and the refusals of section 5.2.",
+    "Generated from the reference implementation (CDF Harness, src/governance/leases/narrow.ts) by",
+    "test/unit/contractNarrowingVectors.test.ts with CDF_WRITE_NARROWING_VECTORS=1, and committed.",
+    "Each vector has `declared` and `parent` (a GRANTED manifest with its REMAINING budget), and either",
+    "`granted` (compare by canonical bytes) or `refusals` (compare the set of R1..R6 exactly).",
+    "A vector with `schema_invalid: true` is refused by the schemas at validation (section 9 step 1):",
+    "a conforming implementation never narrows it, so only its invalidity is checked, and `refusals`",
+    "records which section 5.2 condition the schema enforces. `diff` is informative."
+  ],
+  "vectors": [
+    {
+      "name": "tools-intersect-by-exact-name",
+      "why": "§5: tools intersect by exact name; a tool the parent never held is gone.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_break_glass_advance"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [
+          "cdf_break_glass_advance"
+        ],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "commands-intersect-by-exact-name",
+      "why": "§5: commands intersect by exact executable name.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": [
+            "node",
+            "curl"
+          ]
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [
+          "curl"
+        ],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "paths-parent-star-star-contains-everything",
+      "why": "§5.1: a parent `**` contains every workspace-relative path or glob.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**",
+            "docs/a.md",
+            "lib/*.ts"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**",
+            "docs/a.md",
+            "lib/*.ts"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "paths-dir-star-star-contains-prefix",
+      "why": "§5.1: `src/**` contains `src`, `src/anything`, `src/sub/**` and `src/*.ts`, and nothing outside `src/`.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src",
+            "src/a.ts",
+            "src/sub/**",
+            "src/*.ts",
+            "lib/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src",
+            "src/a.ts",
+            "src/sub/**",
+            "src/*.ts"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [
+          "lib/**"
+        ],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "paths-glob-contains-only-identical-glob",
+      "why": "§5.1: a parent `src/*.ts` does NOT contain a child `src/a.ts`; the child must declare the same glob. Conservative fails closed.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/*.ts"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/*.ts",
+            "src/a.ts"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/*.ts"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [
+          "src/a.ts"
+        ],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "paths-literal-contains-only-identical-path",
+      "why": "§5.1: a literal parent path contains only the identical path.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "README.md"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "README.md",
+            "README.md.bak"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "README.md"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [
+          "README.md.bak"
+        ],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "hosts-wildcard-label-containment",
+      "why": "§4.4 and §5: `*.anthropic.com` contains `api.anthropic.com` and does not contain `anthropic.com` or `example.com`.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "api.anthropic.com",
+            "anthropic.com",
+            "example.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "api.anthropic.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [
+          "anthropic.com",
+          "example.com"
+        ],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "hosts-star-contains-everything",
+      "why": "§5.1: a parent `*` contains every host.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "example.com",
+            "api.example.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "example.com",
+            "api.example.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "deny-and-approvals-union",
+      "why": "§5: deny lists and approvals are the union with the parent; a child cannot shed a parent refusal.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "docker"
+          ],
+          "paths": [
+            ".env"
+          ],
+          "hosts": [
+            "evil.example"
+          ]
+        },
+        "budget": {},
+        "approvals": [
+          "external.write"
+        ]
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "docker",
+            "sudo"
+          ],
+          "paths": [
+            ".env",
+            ".cdf/runtime/**"
+          ],
+          "hosts": [
+            "evil.example"
+          ]
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "external.write",
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "budget-clamped-to-parent-remaining",
+      "why": "§5: a declared budget is min(declared, parent remaining); an absent one inherits the parent remaining; a parent without a ceiling leaves the declared value.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "cost_usd": 3,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 500000,
+          "steps": 50
+        },
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "steps": 50,
+          "tokens": 200000,
+          "cost_usd": 3,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "declared": 500000,
+            "granted": 200000
+          },
+          {
+            "field": "cost_usd",
+            "granted": 3
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "depth-decrements-and-clamps",
+      "why": "§5: depth is parent.depth − 1, further clamped by any declared value.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 5
+        },
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "depth",
+            "declared": 5,
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "depth-declared-smaller-wins",
+      "why": "§5: a declared depth smaller than parent.depth − 1 is kept.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 3,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 0
+        },
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 0,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "fan-out-bounded-by-parent-remaining",
+      "why": "§5: fan_out is bounded by the parent's REMAINING fan-out, which the issuer has already reduced by live children.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 2,
+          "fan_out": 3
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {
+          "fan_out": 10
+        },
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 1,
+          "fan_out": 3
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "declared": 10,
+            "granted": 3
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "identity-intent-attestation-preserved",
+      "why": "§5: agent, intent, parent_lease_id and attestation pass through unchanged; the issuer does not rewrite who vouched.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": [],
+        "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+        "attestation": {
+          "issuer": "bridge",
+          "key_fingerprint": "sha256:3b1f0e"
+        }
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ],
+        "attestation": {
+          "issuer": "bridge",
+          "key_fingerprint": "sha256:3b1f0e"
+        }
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "unknown-accepted-for-external",
+      "why": "§4.2: `unknown` is accepted for an external agent; the issuer genuinely may not know what presents over a bridge.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "bridge peer",
+          "kind": "external",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "bridge peer",
+          "kind": "external",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "unknown-accepted-for-plugin",
+      "why": "§4.2: `unknown` is accepted for a plugin.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "plugin worker",
+          "kind": "plugin",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "plugin worker",
+          "kind": "plugin",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [],
+        "commands_removed": [],
+        "deny_commands_added": [
+          "sudo"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [
+          "phase.advance"
+        ],
+        "budget_clamped": [
+          {
+            "field": "tokens",
+            "granted": 200000
+          },
+          {
+            "field": "depth",
+            "granted": 1
+          },
+          {
+            "field": "fan_out",
+            "granted": 4
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "root-manifest-narrowed-against-root-policy",
+      "why": "§5.1: a manifest with no parent is narrowed against the deployment's root policy, never treated as unbounded; the root policy's denies are inherited.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "workspace root policy",
+          "kind": "native",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "The workspace root policy every parentless lease is narrowed against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "**"
+          ],
+          "hosts": [
+            "api.anthropic.com",
+            "api.openai.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo",
+            "su",
+            "docker",
+            "ssh",
+            "curl",
+            "wget"
+          ],
+          "paths": [
+            ".cdf/runtime/lease-signing.key",
+            ".cdf/steering/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 4,
+          "fan_out": 8
+        },
+        "approvals": []
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "**"
+          ],
+          "hosts": [
+            "api.anthropic.com",
+            "example.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 1000000
+        },
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "**"
+          ],
+          "hosts": [
+            "api.anthropic.com"
+          ],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo",
+            "su",
+            "docker",
+            "ssh",
+            "curl",
+            "wget"
+          ],
+          "paths": [
+            ".cdf/runtime/lease-signing.key",
+            ".cdf/steering/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 1000000,
+          "depth": 3,
+          "fan_out": 8
+        },
+        "approvals": []
+      },
+      "diff": {
+        "tools_removed": [],
+        "read_paths_removed": [],
+        "write_paths_removed": [],
+        "hosts_removed": [
+          "example.com"
+        ],
+        "commands_removed": [
+          "node"
+        ],
+        "deny_commands_added": [
+          "sudo",
+          "su",
+          "docker",
+          "ssh",
+          "curl",
+          "wget"
+        ],
+        "deny_paths_added": [
+          ".cdf/runtime/lease-signing.key",
+          ".cdf/steering/**"
+        ],
+        "deny_hosts_added": [],
+        "approvals_added": [],
+        "budget_clamped": [
+          {
+            "field": "depth",
+            "granted": 3
+          },
+          {
+            "field": "fan_out",
+            "granted": 8
+          }
+        ],
+        "empty": false
+      }
+    },
+    {
+      "name": "R1-empty-purpose",
+      "why": "§5.2 R1: a manifest without a stated purpose is refused.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "   "
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R1"
+      ]
+    },
+    {
+      "name": "R2-tools-empty-after-narrowing",
+      "why": "§5.2 R2: narrowing leaves allow.tools empty; a lease that opens nothing is refused rather than issued.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_break_glass_advance"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R2"
+      ]
+    },
+    {
+      "name": "R2-tools-declared-empty",
+      "why": "§5.2 R2: a manifest that asks for no tools is refused for the same reason.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R2"
+      ]
+    },
+    {
+      "name": "R3-escaping-path-refuses-whole-manifest",
+      "why": "§5.2 R3: an escaping allow path refuses the whole manifest rather than being dropped from it; the other declared paths were acceptable. The schema refuses this manifest at validation (§9 step 1) and the reference implementation refuses it again in narrowing, for a validator that was bypassed.",
+      "schema_invalid": true,
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**",
+            "../x"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R3"
+      ]
+    },
+    {
+      "name": "R3-home-relative-allow-path",
+      "why": "§5.2 R3 and §4.4: a home-relative allow path escapes the workspace. Refused by the schema at validation and again in narrowing.",
+      "schema_invalid": true,
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "~/.ssh/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R3"
+      ]
+    },
+    {
+      "name": "R4-unknown-refused-for-native",
+      "why": "§5.2 R4: `unknown` is refused for a native agent; the issuer runs it and knows what it is.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "turn",
+          "kind": "native",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R4"
+      ]
+    },
+    {
+      "name": "R4-unknown-refused-for-delegated-cli",
+      "why": "§5.2 R4: `unknown` is refused for a delegated CLI.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "unknown"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R4"
+      ]
+    },
+    {
+      "name": "R5-parent-depth-exhausted",
+      "why": "§5.2 R5: a parent whose depth is zero may not issue children.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 0,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R5"
+      ]
+    },
+    {
+      "name": "R6-parent-fan-out-exhausted",
+      "why": "§5.2 R6: a parent whose remaining fan-out is zero has no free child slot.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "depth": 2,
+          "fan_out": 0
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R6"
+      ]
+    },
+    {
+      "name": "R1-and-R2-both-reported",
+      "why": "§5.2: every applicable refusal is reported, not only the first. A whitespace purpose passes the schema's minLength and is still empty.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "  "
+        },
+        "allow": {
+          "tools": [],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "refusals": [
+        "R1",
+        "R2"
+      ]
+    }
+  ]
+}

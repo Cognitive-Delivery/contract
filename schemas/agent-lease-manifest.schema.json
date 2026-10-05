@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cognitivedelivery.co.uk/contract/1.0.0/agent-lease-manifest.schema.json",
+  "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease-manifest.schema.json",
   "title": "Agent Lease Manifest",
   "description": "What an agent DECLARES it needs before the kernel lets it run. The manifest is the declared half of a two-part record: the agent (or the bridge or harness presenting on its behalf) declares tools, paths, hosts, commands and budget, and the kernel answers with an Agent Lease whose `manifest` is the GRANTED half, narrowed to what the parent lease and the workspace policy allow. Declared and granted have the same shape on purpose, so the narrowing diff is a plain comparison. Rule 7 of the harness: no manifest, no lease; no lease, no connectivity. A manifest the kernel cannot narrow to a non-empty grant is refused, and the refusal is recorded. Paths are workspace-relative POSIX globs; hosts are hostnames with an optional leading wildcard label; commands are executable names.",
   "definitions": {
@@ -120,20 +120,72 @@
         },
         "read_paths": {
           "type": "array",
-          "description": "Workspace-relative POSIX globs the agent may read. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root.",
+          "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
           "items": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "^/"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "(^|/)\\.\\.(/|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^~"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^[A-Za-z]:"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "\\\\"
+                }
+              }
+            ]
           }
         },
         "write_paths": {
           "type": "array",
-          "description": "Workspace-relative POSIX globs the agent may change. Absolute paths and any `..` segment are rejected here; the registry re-checks against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
+          "description": "Workspace-relative POSIX globs the agent may change. Refused here, without lookahead: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root, and a change outside the granted set is a scope violation that revokes the lease.",
           "items": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "^/"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "(^|/)\\.\\.(/|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^~"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^[A-Za-z]:"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "\\\\"
+                }
+              }
+            ]
           }
         },
         "hosts": {
@@ -174,11 +226,27 @@
         },
         "paths": {
           "type": "array",
-          "description": "Workspace-relative POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself.",
+          "description": "POSIX globs the agent must not touch: credentials, governance evidence, the lease journal itself. A denial MAY be home-relative (`~/.ssh/**`), because refusing a path outside the workspace is meaningful even though no allow could grant it; a leading `/`, any `..` segment and any backslash are refused.",
           "items": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$)).*$"
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "^/"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "(^|/)\\.\\.(/|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "\\\\"
+                }
+              }
+            ]
           }
         },
         "hosts": {
@@ -199,17 +267,20 @@
         "steps": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum tool calls or turns."
+          "description": "Maximum tool calls or turns.",
+          "maximum": 9007199254740991
         },
         "wall_clock_ms": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum lifetime in milliseconds; the lease expires when it is spent."
+          "description": "Maximum lifetime in milliseconds; the lease expires when it is spent.",
+          "maximum": 9007199254740991
         },
         "tokens": {
           "type": "integer",
           "minimum": 0,
-          "description": "Maximum model tokens, input plus output."
+          "description": "Maximum model tokens, input plus output.",
+          "maximum": 9007199254740991
         },
         "cost_usd": {
           "type": "number",
@@ -219,12 +290,14 @@
         "depth": {
           "type": "integer",
           "minimum": 0,
-          "description": "How many generations of child lease may be issued beneath this one. Zero means no children."
+          "description": "How many generations of child lease may be issued beneath this one. Zero means no children.",
+          "maximum": 9007199254740991
         },
         "fan_out": {
           "type": "integer",
           "minimum": 0,
-          "description": "How many child leases may be live under this one at once."
+          "description": "How many child leases may be live under this one at once.",
+          "maximum": 9007199254740991
         }
       },
       "additionalProperties": true

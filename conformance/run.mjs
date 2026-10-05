@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
 import { runGuardTests } from './guard-tests.mjs';
+import { runSchemaChecks } from './schema-checks.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -52,6 +53,31 @@ async function checkVersionCurrency() {
   if (lockVersion !== version) {
     problems.push(`schemas.lock.json records schemaSetVersion ${lockVersion}, not ${version} — run \`npm run lock\``);
   }
+  // Every `$id` names this major, at the host that serves it. `tooling/sync-version.mjs` writes
+  // them; this is the check that nobody edited one by hand or forgot the sync on a major bump.
+  const major = version.split('.')[0];
+  const { readdir } = await import('node:fs/promises');
+  const { idFor } = await import('../tooling/sync-version.mjs');
+  for (const file of (await readdir(resolve(root, 'schemas'))).filter((n) => n.endsWith('.schema.json')).sort()) {
+    const id = JSON.parse(await readFile(resolve(root, 'schemas', file), 'utf8')).$id;
+    if (id !== idFor(major, file)) {
+      problems.push(`schemas/${file} has $id ${id}, not ${idFor(major, file)} — run \`npm run version:sync\``);
+    }
+  }
+  // The specification's header names the schema set it specifies.
+  const spec = await readFile(resolve(root, 'SPEC-agent-lease-manifest.md'), 'utf8');
+  if (!spec.includes(`Schema set ${major}.`)) {
+    problems.push(`SPEC-agent-lease-manifest.md header does not name schema set ${major}.x`);
+  }
+  // Nothing anywhere still points at the host that never served the schemas.
+  const { execFileSync } = await import('node:child_process');
+  let stale = '';
+  // Built from parts so this file does not match its own check.
+  const oldHost = ['cognitivedelivery.co.uk', 'contract/'].join('/');
+  try { stale = execFileSync('git', ['grep', '-l', oldHost, '--', 'schemas', 'fixtures', 'README.md', 'SPEC-agent-lease-manifest.md', 'conformance', ':!conformance/run.mjs'], { cwd: root, encoding: 'utf8' }); } catch { stale = ''; }
+  if (stale.trim()) {
+    problems.push(`these files still reference the old $id host, which never served the schemas: ${stale.trim().split('\n').join(', ')}`);
+  }
   return { version, problems };
 }
 
@@ -60,18 +86,26 @@ const report = await runConformance(adapter);
 
 console.log(
   `Conformance: ${report.validCount} valid fixtures, ${report.invalidCount} rejections, `
-  + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}.`,
+  + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}, `
+  + `narrowing ${report.narrowingChecked ? 'checked' : 'vectors well-formed, behaviour NOT CHECKED (the reference adapter validates only; the reference implementation runs them in its own suite)'}, `
+  + `signatures ${report.signaturesChecked ? 'checked' : 'NOT CHECKED (adapter offers no hash/verify)'}, `
+  + `rejection paths ${report.errorPathsChecked ? 'checked' : 'NOT CHECKED (adapter reports no errors)'}.`,
 );
 
 const currency = await checkVersionCurrency();
-console.log(`Version ${currency.version} stated consistently in package.json, README, CHANGELOG and schemas.lock.json.`);
+console.log(`Version ${currency.version} stated consistently in package.json (twice), README, CHANGELOG, schemas.lock.json, every $id and the SPEC header.`);
 
 // The guard is a control, so it is tested like one: every finding seen to fire, every
 // additive change seen to pass, the allow-list seen to refuse an entry without evidence.
 const guard = await runGuardTests();
 console.log(`Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures];
+// The schema set itself: strict compile, the inlined granted manifest identical to its
+// source, and the package's own version statement. Held here, not in a consumer.
+const schemaChecks = await runSchemaChecks();
+console.log(`Schema checks: ${schemaChecks.schemaCount} schemas strict-compiled, identity and version checked, ${schemaChecks.failures.length} failure(s).`);
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

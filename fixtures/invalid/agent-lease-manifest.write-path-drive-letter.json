@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "agent": {
+    "name": "reviewer",
+    "kind": "delegated-cli",
+    "runtime_agent": "claude-code"
+  },
+  "intent": {
+    "purpose": "Review the diff for task 1.1."
+  },
+  "allow": {
+    "tools": [
+      "cdf_read_code_map"
+    ],
+    "read_paths": [
+      "src/**"
+    ],
+    "write_paths": [
+      "C:/Users/x"
+    ],
+    "hosts": [],
+    "commands": []
+  },
+  "deny": {
+    "commands": [],
+    "paths": [],
+    "hosts": []
+  },
+  "budget": {},
+  "approvals": []
+}

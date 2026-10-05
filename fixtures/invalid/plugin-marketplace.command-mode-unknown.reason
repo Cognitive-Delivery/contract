@@ -1,0 +1,1 @@
+`source.mode` is `symlink`. Claude Code accepts `copy` (the default) and `link` and nothing else, so a third value never loaded a plugin anywhere; the contract used to carry `mode` as an open string, which let a marketplace declare a mode no host could honour.

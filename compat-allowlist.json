@@ -1,5 +1,374 @@
 {
   "note": "Tightenings accepted within the current major, each with the evidence that no conformant writer ever produced what it now refuses. Entries are history: never deleted within a major, and refused by check-additive.mjs when their evidence file is missing. See CONTRIBUTING.md.",
   "version": 1,
-  "entries": []
+  "entries": [
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.read_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#allow.write_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#deny.paths[]",
+      "reason": "deny paths now refuse a backslash as well as a leading / and a .. segment; the home-relative form the reference root policy denies (~/.ssh/**) stays legal. No real lease in the reference deployment (6 records, 39 paths) carried a backslash.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-backslash-traversal.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.read_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.allow.write_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.deny.paths[]",
+      "reason": "deny paths now refuse a backslash as well as a leading / and a .. segment; the home-relative form the reference root policy denies (~/.ssh/**) stays legal. No real lease in the reference deployment (6 records, 39 paths) carried a backslash.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-backslash-traversal.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.read_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#capabilities.write_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#check.worker",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#contributes.docPacks[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.read_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#capabilities.write_paths[]",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceGitSubdir.path",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "details",
+      "reason": "the schema now refuses the keys the reference writer already drops (eleven segment words, snake and camelCase forms); 33,557 real records, 0 refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.details-key-token.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "reasoning",
+      "reason": "the reference writer caps reasoning at 500 characters; no real record is longer.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.summary-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "request_hash",
+      "reason": "request_hash was always specified as SHA-256; all 33,557 real audit records in the reference deployment are 64-char hex. A raw request validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "summary",
+      "reason": "the reference writer caps summary at 300 characters; no real record is longer.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.summary-too-long.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "details",
+      "reason": "the same key filter as the audit event; 5,652 real signals, 0 refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.details-key-token.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "prompt_hash",
+      "reason": "prompt_hash was always specified as SHA-256; every real signal carrying one is 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.prompt-hash-not-sha256.json"
+    },
+    {
+      "finding": "UNION_CHANGED",
+      "schema": "cdi-signal.schema.json",
+      "path": "workspace_id",
+      "reason": "workspace_id is a SHA-256 digest or a per-checkout UUID; every one of 5,652 real signals is one of the two (the UUID form is the majority). The remote URL itself validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.workspace-id-not-hash-or-uuid.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "workspace_id",
+      "reason": "workspace_id is a SHA-256 digest or a per-checkout UUID; every one of 5,652 real signals is one of the two (the UUID form is the majority). The remote URL itself validated before.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/cdi-signal.workspace-id-not-hash-or-uuid.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.content_hash",
+      "reason": "content_hash was always specified as SHA-256; all real records carrying one are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.prompt_hash",
+      "reason": "prompt_hash was always specified as SHA-256; all 4,535 real provenance records are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.steering_hash",
+      "reason": "steering_hash is a SHA-256, or 64 zeros when the writer cannot compute it; all 4,535 real records are 64-char hex.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.request-hash-not-sha256.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.depth",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.fan_out",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.steps",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.tokens",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease-manifest.schema.json",
+      "path": "#budget.wall_clock_ms",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.depth",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.fan_out",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.steps",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.tokens",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "agent-lease.schema.json",
+      "path": "#grantedManifest.budget.wall_clock_ms",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "cdi-signal.schema.json",
+      "path": "adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "break_glass.timeout_minutes",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "config-core.schema.json",
+      "path": "review_policy.required_reviewers",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceCommand.timeout",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.adoption_tier",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "BOUND_TIGHTENED",
+      "schema": "provenance.schema.json",
+      "path": "#record.implemented_symbols[].line",
+      "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#entry.name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceArchive.sha256",
+      "reason": "loosened: Claude Code accepts the archive digest in upper or lower case; the populated fixture now carries an upper-case one the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "ENUM_NARROWED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceCommand.mode",
+      "reason": "Claude Code accepts only copy and link for a command source's mode; a third value never loaded a plugin on any host, and the harness does not fetch command sources at all, so no real artefact is affected.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/plugin-marketplace.command-mode-unknown.json"
+    }
+  ]
 }

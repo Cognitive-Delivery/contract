@@ -1,0 +1,1 @@
+`allow.write_paths` contains `C:/Users/x`. A drive-letter prefix is an absolute path on Windows, and a reader that compared against the workspace root with forward slashes alone would let it through. `^[A-Za-z]:` refuses any drive letter.
