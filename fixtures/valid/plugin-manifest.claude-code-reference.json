@@ -1,0 +1,169 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "deploy-tools",
+  "displayName": "Deploy Tools",
+  "version": "1.2.0",
+  "description": "Deployment commands, a review agent, and a status monitor",
+  "author": {
+    "name": "Example Team",
+    "email": "dev@example.com",
+    "url": "https://example.com"
+  },
+  "homepage": "https://example.com/docs/deploy-tools",
+  "repository": "https://github.com/example/deploy-tools",
+  "license": "MIT",
+  "keywords": [
+    "deployment",
+    "ci"
+  ],
+  "defaultEnabled": true,
+  "dependencies": [
+    "secrets-vault",
+    "linter@tools-marketplace",
+    {
+      "name": "formatter",
+      "marketplace": "tools-marketplace",
+      "version": "^2"
+    }
+  ],
+  "metadata": {
+    "catalogId": "cat-123"
+  },
+  "icon": "./logo.png",
+  "documentationUrl": "https://example.com/docs",
+  "supportUrl": "https://example.com/support",
+  "privacyPolicyUrl": "https://example.com/privacy",
+  "termsOfServiceUrl": "https://example.com/terms",
+  "skills": [
+    "./extra-skills/",
+    "."
+  ],
+  "commands": {
+    "status": {
+      "source": "./commands/status.md",
+      "description": "Show the current deployment status",
+      "argumentHint": "[env]"
+    },
+    "about": {
+      "content": "Explain what the deploy-tools plugin provides.",
+      "description": "Describe this plugin",
+      "allowedTools": [
+        "Read"
+      ]
+    }
+  },
+  "agents": [
+    "./agents/reviewer.md"
+  ],
+  "hooks": [
+    "./config/extra-hooks.json",
+    {
+      "PostToolUse": [
+        {
+          "matcher": "Write|Edit",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/format.sh"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "mcpServers": [
+    "./mcp/servers.json",
+    "./bundle.mcpb",
+    "https://example.com/server.mcpb",
+    {
+      "deploy-api": {
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/server.js"
+        ]
+      }
+    }
+  ],
+  "lspServers": {
+    "go": {
+      "command": "gopls",
+      "args": [
+        "serve"
+      ],
+      "extensionToLanguage": {
+        ".go": "go"
+      },
+      "transport": "stdio",
+      "startupTimeout": 5000,
+      "requestTimeout": 60000,
+      "restartOnCrash": true,
+      "maxRestarts": 3,
+      "diagnostics": true
+    }
+  },
+  "outputStyles": "./styles/",
+  "workflows": [
+    "./workflows/"
+  ],
+  "types": "./types/mod.d.ts",
+  "settings": {
+    "agent": "reviewer",
+    "subagentStatusLine": {
+      "type": "command",
+      "command": "echo ok"
+    }
+  },
+  "experimental": {
+    "themes": "./themes/",
+    "monitors": [
+      {
+        "name": "deploy-status",
+        "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/poll-deploy.sh",
+        "description": "Deployment status changes",
+        "when": "on-skill-invoke:deploy"
+      }
+    ],
+    "evals": "./quality/evals"
+  },
+  "channels": [
+    {
+      "server": "deploy-api",
+      "displayName": "Deploy",
+      "userConfig": {
+        "bot_token": {
+          "type": "string",
+          "title": "Bot token",
+          "description": "Telegram bot token",
+          "sensitive": true
+        }
+      }
+    }
+  ],
+  "userConfig": {
+    "api_token": {
+      "type": "string",
+      "title": "API token",
+      "description": "Token for the deployment API",
+      "sensitive": true
+    },
+    "tone": {
+      "type": "string",
+      "title": "Tone",
+      "description": "Voice for generated replies",
+      "options": [
+        "neutral",
+        "warm",
+        "formal"
+      ],
+      "default": "neutral"
+    },
+    "retries": {
+      "type": "number",
+      "title": "Retries",
+      "description": "How many times to retry",
+      "min": 0,
+      "max": 5,
+      "default": 2
+    }
+  }
+}

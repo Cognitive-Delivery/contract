@@ -1,0 +1,16 @@
+{
+  "name": "m",
+  "owner": {
+    "name": "o"
+  },
+  "plugins": [
+    {
+      "name": "p",
+      "source": {
+        "source": "archive",
+        "url": "https://example.com/p.zip"
+      },
+      "headersHelper": "./scripts/headers.mjs"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "m",
+  "owner": {
+    "name": "o"
+  },
+  "plugins": [
+    {
+      "name": "p",
+      "source": {
+        "source": "command",
+        "command": "my-tool claude-plugin-path",
+        "mode": "symlink"
+      }
+    }
+  ]
+}

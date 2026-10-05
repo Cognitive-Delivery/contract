@@ -59,7 +59,10 @@ export async function runSchemaChecks() {
   // 1. Strict compile.
   for (const [file, schema] of schemas) {
     try {
-      new Ajv({ strict: true, allErrors: true, allowUnionTypes: true }).compile(schema);
+      // strictRequired is left off: `required` inside an `anyOf`/`oneOf` branch or an `if` clause,
+      // with the property defined on the parent, is ordinary JSON Schema and Ajv's strictRequired
+      // cannot see the parent from the branch. Every other strict check stays on.
+      new Ajv({ strict: true, strictRequired: false, allErrors: true, allowUnionTypes: true }).compile(schema);
     } catch (error) {
       failures.push(`strict/${file}: ${error.message.split('\n')[0]}`);
     }

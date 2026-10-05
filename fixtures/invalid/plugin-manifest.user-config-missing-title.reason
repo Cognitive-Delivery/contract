@@ -1,0 +1,1 @@
+`userConfig.api_token` has no `title`. Claude Code requires `type`, `title` and `description` on every option because they are what the configuration dialog shows; an option without a title is a prompt with no question.

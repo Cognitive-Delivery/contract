@@ -30,7 +30,7 @@
  *   PATTERN_TIGHTENED       a `pattern` was added or changed, or a `not.pattern` was added
  *   BOUND_TIGHTENED         a bound was added, a minimum raised or a maximum lowered
  *   CONTENT_MODEL_CLOSED    `additionalProperties` went from open to false or to a schema
- *   UNION_CHANGED           the number of `anyOf` branches changed
+ *   UNION_CHANGED           an `anyOf` lost a branch, or a branch type or pattern (gaining one widens)
  *   SCHEMA_REMOVED          a schema file is gone
  *
  * The last four need a baseline in lock format 2. Against a format-1 baseline they are
@@ -81,8 +81,12 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
 
   // Format 2 let a union's last branch overwrite the path's own type, so a type comparison on a
   // union site against a format-2 baseline compares an artefact of that defect. Skipped there.
+  // A plain type that becomes a union still containing that type has widened, not changed.
   const unionSite = before.anyOf !== undefined || after.anyOf !== undefined;
-  const typeComparable = !(unionSite && baselineFormat < 3);
+  const beforeTypes = Array.isArray(before.type) ? before.type : before.type ? [before.type] : [];
+  const widenedIntoUnion = after.anyOf !== undefined && before.anyOf === undefined && after.type === undefined
+    && beforeTypes.length > 0 && beforeTypes.every((t) => (after.anyOfTypes ?? []).includes(t));
+  const typeComparable = !(unionSite && baselineFormat < 3) && !widenedIntoUnion;
   const beforeType = JSON.stringify(before.type ?? null);
   const afterType = JSON.stringify(after.type ?? null);
   if (typeComparable && beforeType !== afterType) {
@@ -143,8 +147,9 @@ export function compareEntry(file, path, before, after, extended, out, baselineF
     out.push(finding('CONTENT_MODEL_CLOSED', file, path, 'no longer carries unknown members. A newer writer\'s field is now refused.'));
   }
 
-  if ((before.anyOf ?? null) !== (after.anyOf ?? null)) {
-    out.push(finding('UNION_CHANGED', file, path, `anyOf went from ${before.anyOf ?? 'none'} to ${after.anyOf ?? 'none'} branch(es). A form that validated may no longer.`));
+  // A union that gains a branch accepts more; one that loses a branch, or disappears, accepts less.
+  if (before.anyOf !== undefined && (after.anyOf === undefined || after.anyOf < before.anyOf)) {
+    out.push(finding('UNION_CHANGED', file, path, `anyOf went from ${before.anyOf} to ${after.anyOf ?? 'none'} branch(es). A form that validated may no longer.`));
   }
   if (baselineFormat >= 3) {
     // A union that gains a pattern branch widens; one that loses a pattern branch narrows; a

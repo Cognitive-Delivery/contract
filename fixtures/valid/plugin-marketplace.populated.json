@@ -68,7 +68,18 @@
             "node"
           ]
         }
-      }
+      },
+      "relevance": {
+        "topic": "data quality",
+        "signals": {
+          "files": [
+            "models/**/*.sql"
+          ]
+        }
+      },
+      "dependencies": [
+        "cdf-governance"
+      ]
     },
     {
       "name": "cdf-doc-packs",
@@ -90,19 +101,41 @@
       "source": {
         "source": "archive",
         "url": "https://example.com/downloads/example-plugin-2.0.0.tgz",
-        "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+        "sha256": "2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE"
       },
       "headers": {
         "X-Registry-Channel": "stable"
       },
       "headersHelper": "./scripts/registry-headers.mjs",
-      "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace."
+      "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace.",
+      "strict": false
     },
     {
       "name": "example-relative-plugin",
       "source": "./plugins/example-relative-plugin",
       "author": "Example Maintainers",
       "homepage": "https://example.com/example-relative-plugin"
+    },
+    {
+      "name": "npm_listed.plugin",
+      "source": {
+        "source": "npm",
+        "package": "@example/listed",
+        "version": "^1.0.0",
+        "registry": "https://npm.example.com"
+      },
+      "description": "A name Claude Code accepts (letters, digits, dot, underscore) that the old kebab-only rule refused."
+    },
+    {
+      "name": "rendered-by-tool",
+      "source": {
+        "source": "command",
+        "command": "my-tool claude-plugin-path",
+        "timeout": 120,
+        "mode": "link"
+      },
+      "description": "A command source with the documented timeout and mode fields."
     }
-  ]
+  ],
+  "forceRemoveDeletedPlugins": false
 }

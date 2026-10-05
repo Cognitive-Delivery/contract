@@ -1,0 +1,12 @@
+{
+  "name": "x-plugin",
+  "lspServers": {
+    "go": {
+      "command": "gopls",
+      "extensionToLanguage": {
+        ".go": "go"
+      },
+      "colour": "blue"
+    }
+  }
+}

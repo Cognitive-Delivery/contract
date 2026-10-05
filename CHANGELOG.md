@@ -82,6 +82,28 @@ tooling in this repository.
   `workspace_id` so they fail only for the reason their `.reason` states. The unknown-field round
   trip now plants the field inside the first nested object as well as at the top level.
 
+- **Every key the Claude Code plugin and marketplace references document** (read 2026-10-05) is
+  modelled: `$schema`, `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl`,
+  `termsOfServiceUrl`, `dependencies` (string, `name@marketplace` or object), `settings`,
+  `userConfig` (strict options: `type`, `title`, `description` required; `required`, `default`,
+  `options`, `multiple`, `sensitive`, `min`, `max`), `types`, `channels` (strict), `commands` as an
+  object map of `source`-or-`content` entries, `hooks`/`mcpServers`/`lspServers` as path, inline or a
+  mixed array (with `.mcpb`, `.dxt` and `https://` bundles), strict `lspServers` entries with
+  `command` and `extensionToLanguage` required, `outputStyles`, `workflows`, top-level `themes`
+  (deprecated, still loaded) and `experimental` (`themes`, `monitors` as strict entries, `evals`);
+  marketplace `forceRemoveDeletedPlugins`, entry `relevance` and `dependencies` and every
+  manifest field an entry may carry; `command` source `timeout` (1 to 600) and `mode` (`copy` or
+  `link`); `archive` `sha256` in either case; and the if/then rule that `headersHelper` requires
+  `"strict": false`. Names follow Claude Code's rule (letters, digits, `.`, `_`, `-`, leading
+  alphanumeric) instead of kebab-case only. Where Claude Code's object is strict the contract's is
+  too, because honouring a key "with the same meaning" there means refusing an unknown one.
+
+  Two fixtures carry the evidence: the manifest reference's own example manifest, and Anthropic's
+  marketplace for its bundled plugins (`anthropics/claude-code` at a pinned commit, author emails
+  removed). Four invalid fixtures pin the strict shapes. The `local` source form and plugin-level
+  `category` stay as CDF extensions, named as such in the schema descriptions and, in the next
+  change, the README.
+
 ### Changed
 
 - **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes
