@@ -220,6 +220,17 @@ Both run in CI on every push and pull request, against Node 20 and 22, beside a 
 every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
 check has to be runnable by someone who has never seen the product.
 
+Since 1.2 the claim that "a reader in any language needs nothing else" is checked rather than
+made. `conformance/suite/draft7/` carries the corpus in the official
+[JSON-Schema-Test-Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite) format (one
+file per schema, every fixture a test; `npm test` fails when it is stale), and CI runs it through
+[Bowtie](https://bowtie.report) against six validators in six languages — `go-jsonschema`,
+`rust-jsonschema`, `python-jsonschema`, `java-json-schema`, `dotnet-jsonschema-net` and `js-ajv` —
+failing on any disagreement. A second job runs Sourcemeta's `jsonschema metaschema` and `lint`
+over the schemas, with six style rules excluded by name and for a reason each in the workflow.
+The latest result is the `contract` workflow's run on `main`:
+<https://github.com/Cognitive-Delivery/contract/actions/workflows/contract.yml>.
+
 The same `npm test` runs from the **installed package**, not only from a clone: CI packs the
 tarball, installs it into an empty directory with `ajv`, and runs the installed package's own test.
 1.1.0's package could not, because two files it imported were not in the tarball, and no check in
@@ -348,6 +359,8 @@ conformance/                the reference runner and the vectors; takes an adapt
   spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
   traceability-check.mjs    fails `npm test` on an unmapped, stale or edited clause, or a mapping that names nothing
+  suite-export.mjs          builds the corpus in the official JSON-Schema-Test-Suite format, and says when the export is stale
+  suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what six other validators run
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII
@@ -363,6 +376,7 @@ generate-contract-types.mjs writes a consumer's TypeScript types from schemas/; 
 tooling/                    repository tooling; not in the package
   sync-version.mjs          one version, stated in package.json, written everywhere else from it
   changelog-section.mjs     prints one release's CHANGELOG section; the release workflow's notes
+  export-suite.mjs          writes conformance/suite/ from the schemas and fixtures; run by `npm run lock`
   inline-granted-manifest.mjs rewrites every inlined copy of the manifest schema from its source
   regex-portability/        the Go program CI runs to compile every pattern under RE2
 SPEC-agent-lease-manifest.md the normative specification

@@ -128,6 +128,59 @@ jobs:
       - run: go run . ../../schemas
         working-directory: tooling/regex-portability
 
+  portability-bowtie:
+    name: corpus under six other validators (Bowtie)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Bowtie runs each implementation in its own OCI container (Docker is on ubuntu-latest) and
+      # feeds it the official-format suite under conformance/suite/, which `npm test` holds
+      # identical to the corpus this repository's own runner runs. Six implementations in six
+      # languages, every one of which reads draft-07: a schema that validates here and only here
+      # is not portable, whatever the README says. `bowtie summary --show failures` exits non-zero
+      # when any implementation failed or errored on any test.
+      - name: Install Bowtie
+        uses: bowtie-json-schema/bowtie@v2026.7.4
+
+      - name: Run the suite
+        run: |
+          set -o pipefail  # without it `tee` hides bowtie's exit status, and this job once passed with 2 of 6 implementations erroring
+          bowtie suite \
+            -i go-jsonschema -i rust-jsonschema -i python-jsonschema \
+            -i java-json-schema -i dotnet-jsonschema-net -i js-ajv \
+            conformance/suite/draft7 > "$RUNNER_TEMP/bowtie.jsonl"
+          bowtie summary --format markdown --show failures "$RUNNER_TEMP/bowtie.jsonl" | tee -a "$GITHUB_STEP_SUMMARY"
+
+  portability-sourcemeta:
+    name: schemas under Sourcemeta (meta-schema and lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the JSON Schema CLI
+        uses: sourcemeta/jsonschema@v17.1.1
+
+      # Every schema is valid against its own meta-schema (draft-07), by a validator that is not Ajv.
+      - run: jsonschema metaschema schemas/
+
+      # Lint, with six of Sourcemeta's rules excluded by name and for a reason each:
+      #   description_trailing_period   descriptions here are sentences; they end with a full stop
+      #   enum_with_type                `type` beside `enum` is deliberate: the lock records the type
+      #   enum_to_const                 a one-value `enum` stays an enum so the lock's enum tracking sees it
+      #   top_level_examples            the fixtures are the examples, and they are checked
+      #   unnecessary_allof_wrapper     `allOf: [{ not: { pattern } }]` is the form the lock reads
+      #                                 refusals from (generate-schemas-lock.mjs, notPatternsOf)
+      #   simple_properties_identifiers `$schema` is a key Claude Code manifests carry; it is modelled as is
+      - run: >
+          jsonschema lint schemas/
+          --exclude description_trailing_period
+          --exclude enum_with_type
+          --exclude enum_to_const
+          --exclude top_level_examples
+          --exclude unnecessary_allof_wrapper
+          --exclude simple_properties_identifiers
+
   line-endings:
     name: line endings
     runs-on: ubuntu-latest

@@ -156,32 +156,6 @@
         }
       ]
     },
-    "componentSource": {
-      "description": "A component declared inline as an object, a path to a `.json` file that declares it, or an array mixing both. Claude Code accepts all three for `hooks`, `mcpServers` and `lspServers`; for `mcpServers` the string may also be an `.mcpb` or `.dxt` bundle path or an `https://` bundle URL. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
-      "anyOf": [
-        {
-          "type": "object"
-        },
-        {
-          "type": "string",
-          "minLength": 1
-        },
-        {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "string",
-                "minLength": 1
-              }
-            ]
-          }
-        }
-      ]
-    },
     "entry": {
       "type": "object",
       "description": "One plugin listed by the marketplace. `name` and `source` are required: a listing that names nothing cannot be addressed, and one that resolves to nothing cannot be fetched. Every other key overrides or supplements what the fetched manifest says.",
@@ -1063,7 +1037,9 @@
         "topic": {
           "type": "string"
         },
-        "signals": {}
+        "signals": {
+          "description": "Relevance signals as the marketplace reference leaves them: any value, not modelled."
+        }
       },
       "additionalProperties": true
     },

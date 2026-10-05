@@ -1,0 +1,302 @@
+[
+  {
+    "description": "CDF provenance (provenance.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/provenance.schema.json",
+      "title": "CDF provenance",
+      "description": "What produced a governed artefact. CORRECTED against real artefacts: the record is never written bare. It is wrapped under a `cdf` key in Markdown front-matter, and wrapped again as {artefact_path, cdf} in .cdf/specs/<slug>/provenance.jsonl. The TypeScript interface describes only the inner record, and nothing in the type system said so. Validate a front-matter block against #/definitions/frontMatter, a journal line against #/definitions/journalEntry, and the inner object against #/definitions/record. anyOf, not oneOf: a journal entry also satisfies the front-matter shape, since that only requires `cdf`. Prefer validating against the precise definition you expect.",
+      "definitions": {
+        "record": {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "spec",
+            "phase",
+            "author",
+            "runtime_agent",
+            "model_vendor",
+            "model_family",
+            "adoption_tier",
+            "prompt_hash",
+            "steering_hash",
+            "timestamp",
+            "reviewer",
+            "review_id",
+            "policy_version"
+          ],
+          "properties": {
+            "schema_version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+$",
+              "description": "Contract version this record was written against. Required: a conformant writer always writes it. A reader meeting a pre-contract artefact without it MAY read it as 1.0; it must not emit one. Written as `major.minor`."
+            },
+            "spec": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{0,79}$",
+              "description": "Slug of the governed spec this artefact belongs to: lower-case letters, digits and hyphens, at most 80 characters. It names a directory, so a path form is refused; every one of the reference deployment's 263 specs already conformed."
+            },
+            "phase": {
+              "type": "string",
+              "description": "The lifecycle phase this artefact was produced in. An OPEN string, deliberately: the phase vocabulary belongs to the domain, not to the contract. A reader must not assume any fixed set of values."
+            },
+            "author": {
+              "type": "string"
+            },
+            "runtime_agent": {
+              "type": "string",
+              "description": "Which agent produced this. Attribution, not authentication."
+            },
+            "coding_assistant": {
+              "type": "string"
+            },
+            "model_vendor": {
+              "type": "string"
+            },
+            "model_family": {
+              "type": "string"
+            },
+            "model_version": {
+              "type": "string"
+            },
+            "adoption_tier": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "description": "How much governance this workspace has adopted. Closed: the tiers are the framework.",
+              "maximum": 9007199254740991
+            },
+            "prompt_hash": {
+              "type": "string",
+              "description": "SHA-256 of the request, lower-case hex. NEVER the request itself; the pattern refuses anything that is not a 64-character digest.",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "steering_hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA-256 of the steering the artefact was produced under, lower-case hex. A writer that cannot compute it writes 64 zeros, which the reference deployment did for 4,524 of 4,535 records; the shape is still a digest."
+            },
+            "content_hash": {
+              "type": "string",
+              "description": "SHA-256 of the artefact body only, excluding this front-matter block, lower-case hex.",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "timestamp": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+              "description": "ISO 8601 with a timezone."
+            },
+            "reviewer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Null means not yet reviewed. Null is a value here, not an omission."
+            },
+            "review_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "policy_version": {
+              "type": "string"
+            },
+            "implemented_symbols": {
+              "type": "array",
+              "description": "Resolved implementing symbols for the spec's declared requirements. Additive and optional: omitted entirely when nothing resolves, never an empty array. Excluded from content_hash, so it can never affect verification.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "requirementId": {
+                    "type": "string"
+                  },
+                  "symbolName": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "line": {
+                    "type": "integer",
+                    "maximum": 9007199254740991
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          },
+          "additionalProperties": true,
+          "title": "The provenance record itself"
+        },
+        "frontMatter": {
+          "type": "object",
+          "description": "The front-matter form: the record under a `cdf` key. No artefact_path — the file is the artefact.",
+          "required": [
+            "cdf"
+          ],
+          "properties": {
+            "cdf": {
+              "$ref": "#/definitions/record"
+            }
+          },
+          "additionalProperties": true
+        },
+        "journalEntry": {
+          "type": "object",
+          "description": "One line of provenance.jsonl: the record under `cdf`, plus the path of the artefact it describes.",
+          "required": [
+            "artefact_path",
+            "cdf"
+          ],
+          "properties": {
+            "artefact_path": {
+              "type": "string"
+            },
+            "cdf": {
+              "$ref": "#/definitions/record"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "anyOf": [
+        {
+          "$ref": "#/definitions/journalEntry"
+        },
+        {
+          "$ref": "#/definitions/frontMatter"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "description": "provenance.minimal validates",
+        "data": {
+          "artefact_path": "a.md",
+          "cdf": {
+            "schema_version": "1.0",
+            "spec": "s",
+            "phase": "Draft",
+            "author": "a",
+            "runtime_agent": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "adoption_tier": 2,
+            "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "steering_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "2026-07-25T10:00:00.000Z",
+            "reviewer": null,
+            "review_id": null,
+            "policy_version": "workspace-local"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "provenance.populated validates",
+        "data": {
+          "artefact_path": "a.md",
+          "cdf": {
+            "schema_version": "1.0",
+            "spec": "s",
+            "phase": "Reconciled",
+            "author": "a",
+            "runtime_agent": "codex-cli",
+            "coding_assistant": "Codex",
+            "model_vendor": "openai",
+            "model_family": "gpt",
+            "model_version": "5",
+            "adoption_tier": 4,
+            "prompt_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "steering_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "timestamp": "2026-07-25T10:00:00.000Z",
+            "reviewer": "Jason",
+            "review_id": "review-1",
+            "policy_version": "org",
+            "implemented_symbols": [
+              {
+                "requirementId": "R1.1",
+                "symbolName": "doThing",
+                "path": "src/x.ts",
+                "line": 12
+              }
+            ]
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "provenance.bad-tier is refused",
+        "data": {
+          "artefact_path": "a.md",
+          "cdf": {
+            "schema_version": "1.0",
+            "spec": "s",
+            "phase": "Draft",
+            "author": "a",
+            "runtime_agent": "x",
+            "model_vendor": "v",
+            "model_family": "f",
+            "adoption_tier": 7,
+            "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "steering_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "2026-07-25T10:00:00.000Z",
+            "reviewer": null,
+            "review_id": null,
+            "policy_version": "p"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "provenance.spec-traversal is refused",
+        "data": {
+          "artefact_path": "a.md",
+          "cdf": {
+            "schema_version": "1.0",
+            "spec": "../../etc",
+            "phase": "Draft",
+            "author": "a",
+            "runtime_agent": "claude-code",
+            "model_vendor": "anthropic",
+            "model_family": "claude",
+            "adoption_tier": 2,
+            "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "steering_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "timestamp": "2026-07-25T10:00:00.000Z",
+            "reviewer": null,
+            "review_id": null,
+            "policy_version": "workspace-local"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "provenance.unwrapped is refused",
+        "data": {
+          "schema_version": "1.0",
+          "spec": "s",
+          "phase": "Draft",
+          "author": "a",
+          "runtime_agent": "x",
+          "model_vendor": "v",
+          "model_family": "f",
+          "adoption_tier": 2,
+          "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "steering_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "timestamp": "2026-07-25T10:00:00.000Z",
+          "reviewer": null,
+          "review_id": null,
+          "policy_version": "p"
+        },
+        "valid": false
+      }
+    ]
+  }
+]

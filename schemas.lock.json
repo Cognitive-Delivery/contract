@@ -1395,7 +1395,7 @@
         "required": false,
         "type": "string",
         "notPatterns": [
-          "\\p{Cc}"
+          "[\u0000-\u001f]"
         ],
         "maxLength": 500
       },
@@ -1425,7 +1425,7 @@
         "required": false,
         "type": "string",
         "notPatterns": [
-          "\\p{Cc}"
+          "[\u0000-\u001f]"
         ],
         "maxLength": 300
       },
@@ -4119,23 +4119,6 @@
         "required": false,
         "type": "string",
         "minLength": 1
-      },
-      "#componentSource": {
-        "required": false,
-        "anyOf": 3,
-        "anyOfTypes": [
-          "array",
-          "object",
-          "string"
-        ]
-      },
-      "#componentSource[]": {
-        "required": false,
-        "anyOf": 2,
-        "anyOfTypes": [
-          "object",
-          "string"
-        ]
       },
       "#contributes": {
         "required": false,
@@ -8307,23 +8290,6 @@
         "required": false,
         "type": "string",
         "minLength": 1
-      },
-      "#componentSource": {
-        "required": false,
-        "anyOf": 3,
-        "anyOfTypes": [
-          "array",
-          "object",
-          "string"
-        ]
-      },
-      "#componentSource[]": {
-        "required": false,
-        "anyOf": 2,
-        "anyOfTypes": [
-          "object",
-          "string"
-        ]
       },
       "#credentialFree": {
         "required": false,

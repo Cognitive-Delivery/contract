@@ -1,0 +1,724 @@
+[
+  {
+    "description": "CDF CDI assessment record (cdi-assessment.schema.json, @cognitive-delivery/contract 1.1.0): every fixture of the conformance corpus",
+    "schema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "https://cognitive-delivery.github.io/contract/1.x/cdi-assessment.schema.json",
+      "title": "CDF CDI assessment record",
+      "description": "A recorded human assessment against the six Index dimensions, on a ninety-day cadence. Distinct from the signal log: signals are emitted automatically, this is a judgement someone made and put their name to. CORRECTED against real artefacts: every field is snake_case on disk (level_label, average_score, lowest_score, lowest_dimensions) while the TypeScript interface is camelCase. The writer wins.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "assessment_id",
+        "created_at",
+        "assessor",
+        "participants",
+        "dimensions",
+        "summary",
+        "ninety_day_priority",
+        "next_assessment_due",
+        "source"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+        },
+        "assessment_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+          "description": "ISO 8601 with a timezone."
+        },
+        "assessor": {
+          "type": "string"
+        },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dimensions": {
+          "type": "array",
+          "description": "One entry per dimension, each of the six exactly once (schema set 1.2: `minItems`, `maxItems` and one `contains` per id). The dimension set is closed because it is the instrument; an assessment of five dimensions is not an assessment.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "score",
+              "evidence",
+              "name",
+              "level_label"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/dimensionId"
+              },
+              "score": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "1 Absent, 2 Informal, 3 Documented, 4 Complete, 5 Substantive. The four-to-five step is the distinction between a control that exists and a control that changes what someone does. A whole number: the levels are discrete and a 3.7 is a score nobody can act on."
+              },
+              "evidence": {
+                "type": "string",
+                "description": "Why this score. A score without evidence is an opinion."
+              },
+              "name": {
+                "type": "string"
+              },
+              "level_label": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "minItems": 6,
+          "maxItems": 6,
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "provenance-integrity"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "supervisory-clarity"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "scope-definition"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "review-substance"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "constraint-fidelity"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "capability-calibration"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "summary": {
+          "type": "object",
+          "required": [
+            "average_score",
+            "lowest_score",
+            "lowest_dimensions",
+            "profile"
+          ],
+          "properties": {
+            "profile": {
+              "type": "string",
+              "enum": [
+                "flat",
+                "audit-ready",
+                "split",
+                "brittle",
+                "emerging"
+              ]
+            },
+            "average_score": {
+              "type": "number"
+            },
+            "lowest_score": {
+              "type": "number"
+            },
+            "lowest_dimensions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dimensionId"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "ninety_day_priority": {
+          "type": "object",
+          "required": [
+            "dimension",
+            "action",
+            "success_measure",
+            "review_date"
+          ],
+          "properties": {
+            "dimension": {
+              "$ref": "#/definitions/dimensionId"
+            },
+            "action": {
+              "type": "string"
+            },
+            "success_measure": {
+              "type": "string",
+              "description": "How you will know it worked. Required, so that a priority cannot be recorded without one."
+            },
+            "review_date": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "next_assessment_due": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "description": "Self-describing, so a record found on its own still says what instrument produced it.",
+          "required": [
+            "instrument",
+            "version"
+          ],
+          "properties": {
+            "instrument": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "definitions": {
+        "dimensionId": {
+          "type": "string",
+          "enum": [
+            "provenance-integrity",
+            "supervisory-clarity",
+            "scope-definition",
+            "review-substance",
+            "constraint-fidelity",
+            "capability-calibration"
+          ]
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "cdi-assessment.minimal validates",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "cdi-1",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "Jason",
+          "participants": [
+            "Jason"
+          ],
+          "dimensions": [
+            {
+              "id": "provenance-integrity",
+              "name": "provenance-integrity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "supervisory-clarity",
+              "name": "supervisory-clarity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "scope-definition",
+              "name": "scope-definition",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "review-substance",
+              "name": "review-substance",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "constraint-fidelity",
+              "name": "constraint-fidelity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "capability-calibration",
+              "name": "capability-calibration",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            }
+          ],
+          "summary": {
+            "average_score": 3,
+            "lowest_score": 3,
+            "lowest_dimensions": [
+              "scope-definition"
+            ],
+            "profile": "flat"
+          },
+          "ninety_day_priority": {
+            "dimension": "scope-definition",
+            "action": "a",
+            "success_measure": "m",
+            "review_date": "2026-10-01"
+          },
+          "next_assessment_due": "2026-10-01T00:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "cdi-assessment.populated validates",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "cdi-2026-07-25T10-00-00-000Z",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "Jason",
+          "participants": [
+            "Jason",
+            "system"
+          ],
+          "dimensions": [
+            {
+              "id": "provenance-integrity",
+              "name": "Provenance Integrity",
+              "score": 5,
+              "level_label": "Substantive",
+              "evidence": "All artefacts carry provenance."
+            },
+            {
+              "id": "supervisory-clarity",
+              "name": "Supervisory Clarity",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Every task claimed and reviewed."
+            },
+            {
+              "id": "scope-definition",
+              "name": "Scope Definition",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "Steering complete, scope lists partial."
+            },
+            {
+              "id": "review-substance",
+              "name": "Review Substance",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Reviews carry reasoning, not just an outcome."
+            },
+            {
+              "id": "constraint-fidelity",
+              "name": "Constraint Fidelity",
+              "score": 2,
+              "level_label": "Informal",
+              "evidence": "Few fields sealed at org level."
+            },
+            {
+              "id": "capability-calibration",
+              "name": "Capability Calibration",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "Tier 2 matches the evidence."
+            }
+          ],
+          "summary": {
+            "average_score": 3.5,
+            "lowest_score": 2,
+            "lowest_dimensions": [
+              "constraint-fidelity"
+            ],
+            "profile": "brittle"
+          },
+          "ninety_day_priority": {
+            "dimension": "constraint-fidelity",
+            "action": "Seal critical config at org level.",
+            "success_measure": "Zero break-glass events over the quarter.",
+            "review_date": "2026-10-23"
+          },
+          "next_assessment_due": "2026-10-23T10:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "cdi-assessment.five-dimensions is refused",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "cdi-2026-07-25T10-00-00-000Z",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "Jason",
+          "participants": [
+            "Jason",
+            "system"
+          ],
+          "dimensions": [
+            {
+              "id": "provenance-integrity",
+              "name": "Provenance Integrity",
+              "score": 5,
+              "level_label": "Substantive",
+              "evidence": "All artefacts carry provenance."
+            },
+            {
+              "id": "supervisory-clarity",
+              "name": "Supervisory Clarity",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Every task claimed and reviewed."
+            },
+            {
+              "id": "scope-definition",
+              "name": "Scope Definition",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "Steering complete, scope lists partial."
+            },
+            {
+              "id": "review-substance",
+              "name": "Review Substance",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Reviews carry reasoning, not just an outcome."
+            },
+            {
+              "id": "constraint-fidelity",
+              "name": "Constraint Fidelity",
+              "score": 2,
+              "level_label": "Informal",
+              "evidence": "Few fields sealed at org level."
+            }
+          ],
+          "summary": {
+            "average_score": 3.5,
+            "lowest_score": 2,
+            "lowest_dimensions": [
+              "constraint-fidelity"
+            ],
+            "profile": "brittle"
+          },
+          "ninety_day_priority": {
+            "dimension": "constraint-fidelity",
+            "action": "Seal critical config at org level.",
+            "success_measure": "Zero break-glass events over the quarter.",
+            "review_date": "2026-10-23"
+          },
+          "next_assessment_due": "2026-10-23T10:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "cdi-assessment.fractional-score is refused",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "cdi-2026-07-25T10-00-00-000Z",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "Jason",
+          "participants": [
+            "Jason",
+            "system"
+          ],
+          "dimensions": [
+            {
+              "id": "provenance-integrity",
+              "name": "Provenance Integrity",
+              "score": 3.7,
+              "level_label": "Substantive",
+              "evidence": "All artefacts carry provenance."
+            },
+            {
+              "id": "supervisory-clarity",
+              "name": "Supervisory Clarity",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Every task claimed and reviewed."
+            },
+            {
+              "id": "scope-definition",
+              "name": "Scope Definition",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "Steering complete, scope lists partial."
+            },
+            {
+              "id": "review-substance",
+              "name": "Review Substance",
+              "score": 4,
+              "level_label": "Complete",
+              "evidence": "Reviews carry reasoning, not just an outcome."
+            },
+            {
+              "id": "constraint-fidelity",
+              "name": "Constraint Fidelity",
+              "score": 2,
+              "level_label": "Informal",
+              "evidence": "Few fields sealed at org level."
+            },
+            {
+              "id": "capability-calibration",
+              "name": "Capability Calibration",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "Tier 2 matches the evidence."
+            }
+          ],
+          "summary": {
+            "average_score": 3.5,
+            "lowest_score": 2,
+            "lowest_dimensions": [
+              "constraint-fidelity"
+            ],
+            "profile": "brittle"
+          },
+          "ninety_day_priority": {
+            "dimension": "constraint-fidelity",
+            "action": "Seal critical config at org level.",
+            "success_measure": "Zero break-glass events over the quarter.",
+            "review_date": "2026-10-23"
+          },
+          "next_assessment_due": "2026-10-23T10:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "cdi-assessment.no-success-measure is refused",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "a",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "j",
+          "participants": [],
+          "dimensions": [
+            {
+              "id": "provenance-integrity",
+              "name": "provenance-integrity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "supervisory-clarity",
+              "name": "supervisory-clarity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "scope-definition",
+              "name": "scope-definition",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "review-substance",
+              "name": "review-substance",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "constraint-fidelity",
+              "name": "constraint-fidelity",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            },
+            {
+              "id": "capability-calibration",
+              "name": "capability-calibration",
+              "score": 3,
+              "level_label": "Documented",
+              "evidence": "why"
+            }
+          ],
+          "summary": {
+            "average_score": 3,
+            "lowest_score": 3,
+            "lowest_dimensions": [
+              "scope-definition"
+            ],
+            "profile": "flat"
+          },
+          "ninety_day_priority": {
+            "dimension": "scope-definition",
+            "action": "a",
+            "review_date": "2026-10-01"
+          },
+          "next_assessment_due": "2026-10-01T00:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "cdi-assessment.score-out-of-range is refused",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "a",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "j",
+          "participants": [],
+          "dimensions": [
+            {
+              "id": "scope-definition",
+              "name": "n",
+              "score": 9,
+              "level_label": "l",
+              "evidence": "e"
+            }
+          ],
+          "summary": {
+            "average_score": 9,
+            "lowest_score": 9,
+            "lowest_dimensions": [
+              "scope-definition"
+            ],
+            "profile": "flat"
+          },
+          "ninety_day_priority": {
+            "dimension": "scope-definition",
+            "action": "a",
+            "success_measure": "m",
+            "review_date": "2026-10-01"
+          },
+          "next_assessment_due": "2026-10-01T00:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": false
+      },
+      {
+        "description": "cdi-assessment.unknown-dimension is refused",
+        "data": {
+          "schema_version": "1.0",
+          "assessment_id": "a",
+          "created_at": "2026-07-25T10:00:00.000Z",
+          "assessor": "j",
+          "participants": [],
+          "dimensions": [
+            {
+              "id": "vibes",
+              "name": "n",
+              "score": 3,
+              "level_label": "l",
+              "evidence": "e"
+            }
+          ],
+          "summary": {
+            "average_score": 3,
+            "lowest_score": 3,
+            "lowest_dimensions": [
+              "scope-definition"
+            ],
+            "profile": "flat"
+          },
+          "ninety_day_priority": {
+            "dimension": "scope-definition",
+            "action": "a",
+            "success_measure": "m",
+            "review_date": "2026-10-01"
+          },
+          "next_assessment_due": "2026-10-01T00:00:00.000Z",
+          "source": {
+            "instrument": "Cognitive Delivery Index",
+            "version": "1.0"
+          }
+        },
+        "valid": false
+      }
+    ]
+  }
+]

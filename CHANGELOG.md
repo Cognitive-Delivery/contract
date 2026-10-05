@@ -87,8 +87,10 @@ deployment validates with zero rejections.
   development`: an issuer MAY omit it from the grant and MUST NOT treat it as authority, because
   the reference gate does not yet evaluate argument schemas and a rule without an enforcing gate is
   a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it.
-  `x-stability` is the contract's own annotation, registered with the strict compile; every
-  property gains one in a later change of this release.
+  The stability marker is a `$comment` (draft-07 defines it): Bowtie showed Ajv's strict mode in
+  another harness refusing a custom `x-stability` keyword, and a schema only this repository can
+  compile is not portable. Python's `re` likewise rejected `\p{Cc}`, so the control-character
+  class is written as literal characters, which every engine reads the same way.
 - **Every normative clause of the SPEC has a named test** (`conformance/traceability.json`,
   checked by `npm test`). `conformance/spec-clauses.mjs` extracts the 87 clauses with stable ids
   and a drift key; each is mapped to the fixtures, vectors, checks or rules that test it, or
@@ -96,6 +98,15 @@ deployment validates with zero rejections.
   added where a clause had nothing to point at: a manifest with a bare-major `schema_version`, a
   `runtime_agent` outside the vocabulary, a model without `family`, an `allow` or `deny` missing a
   list, an attestation with an unknown issuer, and a valid home-relative deny path.
+- **The corpus runs under six other validators.** `conformance/suite/draft7/` is the corpus in the official
+  JSON-Schema-Test-Suite format (one file per schema, every fixture a test, written by
+  `npm run lock` and checked current by `npm test`), and CI runs it through Bowtie against
+  `go-jsonschema`, `rust-jsonschema`, `python-jsonschema`, `java-json-schema`,
+  `dotnet-jsonschema-net` and `js-ajv`, failing on any disagreement. A second job runs
+  Sourcemeta's `jsonschema metaschema` and `lint` (six style rules excluded by name, each with
+  its reason in the workflow). Two orphan `componentSource` definitions the typed hook and MCP
+  shapes had left behind are removed, and the marketplace's empty `relevance.signals` schema
+  gained a description, both found by that lint.
 
 ## [1.1.0] — 2026-10-05
 
