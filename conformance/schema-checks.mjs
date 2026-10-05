@@ -45,12 +45,10 @@ export async function runSchemaChecks() {
       // strictRequired is left off: `required` inside an `anyOf`/`oneOf` branch or an `if` clause,
       // with the property defined on the parent, is ordinary JSON Schema and Ajv's strictRequired
       // cannot see the parent from the branch. Every other strict check stays on.
-      // `x-stability` is the contract's own annotation (schema set 1.2): `stable` or `development`.
-      // Strict mode refuses unknown keywords, so it is declared, and declared with a type so a
-      // misspelt value fails to compile rather than passing as prose.
-      new Ajv({ strict: true, strictRequired: false, allErrors: true, allowUnionTypes: true })
-        .addKeyword({ keyword: 'x-stability', schemaType: 'string', metaSchema: { enum: ['stable', 'development'] } })
-        .compile(schema);
+      // No custom keyword is registered: Bowtie showed Ajv's strict mode in another harness refusing
+      // one, and a schema only this repository's Ajv can compile is not portable. Annotations use
+      // `$comment`, which draft-07 defines.
+      new Ajv({ strict: true, strictRequired: false, allErrors: true, allowUnionTypes: true }).compile(schema);
     } catch (error) {
       failures.push(`strict/${file}: ${error.message.split('\n')[0]}`);
     }

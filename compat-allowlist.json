@@ -6,7 +6,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -15,7 +15,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease-manifest.schema.json",
       "path": "#allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -33,7 +33,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -42,7 +42,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "agent-lease.schema.json",
       "path": "#grantedManifest.allow.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real lease in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -60,7 +60,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -69,7 +69,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -78,7 +78,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#check.worker",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -87,7 +87,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-manifest.schema.json",
       "path": "#contributes.docPacks[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -96,7 +96,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.read_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -105,7 +105,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#capabilities.write_paths[]",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -114,7 +114,7 @@
       "finding": "PATTERN_TIGHTENED",
       "schema": "plugin-marketplace.schema.json",
       "path": "#sourceGitSubdir.path",
-      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC \u00a75.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
+      "reason": "allow paths now refuse a leading ~, a drive-letter prefix and any backslash, which SPEC §5.2 condition 3 already required and the reference implementation (isEscapingPath) already refused; six fixtures prove the forms. No real plugin manifest in the reference deployment carried one.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.write-path-home.json",
       "after": "not=[\"(^|/)\\\\.\\\\.(/|$)\",\"\\\\\\\\\",\"^/\",\"^[A-Za-z]:\",\"^~\"]"
@@ -973,6 +973,24 @@
       "reason": "An orphan definition: nothing referred to componentSource once hooks and mcpServers gained typed sources in 1.2 (lspServers has its own definition), so no instance path and no reader is affected; found by Sourcemeta lint (orphan_definitions). The Claude Code reference fixtures still validate; see fixtures/evidence/2026-10-05-plugin-components.md.",
       "date": "2026-10-05",
       "evidence": "fixtures/valid/plugin-manifest.claude-code-reference.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "reasoning",
+      "after": "not=[\"[\\u0000-\\u001f]\"]",
+      "reason": "DR-183 D4, restated for portability: the control-character refusal is written as a literal character class (U+0000 to U+001F, U+007F) because Python re, which python-jsonschema uses, rejects \\p{Cc}; the rule is unchanged and zero real records carry one; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.control-char-summary.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "audit-event.schema.json",
+      "path": "summary",
+      "after": "not=[\"[\\u0000-\\u001f]\"]",
+      "reason": "DR-183 D4, restated for portability: the control-character refusal is written as a literal character class (U+0000 to U+001F, U+007F) because Python re, which python-jsonschema uses, rejects \\p{Cc}; the rule is unchanged and zero real records carry one; see fixtures/evidence/2026-10-05-evidence-hygiene.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/audit-event.control-char-summary.json"
     }
   ]
 }

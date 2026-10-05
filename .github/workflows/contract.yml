@@ -145,6 +145,7 @@ jobs:
 
       - name: Run the suite
         run: |
+          set -o pipefail  # without it `tee` hides bowtie's exit status, and this job once passed with 2 of 6 implementations erroring
           bowtie suite \
             -i go-jsonschema -i rust-jsonschema -i python-jsonschema \
             -i java-json-schema -i dotnet-jsonschema-net -i js-ajv \

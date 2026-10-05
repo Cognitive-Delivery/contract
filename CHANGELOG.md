@@ -87,8 +87,10 @@ deployment validates with zero rejections.
   development`: an issuer MAY omit it from the grant and MUST NOT treat it as authority, because
   the reference gate does not yet evaluate argument schemas and a rule without an enforcing gate is
   a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it.
-  `x-stability` is the contract's own annotation, registered with the strict compile; every
-  property gains one in a later change of this release.
+  The stability marker is a `$comment` (draft-07 defines it): Bowtie showed Ajv's strict mode in
+  another harness refusing a custom `x-stability` keyword, and a schema only this repository can
+  compile is not portable. Python's `re` likewise rejected `\p{Cc}`, so the control-character
+  class is written as literal characters, which every engine reads the same way.
 - **Every normative clause of the SPEC has a named test** (`conformance/traceability.json`,
   checked by `npm test`). `conformance/spec-clauses.mjs` extracts the 87 clauses with stable ids
   and a drift key; each is mapped to the fixtures, vectors, checks or rules that test it, or

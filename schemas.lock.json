@@ -1395,7 +1395,7 @@
         "required": false,
         "type": "string",
         "notPatterns": [
-          "\\p{Cc}"
+          "[\u0000-\u001f]"
         ],
         "maxLength": 500
       },
@@ -1425,7 +1425,7 @@
         "required": false,
         "type": "string",
         "notPatterns": [
-          "\\p{Cc}"
+          "[\u0000-\u001f]"
         ],
         "maxLength": 300
       },

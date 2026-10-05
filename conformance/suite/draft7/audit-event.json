@@ -96,11 +96,11 @@
         "summary": {
           "type": "string",
           "maxLength": 300,
-          "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text. No control character (`\\p{Cc}`), tab and newline included: the reference writer replaces them with a space before write.",
+          "description": "A sanitised one-line summary, at most 300 characters: the reference writer's own cap. Never prompt text. No control character (U+0000 to U+001F and U+007F, written as literal characters in the pattern so Python's `re`, RE2 and ECMAScript all read it the same way), tab and newline included: the reference writer replaces them with a space before write.",
           "allOf": [
             {
               "not": {
-                "pattern": "\\p{Cc}"
+                "pattern": "[\u0000-\u001f]"
               }
             }
           ]
@@ -112,7 +112,7 @@
           "allOf": [
             {
               "not": {
-                "pattern": "\\p{Cc}"
+                "pattern": "[\u0000-\u001f]"
               }
             }
           ]
