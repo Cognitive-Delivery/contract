@@ -107,6 +107,14 @@ deployment validates with zero rejections.
   its reason in the workflow). Two orphan `componentSource` definitions the typed hook and MCP
   shapes had left behind are removed, and the marketplace's empty `relevance.signals` schema
   gained a description, both found by that lint.
+- **Every property says what it promises.** All 664 declared properties carry a `$comment` of
+  `stability: stable` or `stability: development` (only `allow.tool_args` is development), with
+  `; deprecated: <replacement>` for retiring a field. `conformance/metaschema.json` holds that and
+  the other conventions (dialect, `$id`, title, description, no `format`) and `npm test` validates
+  every schema against it. Lock format 5 records `stability`, `deprecated` and the names an
+  `allOf` `if`/`then` makes required (the lease record's per-event requirements were invisible to
+  earlier formats); the guard reports `STABILITY_LOWERED` and `CONDITIONAL_REQUIRED_ADDED` as
+  breaking and treats deprecation as additive. Two new guard scenarios.
 
 ## [1.1.0] — 2026-10-05
 

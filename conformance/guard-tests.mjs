@@ -26,13 +26,13 @@ async function loadGuard() {
   }
 }
 
-function lock(schemas, contentModels = {}, lockFormat = 3) {
+function lock(schemas, contentModels = {}, lockFormat = 5) {
   return { lockFormat, schemaSetVersion: '1.0.0', major: '1', contentModels, schemas };
 }
 
 const base = () => lock({
   'x.schema.json': {
-    a: { required: false, type: 'string' },
+    a: { required: false, type: 'string', stability: 'stable' },
     b: { required: true, type: 'integer', minimum: 0, maximum: 10 },
     c: { required: false, type: 'string', pattern: '^[a-z]+$' },
     d: { required: false, type: 'object', additionalProperties: true },
@@ -71,6 +71,9 @@ export async function runGuardTests() {
     delete after.schemas['x.schema.json'].a.type; // a plain string became a union that still accepts a string
     after.schemas['x.schema.json'].a.anyOf = 2;
     after.schemas['x.schema.json'].a.anyOfTypes = ['object', 'string'];
+    after.schemas['x.schema.json'].a.deprecated = 'use b'; // deprecation is additive
+    after.schemas['x.schema.json'].b.stability = 'stable'; // marking stability where there was none, additive
+    after.schemas['x.schema.json'].c.stability = 'development'; // development where unmarked: not a lowering
     expect('additive-is-silent', codes(compare(base(), after)), []);
   }
 
@@ -93,6 +96,8 @@ export async function runGuardTests() {
     ['type-changed', (s) => { s.a.type = 'integer'; }, ['TYPE_CHANGED a']],
     ['enum-narrowed', (s) => { s.g.enum = ['x']; }, ['ENUM_NARROWED g']],
     ['enum-closed', (s) => { s.a.enum = ['only']; }, ['ENUM_NARROWED a']],
+    ['stability-lowered', (s) => { s.a.stability = 'development'; }, ['STABILITY_LOWERED a']],
+    ['conditional-required-added', (s) => { s.d.conditionalRequired = ['x']; }, ['CONDITIONAL_REQUIRED_ADDED d']],
   ];
   for (const [name, mutate, wanted] of cases) {
     const after = base();

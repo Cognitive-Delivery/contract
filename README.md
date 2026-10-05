@@ -131,6 +131,12 @@ Every artefact carries `schema_version`, and the schemas require it: a conforman
 writes it. A reader meeting a pre-contract artefact without it may read it as `1.0`; it must not
 emit one.
 
+Since 1.2 every declared property says which promise it is under: a `$comment` of
+`stability: stable` (held to the additive rule) or `stability: development` (may change within the
+major, and says so; `allow.tool_args` is the one such field today). Lowering a field from stable to
+development is a breaking change the guard reports; retiring a field is `; deprecated: <replacement>`
+on its comment, which is additive, and the field stays until the next major.
+
 ## Installing
 
 ```
@@ -354,6 +360,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
   schema-checks.mjs         strict compile, every inlined copy identical to its source, the version
   inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
+  metaschema.json           the conventions every schema is held to: dialect, $id, title, no `format`, a stability $comment on every property
   layout-check.mjs          this block is current
   lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
   spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key

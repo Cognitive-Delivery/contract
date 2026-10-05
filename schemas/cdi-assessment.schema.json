@@ -20,24 +20,29 @@
     "schema_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+$",
-      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule."
+      "description": "Contract version this record was written against, as `major.minor`. One rule across every schema (schema set 1.2): a reader compares the major only, and a minor it has not met is additive by the contract's own rule.",
+      "$comment": "stability: stable"
     },
     "assessment_id": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "created_at": {
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
-      "description": "ISO 8601 with a timezone."
+      "description": "ISO 8601 with a timezone.",
+      "$comment": "stability: stable"
     },
     "assessor": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "participants": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "$comment": "stability: stable"
     },
     "dimensions": {
       "type": "array",
@@ -53,23 +58,28 @@
         ],
         "properties": {
           "id": {
-            "$ref": "#/definitions/dimensionId"
+            "$ref": "#/definitions/dimensionId",
+            "$comment": "stability: stable"
           },
           "score": {
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "1 Absent, 2 Informal, 3 Documented, 4 Complete, 5 Substantive. The four-to-five step is the distinction between a control that exists and a control that changes what someone does. A whole number: the levels are discrete and a 3.7 is a score nobody can act on."
+            "description": "1 Absent, 2 Informal, 3 Documented, 4 Complete, 5 Substantive. The four-to-five step is the distinction between a control that exists and a control that changes what someone does. A whole number: the levels are discrete and a 3.7 is a score nobody can act on.",
+            "$comment": "stability: stable"
           },
           "evidence": {
             "type": "string",
-            "description": "Why this score. A score without evidence is an opinion."
+            "description": "Why this score. A score without evidence is an opinion.",
+            "$comment": "stability: stable"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "$comment": "stability: stable"
           },
           "level_label": {
-            "type": "string"
+            "type": "string",
+            "$comment": "stability: stable"
           }
         },
         "additionalProperties": true
@@ -87,7 +97,8 @@
               "id": {
                 "enum": [
                   "provenance-integrity"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
@@ -102,7 +113,8 @@
               "id": {
                 "enum": [
                   "supervisory-clarity"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
@@ -117,7 +129,8 @@
               "id": {
                 "enum": [
                   "scope-definition"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
@@ -132,7 +145,8 @@
               "id": {
                 "enum": [
                   "review-substance"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
@@ -147,7 +161,8 @@
               "id": {
                 "enum": [
                   "constraint-fidelity"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
@@ -162,12 +177,14 @@
               "id": {
                 "enum": [
                   "capability-calibration"
-                ]
+                ],
+                "$comment": "stability: stable"
               }
             }
           }
         }
-      ]
+      ],
+      "$comment": "stability: stable"
     },
     "summary": {
       "type": "object",
@@ -186,22 +203,27 @@
             "split",
             "brittle",
             "emerging"
-          ]
+          ],
+          "$comment": "stability: stable"
         },
         "average_score": {
-          "type": "number"
+          "type": "number",
+          "$comment": "stability: stable"
         },
         "lowest_score": {
-          "type": "number"
+          "type": "number",
+          "$comment": "stability: stable"
         },
         "lowest_dimensions": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/dimensionId"
-          }
+          },
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "ninety_day_priority": {
       "type": "object",
@@ -213,23 +235,29 @@
       ],
       "properties": {
         "dimension": {
-          "$ref": "#/definitions/dimensionId"
+          "$ref": "#/definitions/dimensionId",
+          "$comment": "stability: stable"
         },
         "action": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "success_measure": {
           "type": "string",
-          "description": "How you will know it worked. Required, so that a priority cannot be recorded without one."
+          "description": "How you will know it worked. Required, so that a priority cannot be recorded without one.",
+          "$comment": "stability: stable"
         },
         "review_date": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     },
     "next_assessment_due": {
-      "type": "string"
+      "type": "string",
+      "$comment": "stability: stable"
     },
     "source": {
       "type": "object",
@@ -240,13 +268,16 @@
       ],
       "properties": {
         "instrument": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         },
         "version": {
-          "type": "string"
+          "type": "string",
+          "$comment": "stability: stable"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "$comment": "stability: stable"
     }
   },
   "additionalProperties": true,
