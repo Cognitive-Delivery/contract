@@ -163,6 +163,14 @@ refused: the first would let the same program at another path escape the rule, a
 authorises an invocation rather than a program. `*` is refused as a tool name because a lease that
 names every tool has named none, which §5.2 R2 already refuses from the other side.
 
+`allow.tool_args` (schema set 1.2, **development stability**) is an optional map from tool name to a
+JSON Schema the agent proposes for its own calls to that tool. It is a declaration and not a grant:
+an issuer **MAY** omit it from the granted manifest and **MUST NOT** treat it as granted authority,
+because the reference gate does not yet evaluate argument schemas, and a narrowing rule without an
+enforcing gate is a claim the corpus cannot test. The narrowing vector `tool-args-dropped` shows the
+reference issuer dropping it. It becomes a rule, with a containment relation between a child's and a
+parent's schemas, when a gate enforces it; until then its stability marker says so.
+
 ### 4.5 Budget
 
 Every field of `budget` is **OPTIONAL** and **MUST** be non-negative when present.
@@ -538,6 +546,8 @@ is an additive change; removing or redefining one is not.
 | **OWASP agentic risks** | This addresses excessive agency, tool misuse and control hijacking. It does not address prompt injection, memory poisoning or model-level risks |
 | **NIST agent identity and authorisation work** | This is offered as a running implementation to test ideas against |
 
+- **Progent** (JSON-Schema argument policies for tool calls, with a narrowing proof): the direction `allow.tool_args` points in once a gate evaluates argument schemas.
+
 ## 12. Deliberately out of scope
 
 - **Runtime enforcement.** This specifies the document and the algebra. How a host enforces a grant —
@@ -554,6 +564,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-05 | §4.4 adds `allow.tool_args`, a per-tool argument-schema declaration with development stability that an issuer MAY omit from the grant and MUST NOT treat as authority; the vector `tool-args-dropped` shows the reference dropping it; §11 cites Progent |
 | 1.2 | 2026-10-05 | §6.2 states that `schema_version` is `major.minor` everywhere and compared on the major only; reserves the reference writer's audit `event_type` first segments and gives other writers the vendor-name rule; adds `actor.runtime_agent` to the audit event while `actor.runtime` stays open |
 | 1.2 | 2026-10-05 | §6.1 specifies the lease record: nine events with what each carries, `declared_hash` and `granted_hash` as the two identities of a decision, revocation by an ancestor or the issuer (rule L3), and §5.2 the three reserved forms a refusal reason takes |
 | 1.2 | 2026-10-05 | §6 states rules L1 (`expires_at` after `issued_at`) and L2 (no self-parent) with stable identifiers and one timestamp form inside the signed bytes; §4.5 caps `depth` at 16 and `fan_out` at 256; §4.6 fixes `attestation.signature` at 64 hex; §9 adds the by-rule fixtures and the `rules` adapter hook, reported unchecked when absent |

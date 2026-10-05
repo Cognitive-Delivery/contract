@@ -232,6 +232,18 @@
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
                 "description": "An executable the agent may run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
               }
+            },
+            "tool_args": {
+              "type": "object",
+              "x-stability": "development",
+              "description": "DECLARED argument constraints per tool (schema set 1.2, development stability): tool name to a JSON Schema the agent proposes for its own calls to that tool, after Progent's argument-schema policies. A declaration, not a grant: in 1.x an issuer MAY omit it from the granted manifest and MUST NOT treat it as granted authority, because the reference gate does not yet evaluate argument schemas and a narrowing rule without an enforcing gate is a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it. It becomes a rule when a gate enforces it.",
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
+              }
             }
           },
           "additionalProperties": true

@@ -83,6 +83,12 @@ deployment validates with zero rejections.
   exactly six dimensions, each id once, with integer scores; a sealed config path is dotted lower-case
   and the runner checks it names a field the fixture carries. Ten invalid fixtures, one valid. Every
   real audit record, signal, provenance record and assessment in the reference deployment validates.
+- **`allow.tool_args`** (SPEC §4.4), a per-tool argument-schema declaration marked `x-stability:
+  development`: an issuer MAY omit it from the grant and MUST NOT treat it as authority, because
+  the reference gate does not yet evaluate argument schemas and a rule without an enforcing gate is
+  a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it.
+  `x-stability` is the contract's own annotation, registered with the strict compile; every
+  property gains one in a later change of this release.
 
 ## [1.1.0] — 2026-10-05
 

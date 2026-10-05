@@ -124,6 +124,15 @@
         ],
         "minLength": 1
       },
+      "#allow.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#allow.tool_args.*": {
+        "required": false,
+        "type": "object"
+      },
       "#allow.tools": {
         "required": true,
         "type": "array"
@@ -414,6 +423,17 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "allow.tool_args": {
+        "required": false,
+        "via": "#allow.tool_args",
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "allow.tool_args.*": {
+        "required": false,
+        "via": "#allow.tool_args.*",
+        "type": "object"
       },
       "allow.tools": {
         "required": true,
@@ -723,6 +743,15 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "#grantedManifest.allow.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#grantedManifest.allow.tool_args.*": {
+        "required": false,
+        "type": "object"
       },
       "#grantedManifest.allow.tools": {
         "required": true,
@@ -1049,6 +1078,17 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "manifest.allow.tool_args": {
+        "required": false,
+        "via": "#grantedManifest.allow.tool_args",
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "manifest.allow.tool_args.*": {
+        "required": false,
+        "via": "#grantedManifest.allow.tool_args.*",
+        "type": "object"
       },
       "manifest.allow.tools": {
         "required": true,
@@ -2046,6 +2086,15 @@
         ],
         "minLength": 1
       },
+      "#lease.manifest.allow.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#lease.manifest.allow.tool_args.*": {
+        "required": false,
+        "type": "object"
+      },
       "#lease.manifest.allow.tools": {
         "required": true,
         "type": "array"
@@ -2337,6 +2386,15 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "#manifest.allow.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#manifest.allow.tool_args.*": {
+        "required": false,
+        "type": "object"
       },
       "#manifest.allow.tools": {
         "required": true,
@@ -2692,6 +2750,17 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "declared.allow.tool_args": {
+        "required": false,
+        "via": "#manifest.allow.tool_args",
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "declared.allow.tool_args.*": {
+        "required": false,
+        "via": "#manifest.allow.tool_args.*",
+        "type": "object"
       },
       "declared.allow.tools": {
         "required": true,
@@ -3089,6 +3158,17 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "lease.manifest.allow.tool_args": {
+        "required": false,
+        "via": "#lease.manifest.allow.tool_args",
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "lease.manifest.allow.tool_args.*": {
+        "required": false,
+        "via": "#lease.manifest.allow.tool_args.*",
+        "type": "object"
       },
       "lease.manifest.allow.tools": {
         "required": true,

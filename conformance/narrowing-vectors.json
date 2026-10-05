@@ -3550,6 +3550,144 @@
         "R1",
         "R2"
       ]
+    },
+    {
+      "name": "tool-args-dropped",
+      "why": "§4.4 and §5 (1.2): `allow.tool_args` is a declaration with development stability; the reference issuer omits it from the grant and treats it as no authority.",
+      "parent": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "parent",
+          "kind": "native",
+          "runtime_agent": "cdf-native"
+        },
+        "intent": {
+          "purpose": "The parent grant these vectors narrow against."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact",
+            "cdf_read_steering"
+          ],
+          "read_paths": [
+            "**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [
+            "*.anthropic.com"
+          ],
+          "commands": [
+            "node"
+          ]
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 2,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      },
+      "declared": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": [],
+          "tool_args": {
+            "cdf_write_artefact": {
+              "type": "object",
+              "properties": {
+                "artefact": {
+                  "enum": [
+                    "requirements",
+                    "design"
+                  ]
+                }
+              },
+              "required": [
+                "artefact"
+              ]
+            }
+          }
+        },
+        "deny": {
+          "commands": [],
+          "paths": [],
+          "hosts": []
+        },
+        "budget": {},
+        "approvals": []
+      },
+      "granted": {
+        "schema_version": "1.0",
+        "agent": {
+          "name": "worker",
+          "kind": "delegated-cli",
+          "runtime_agent": "claude-code"
+        },
+        "intent": {
+          "purpose": "Implement task 1.1 within its file scope."
+        },
+        "allow": {
+          "tools": [
+            "cdf_write_artefact"
+          ],
+          "read_paths": [
+            "src/**"
+          ],
+          "write_paths": [
+            "src/**"
+          ],
+          "hosts": [],
+          "commands": []
+        },
+        "deny": {
+          "commands": [
+            "sudo"
+          ],
+          "paths": [
+            ".cdf/runtime/**"
+          ],
+          "hosts": []
+        },
+        "budget": {
+          "tokens": 200000,
+          "depth": 1,
+          "fan_out": 4
+        },
+        "approvals": [
+          "phase.advance"
+        ]
+      }
     }
   ]
 }
