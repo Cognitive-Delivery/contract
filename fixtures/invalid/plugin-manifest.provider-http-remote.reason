@@ -1,0 +1,1 @@
+A contributed provider at `http://api.example.com/v1`. A plain-http remote provider carries an API key in the clear; `baseUrl` is `https://`, or `http://` to loopback only (127.0.0.1, localhost, [::1]), where Ollama and LM Studio live.

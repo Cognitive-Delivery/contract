@@ -75,6 +75,16 @@ function parentPath(path) {
 
 /** Everything one side says about a property path, compared with the other. */
 export function compareEntry(file, path, before, after, extended, out, baselineFormat = 3) {
+  const start = out.length;
+  compareEntryInner(file, path, before, after, extended, out, baselineFormat);
+  // A finding at a path reached through a `$ref` also names where the rule lives in its definition
+  // (lock format 4 `via`), so one allow-list entry at `#definition.path` covers every referring path.
+  if (after && typeof after.via === 'string') {
+    for (let i = start; i < out.length; i += 1) out[i] = { ...out[i], via: after.via };
+  }
+}
+
+function compareEntryInner(file, path, before, after, extended, out, baselineFormat = 3) {
   if (!after) {
     out.push(finding('FIELD_REMOVED', file, path, 'removed. An older reader loses a field it depends on.', 'removed'));
     return;
@@ -257,7 +267,7 @@ export function applyAllowlist(findings, allowlist) {
   const entries = allowlist?.entries ?? [];
   for (const f of findings) {
     // `after` must match too: an entry admits one specific tightening, not every later one.
-    const entry = entries.find((e) => e.finding === f.code && e.schema === f.file && e.path === f.path && e.after === f.after);
+    const entry = entries.find((e) => e.finding === f.code && e.schema === f.file && (e.path === f.path || (f.via !== undefined && e.path === f.via)) && e.after === f.after);
     (entry ? accepted : unlisted).push(entry ? { ...f, entry } : f);
   }
   return { accepted, unlisted };

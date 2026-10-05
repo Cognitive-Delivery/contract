@@ -59,6 +59,21 @@ deployment validates with zero rejections.
   and an entry must name it. Found while lowering `depth`'s ceiling: batch one's entry for the
   2^53 `maximum` would have covered it silently. Every existing entry gained its `after`; three
   guard scenarios prove the match is exact.
+- **Inline plugin hooks and MCP servers are typed, and a manifest cannot carry a credential.**
+  An inline `hooks` object validates as the event map (thirty-three events, five handler types
+  with their required fields, after the Claude Code settings schema of 2026-10-05) and an inline
+  `mcpServers` object as a map of server configs (`stdio` requires `command`; `http`, `sse`, `ws`
+  and `streamable-http` require `url`). A value in a hook header, an MCP `env` or an MCP `headers`
+  that matches one of seven credential shapes is refused; a marketplace entry's `headers` refuses
+  an `authorization` key in any case; a contributed provider's `baseUrl` is `https://` or
+  `http://` to loopback only. Nine invalid fixtures, one valid fixture with every admitted inline
+  form; Anthropic's bundled-plugin manifest and the reference deployment's own manifests validate
+  unchanged.
+- **The lock follows local `$ref`s** (lock format 4). A property re-pointed from one definition to a
+  stricter one used to change only its `ref` string, which the guard never compared, so the typed
+  hook and MCP shapes above would have landed unseen; and a value that became a `$ref` lost its
+  recorded type and read as `TYPE_CHANGED`. The referenced definition is now digested at the
+  referring path, with `ref` recorded beside it; a cycle stops at its second visit.
 
 ## [1.1.0] — 2026-10-05
 

@@ -1,0 +1,1 @@
+An inline hook map keyed by `OnSave`, which is not one of the thirty-three events the hooks reference lists. Nothing would ever fire it; refusing it is how a typo stops being a hook that silently never runs.

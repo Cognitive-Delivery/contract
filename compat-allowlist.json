@@ -748,6 +748,33 @@
       "reason": "SPEC 4.5 (1.2): depth at most 16 and fan_out at most 256. The root policy is 4 and 8; the largest declared values anywhere are 5 and 10; see fixtures/evidence/2026-10-05-lease-timestamps.md.",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.depth-above-ceiling.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "#provider.baseUrl",
+      "after": "anyOfPatterns=[\"^http://(127\\\\.0\\\\.0\\\\.1|localhost|\\\\[::1\\\\])(:[0-9]{1,5})?(/|$)\",\"^https://\"]",
+      "reason": "A contributed provider is https://, or http:// to loopback only (127.0.0.1, localhost, [::1]) where Ollama and LM Studio live; a plain-http remote provider would carry a key in the clear (DR-183 D3). The ten built-in providers all satisfy it; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/plugin-manifest.provider-http-remote.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#entry.headers",
+      "after": "keyNot=[\"^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$\"]",
+      "reason": "A marketplace entry headers map refuses an authorization key in any case: the file is read by everyone who adds the marketplace and headersHelper is the documented route for a credential. No real marketplace carries one; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/plugin-marketplace.headers-authorization.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#credentialFree",
+      "after": "not=[\"(^|[^A-Za-z0-9])AKIA[0-9A-Z]{16}([^A-Za-z0-9]|$)\",\"(^|[^A-Za-z0-9])gh[pousr]_[A-Za-z0-9]{36,}\",\"(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{20,}\",\"(^|[^A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}\",\"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----\",\"Bearer +[A-Za-z0-9._~+/-]{16,}\",\"eyJ[A-Za-z0-9_-]{8,}\\\\.eyJ[A-Za-z0-9_-]{8,}\\\\.[A-Za-z0-9_-]{8,}\"]",
+      "reason": "A credential-free string (the definition every header and env value in the plugin schemas refers to): the seven shapes the evidence sanitiser refuses (private key, AWS key, GitHub token, OpenAI key, Slack token, literal bearer, JWT). No real manifest or marketplace carries one; see fixtures/evidence/2026-10-05-plugin-components.md.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/plugin-manifest.mcp-env-github-token.json"
     }
   ]
 }

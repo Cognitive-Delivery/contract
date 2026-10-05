@@ -162,6 +162,11 @@ export async function runGuardTests() {
     expect('allowlist-refuses-other-after', applyAllowlist(compare(base(), after).findings, other).accepted.length, 0);
     const lowered = base(); lowered.schemas['x.schema.json'].b.maximum = 5;
     const oldBound = { entries: [{ finding: 'BOUND_TIGHTENED', schema: 'x.schema.json', path: 'b', after: 'maximum=10', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] };
+    // A tightening seen through a $ref (lock format 4 `via`) is covered by the entry at its definition.
+    const viaLock = base(); viaLock.schemas['x.schema.json'].v = { required: false, type: 'string', via: '#v' };
+    const viaAfter = base(); viaAfter.schemas['x.schema.json'].v = { required: false, type: 'string', via: '#v', pattern: '^[a-z]+$' };
+    const viaList = { entries: [{ finding: 'PATTERN_TIGHTENED', schema: 'x.schema.json', path: '#v', after: 'pattern=^[a-z]+$', reason: 'r', date: '2026-10-05', evidence: 'README.md' }] };
+    expect('allowlist-covers-via-definition', applyAllowlist(compare(viaLock, viaAfter).findings, viaList).accepted.length, 1);
     expect('allowlist-old-bound-does-not-cover-lower', applyAllowlist(compare(base(), lowered).findings, oldBound).unlisted.map((f) => f.after), ['maximum=5']);
   }
 
@@ -190,5 +195,5 @@ export async function runGuardTests() {
     expect('allowlist-valued-entry-not-satisfied-by-other-value', missingAllowlistEntries({ entries: [{ ...legacy, after: 'pattern=^x$' }] }, { entries: [{ ...legacy, after: 'pattern=^y$' }] }).length, 1);
   }
 
-  return { present: true, count: cases.length + 22, failures };
+  return { present: true, count: cases.length + 23, failures };
 }

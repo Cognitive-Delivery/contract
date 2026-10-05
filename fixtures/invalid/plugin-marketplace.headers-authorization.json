@@ -1,0 +1,142 @@
+{
+  "$schema": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
+  "name": "cdf-first-party",
+  "owner": {
+    "name": "Cognitive Delivery",
+    "email": "contact@example.com",
+    "url": "https://example.com"
+  },
+  "description": "The first-party CDF plugins, plus three listed from elsewhere.",
+  "version": "1.0.0",
+  "metadata": {
+    "pluginRoot": "./plugins",
+    "description": "Plugins that ship in this repository.",
+    "version": "1.0.0"
+  },
+  "allowCrossMarketplaceDependenciesOn": [
+    "cdf-community"
+  ],
+  "renames": {
+    "cdf-checks": "cdf-data-checks",
+    "cdf-legacy-mirror": null
+  },
+  "plugins": [
+    {
+      "name": "cdf-governance",
+      "source": {
+        "source": "local",
+        "path": "./plugins/cdf-governance"
+      },
+      "displayName": "CDF Governance",
+      "description": "Governed delivery tools, already in this repository: nothing to fetch and nothing to pin.",
+      "category": "Productivity",
+      "defaultEnabled": true,
+      "strict": true
+    },
+    {
+      "name": "cdf-data-checks",
+      "source": {
+        "source": "github",
+        "repo": "cognitive-delivery/cdf-data-checks",
+        "ref": "v1.2.0",
+        "sha": "5b1e0c9a4d3f2e1b0a9c8d7e6f5a4b3c2d1e0f9a"
+      },
+      "displayName": "CDF Data Checks",
+      "version": "1.2.0",
+      "license": "PolyForm-Noncommercial-1.0.0",
+      "keywords": [
+        "data",
+        "quality"
+      ],
+      "tags": [
+        "first-party"
+      ],
+      "author": {
+        "name": "Cognitive Delivery"
+      },
+      "cdf": {
+        "digest": "3f79bb7b435b05321651daefd374cdc681dc06faa65e374e38337b88ca046dea",
+        "capabilities": {
+          "read_paths": [
+            "models/**"
+          ],
+          "write_paths": [
+            ".cdf/checks/**"
+          ],
+          "hosts": [],
+          "commands": [
+            "node"
+          ]
+        }
+      },
+      "relevance": {
+        "topic": "data quality",
+        "signals": {
+          "files": [
+            "models/**/*.sql"
+          ]
+        }
+      },
+      "dependencies": [
+        "cdf-governance"
+      ]
+    },
+    {
+      "name": "cdf-doc-packs",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://example.com/cdf-monorepo.git",
+        "path": "packages/doc-packs",
+        "ref": "main"
+      },
+      "description": "One directory of a monorepo. The ref is a branch, so this entry is not pinned and the loader says so before a human decides.",
+      "skills": [
+        "./skills"
+      ],
+      "commands": "./commands",
+      "strict": false
+    },
+    {
+      "name": "example-archive-plugin",
+      "source": {
+        "source": "archive",
+        "url": "https://example.com/downloads/example-plugin-2.0.0.tgz",
+        "sha256": "2C26B46B68FFC68FF99B453C1D30413413422D706483BFA0F98A5E886266E7AE"
+      },
+      "headers": {
+        "Authorization": "Basic abc",
+        "X-Trace": "cdf"
+      },
+      "headersHelper": "./scripts/registry-headers.mjs",
+      "description": "A declared form the harness cannot fetch in v1. It parses, and it is reported as an unsupported source form rather than failing the whole marketplace.",
+      "strict": false
+    },
+    {
+      "name": "example-relative-plugin",
+      "source": "./plugins/example-relative-plugin",
+      "author": "Example Maintainers",
+      "homepage": "https://example.com/example-relative-plugin"
+    },
+    {
+      "name": "npm_listed.plugin",
+      "source": {
+        "source": "npm",
+        "package": "@example/listed",
+        "version": "^1.0.0",
+        "registry": "https://npm.example.com"
+      },
+      "description": "A name Claude Code accepts (letters, digits, dot, underscore) that the old kebab-only rule refused."
+    },
+    {
+      "name": "rendered-by-tool",
+      "source": {
+        "source": "command",
+        "command": "my-tool claude-plugin-path",
+        "timeout": 120,
+        "mode": "link"
+      },
+      "description": "A command source with the documented timeout and mode fields."
+    }
+  ],
+  "forceRemoveDeletedPlugins": false
+}

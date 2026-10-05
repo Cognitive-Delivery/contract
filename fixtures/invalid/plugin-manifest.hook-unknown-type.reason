@@ -1,0 +1,1 @@
+An inline hook of `type: webhook`. The five handler types are `command`, `prompt`, `agent`, `http` and `mcp_tool` (Claude Code settings schema, 2026-10-05); a handler of unknown type is one the harness cannot vet, so the type set is closed while each type's own fields stay open.
