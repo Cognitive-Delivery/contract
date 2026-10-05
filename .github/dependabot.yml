@@ -1,0 +1,14 @@
+# Weekly update pull requests for the two things this repository depends on: the npm
+# devDependency (ajv, the reference adapter) and the GitHub Actions the workflows pin. Each lands
+# through the same checks as any change; a bumped action that breaks a job is a red check, not a
+# surprise at release.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

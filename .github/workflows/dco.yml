@@ -1,0 +1,42 @@
+name: DCO
+
+# Every commit on a pull request carries a Developer Certificate of Origin sign-off
+# (`Signed-off-by: Name <email>`, written by `git commit -s`). Repository-owned rather than the
+# third-party DCO app, because a suspended app's check disappears silently and the pull requests
+# keep merging (modelcontextprotocol/inspector found 242 of them); a workflow that is missing is a
+# red required check. Only the pull request's own commits are checked: a merge commit GitHub
+# writes has no sign-off and is not anyone's contribution.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    name: DCO
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Every commit on this pull request is signed off
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          status=0
+          count=0
+          for sha in $(git rev-list --no-merges "$BASE".."$HEAD"); do
+            count=$((count + 1))
+            if git show -s --format=%B "$sha" | grep -Eq '^Signed-off-by: .+ <[^>]+>$'; then
+              echo "$(git show -s --format='%h %s' "$sha"): signed off"
+            else
+              echo "::error::$(git show -s --format='%h %s' "$sha") has no Signed-off-by trailer. Sign it with git commit -s (or git commit --amend -s) and force-push."
+              status=1
+            fi
+          done
+          echo "$count commit(s) checked."
+          exit $status

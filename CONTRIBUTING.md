@@ -30,6 +30,17 @@ as do the guard's own scenario tests (`conformance/guard-tests.mjs`): every find
 fire and every additive change seen to pass, because a guard nobody has watched fail is a
 sentence in a README.
 
+## Before you start
+
+Sign off every commit (`git commit -s`): the `DCO` check refuses a pull request with a commit that
+has no `Signed-off-by` trailer, and it is the Developer Certificate of Origin, not a copyright
+assignment. A **semantic change** — a new schema, a field whose meaning is not obvious from its
+name, a narrowing rule or refusal code, a reserved vocabulary, a change to what the corpus checks —
+starts as a one-page proposal on [docs/proposals/TEMPLATE.md](docs/proposals/TEMPLATE.md), with its
+Backward compatibility and Security sections answered; [GOVERNANCE.md](GOVERNANCE.md) says who
+decides and how. A fixture, a tightening with its evidence, a description or a tooling fix needs no
+proposal. The pull-request template lists what the checks cannot see.
+
 ## Changing the SPEC
 
 Every normative clause of `SPEC-agent-lease-manifest.md` is mapped in `conformance/traceability.json`.
@@ -123,4 +134,6 @@ test key; never commit a lease signed with a real key, and never commit a real k
 
 ## Reporting a problem
 
-Open an issue. For a security problem, follow [SECURITY.md](SECURITY.md) instead.
+Open an issue with the *Defect* template (what is wrong, what the contract says, which half is
+wrong) or the *Proposal* template for a change. For a security problem, follow
+[SECURITY.md](SECURITY.md) instead; the issue form links to the private advisory.

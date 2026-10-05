@@ -115,6 +115,13 @@ deployment validates with zero rejections.
   `allOf` `if`/`then` makes required (the lease record's per-event requirements were invisible to
   earlier formats); the guard reports `STABILITY_LOWERED` and `CONDITIONAL_REQUIRED_ADDED` as
   breaking and treats deprecation as additive. Two new guard scenarios.
+- **Governance written down.** `GOVERNANCE.md`: one maintainer (`@datajace`, the sole CODEOWNER,
+  stated rather than padded), a proposal under `docs/proposals/` before any semantic change, how a
+  change lands and how a release is cut. A repository-owned `DCO` check refuses a pull request with
+  an unsigned commit (the third-party app was not used because a suspended app's check disappears
+  silently). Issue templates for a defect and a proposal, a pull-request template with the checks
+  the automation cannot see, Dependabot for npm and Actions weekly, and the proposal template with
+  Backward compatibility and Security sections and a status lifecycle.
 
 ## [1.1.0] — 2026-10-05
 
