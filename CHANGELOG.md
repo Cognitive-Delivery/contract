@@ -20,6 +20,19 @@ review's fourteen improvements. Every tightening below is allow-listed with the 
 conformant writer ever produced what it now refuses, and every real journal in the reference
 deployment validates with zero rejections.
 
+### Added
+
+- **`lease-record`**, the decision side of the lease (SPEC §6.1). One line of the lease journal:
+  nine events (`granted`, `refused`, `narrowed`, `heartbeat`, `attached`, `revoked`, `stopped`,
+  `completed`, `expired`) with what each must carry, enforced by conditional requirements; a
+  refusal's `reasons` are reserved codes (`R<n>`, `runtime_error:<name>`, `vendor:<vendor>:<code>`)
+  with the prose in `reason`; `declared_hash` and `granted_hash` tie a record to the exact bytes
+  decided; a `revoked` record names `by` (an ancestor lease or `issuer`) and rule L3 refuses any
+  other, given the journal. The schema carries the manifest and the lease inlined, held identical to
+  their sources (`conformance/inlined-copies.mjs`). Eleven valid fixtures, five invalid, one by rule.
+  The reference deployment's real journal validates unchanged; a 1.1 `granted` record carries no
+  `granted_hash` and a reader may compute it.
+
 ### Changed
 
 - **Hosts, commands, tools and approvals have one identity rule each**, enforced by the schemas

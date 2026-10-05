@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "at": "2026-09-15T10:00:00.000Z",
+  "event": "refused",
+  "lease_id": "4f7a2b3c-6d5e-4f8a-9b0c-1d2e3f4a5b6c",
+  "reasons": [
+    "runtime_error:parent_unknown"
+  ],
+  "reason": "parent lease 0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c is unknown",
+  "declared_hash": "a4a9b3126f04364f4c749ffc3f7935f2900c788d2c07b518c2f37deb71b59be0"
+}

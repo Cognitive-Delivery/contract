@@ -1,0 +1,1 @@
+`reasons` carries prose, `purpose is empty`, where a reserved code belongs. SPEC §5.2: codes are `R<n>`, `runtime_error:<name>` or `vendor:<vendor>:<code>`, so two implementations compare refusals by code; the prose goes in `reason`.

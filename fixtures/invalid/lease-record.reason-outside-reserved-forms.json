@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "at": "2026-09-15T10:00:00.000Z",
+  "event": "refused",
+  "lease_id": "3e6f1a2b-5c4d-4e7f-8a9b-0c1d2e3f4a5b",
+  "parent_lease_id": "0f9b7c1e-4a2d-4c6e-9b1f-2d3e4f5a6b7c",
+  "reasons": [
+    "purpose is empty"
+  ],
+  "reason": "purpose is empty; runtime_agent unknown is refused for a native agent",
+  "declared_hash": "a4a9b3126f04364f4c749ffc3f7935f2900c788d2c07b518c2f37deb71b59be0"
+}

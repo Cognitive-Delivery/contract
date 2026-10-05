@@ -256,6 +256,13 @@ identifier, R1 to R6, which is what a refusal record and the conformance vectors
 5. **R5.** The parent's `depth` is already zero.
 6. **R6.** The parent's remaining `fan_out` is zero.
 
+A refusal record's `reasons` **MUST** be codes in one of three reserved forms (schema set 1.2), so
+two implementations compare refusals by code and not by prose: `R<n>` for the conditions above (R7
+and above are reserved for this specification to assign; an issuer **MUST NOT** mint one),
+`runtime_error:<name>` for a refusal the issuer could not avoid (no signing key, an unknown parent,
+a manifest that does not validate), and `vendor:<vendor>:<code>` for anything else. The prose goes
+in the record's `reason`.
+
 Every refusal **MUST** be recorded with the same weight as a grant. An implementation that records
 grants but discards refusals does not conform: "the agent was not permitted to do that" is a fact,
 not the absence of one.
@@ -288,6 +295,36 @@ UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`). An
 the same instant in different bytes, and two implementations would then disagree about one
 signature. The evidence schemas (audit, signal, provenance, assessment) keep their offset-tolerant
 form; nothing there is signed.
+
+### 6.1 The record
+
+Every decision about a lease is one line of the lease journal, conforming to
+`schemas/lease-record.schema.json` (schema set 1.2). The journal is append-only; a reader folds every
+lease's status from its lines and **MUST NOT** rewrite one. Nine events, with what each **MUST**
+carry beyond `schema_version`, `at`, `event` and `lease_id`:
+
+| Event | Carries | Meaning |
+|---|---|---|
+| `granted` | `lease`; a 1.2 writer also `declared` and `granted_hash` | The signed lease. `at` is its `issued_at` |
+| `refused` | `reasons` (reserved codes), `declared_hash`; `reason` for the prose | No lease; `lease_id` is a fresh id naming the refusal |
+| `narrowed` | `reason` (the narrowing summary) | What the grant took away, beside its `granted` line |
+| `heartbeat` | nothing further | Liveness. Never extends `expires_at` |
+| `attached` | `containment`, `platform` | How the governor contained the process: `enforced` or `advisory`, never implied |
+| `revoked` | `by`, `reason`; optionally `signature` | From this `at` the lease opens nothing |
+| `stopped` | `reason` | Closed by an operator |
+| `completed` | optionally `usage` | Closed by the agent finishing |
+| `expired` | nothing further | `expires_at` passed |
+
+`declared_hash` is the SHA-256 of the canonical bytes of the manifest as declared and
+`granted_hash` of the manifest as granted (`lease.manifest`), so a record ties to the exact bytes
+decided on both sides. A reader meeting a `granted` record from a 1.1 writer, without
+`granted_hash`, **MAY** compute it from `lease.manifest`.
+
+**Revocation.** A `revoked` record **MUST** name `by`: the `lease_id` of an ancestor of the revoked
+lease, or `issuer`. From the record's `at` the lease **MUST** open nothing. A reader meeting a `by`
+that is neither **MUST** treat the record as invalid; this is rule **L3**, and it needs the journal
+to check, so a reader with one record and no journal cannot check it and **MUST NOT** claim to have.
+
 
 ## 7. Canonical bytes
 
@@ -500,6 +537,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-05 | §6.1 specifies the lease record: nine events with what each carries, `declared_hash` and `granted_hash` as the two identities of a decision, revocation by an ancestor or the issuer (rule L3), and §5.2 the three reserved forms a refusal reason takes |
 | 1.2 | 2026-10-05 | §6 states rules L1 (`expires_at` after `issued_at`) and L2 (no self-parent) with stable identifiers and one timestamp form inside the signed bytes; §4.5 caps `depth` at 16 and `fan_out` at 256; §4.6 fixes `attestation.signature` at 64 hex; §9 adds the by-rule fixtures and the `rules` adapter hook, reported unchecked when absent |
 | 1.2 | 2026-10-05 | §4.4 gives hosts, commands, tools and approvals one identity rule each, enforced by the schemas: hosts are lower-case DNS names (IPv4 literals and `localhost` included) with at most a single leading wildcard label and never a scheme, port or path; commands are executable basenames; tools and approvals are identifiers that are never `*`. §4.2 caps `agent.name` at 120 characters and says it is never a person's name; §4.3 caps `purpose` at 500. Every real lease in the reference deployment still validates |
 | 1.1 | 2026-10-05 | §7 publishes a test key and signed fixtures so verification is checked across implementations; §9 requires a rejection to be reported at the place each invalid fixture's `.expect.json` names, and extends the round trip to a nested unknown field |

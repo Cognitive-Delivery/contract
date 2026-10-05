@@ -46,6 +46,7 @@ export const SHAPES = [
   'config-core',
   'agent-lease-manifest',
   'agent-lease',
+  'lease-record',
   'plugin-manifest',
   'plugin-marketplace',
 ];
@@ -125,7 +126,7 @@ async function checkLeaseRules(adapter, valid, failures) {
   if (typeof adapter.rules !== 'function') {
     return false;
   }
-  for (const fixture of valid.filter((f) => f.shape === 'agent-lease')) {
+  for (const fixture of valid.filter((f) => f.shape === 'agent-lease' || f.shape === 'lease-record')) {
     const findings = adapter.rules(fixture.data) ?? [];
     if (findings.length > 0) {
       failures.push(`valid/${fixture.file}: fails rule(s) ${findings.map((f) => f.rule).join(', ')}, but it is a legitimate lease.`);
@@ -134,7 +135,12 @@ async function checkLeaseRules(adapter, valid, failures) {
   for (const fixture of byRule) {
     const expected = await expectFor(fixture.file, 'invalid-by-rule');
     if (!expected || typeof expected.rule !== 'string') continue;
-    const findings = adapter.rules(fixture.data) ?? [];
+    // A rule that needs the journal (L3) gets it from the fixture's own `.expect.json`:
+    // `context.chain` lists the ancestors of the record's lease, oldest first.
+    const context = expected.context && Array.isArray(expected.context.chain)
+      ? { chainOf: () => expected.context.chain }
+      : {};
+    const findings = adapter.rules(fixture.data, context) ?? [];
     const rules = [...new Set(findings.map((f) => f.rule))];
     if (!rules.includes(expected.rule)) {
       failures.push(`invalid-by-rule/${fixture.file}: must fail rule ${expected.rule}, but the implementation reported ${JSON.stringify(rules)}.`);

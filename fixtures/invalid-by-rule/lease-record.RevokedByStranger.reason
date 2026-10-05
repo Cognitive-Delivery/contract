@@ -1,0 +1,1 @@
+`by` names a lease that is neither the issuer nor an ancestor of the revoked lease (its chain, given to the rule as context, is the parent only). SPEC §6 rule L3: only an ancestor or the issuer may revoke; a reader meeting any other `by` treats the record as invalid. Schema-valid, refused by rule, and checkable only with the journal.

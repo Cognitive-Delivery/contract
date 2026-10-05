@@ -10,6 +10,7 @@
     "cdi-assessment.schema.json": "open",
     "cdi-signal.schema.json": "open",
     "config-core.schema.json": "open",
+    "lease-record.schema.json": "open",
     "plugin-manifest.schema.json": "open",
     "plugin-marketplace.schema.json": "open",
     "provenance.schema.json": "open"
@@ -1231,6 +1232,744 @@
       "sealed[]": {
         "required": false,
         "type": "string"
+      }
+    },
+    "lease-record.schema.json": {
+      "#lease": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.declared_hash": {
+        "required": true,
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "#lease.expires_at": {
+        "required": true,
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+      },
+      "#lease.issued_at": {
+        "required": true,
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+      },
+      "#lease.issuer_session_id": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lease.key_fingerprint": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lease.lease_id": {
+        "required": true,
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "#lease.manifest": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.agent": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.agent.harness_version": {
+        "required": false,
+        "type": "string"
+      },
+      "#lease.manifest.agent.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "delegated-cli",
+          "external",
+          "native",
+          "plugin"
+        ]
+      },
+      "#lease.manifest.agent.model": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.agent.model.family": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lease.manifest.agent.model.vendor": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lease.manifest.agent.model.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#lease.manifest.agent.name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "#lease.manifest.agent.provider": {
+        "required": false,
+        "type": "string"
+      },
+      "#lease.manifest.agent.runtime_agent": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "cdf-native",
+          "claude-code",
+          "codex-cli",
+          "gemini-code-assist",
+          "github-copilot",
+          "unknown"
+        ]
+      },
+      "#lease.manifest.allow": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.allow.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.allow.commands[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+        "minLength": 1
+      },
+      "#lease.manifest.allow.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.allow.hosts[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
+      },
+      "#lease.manifest.allow.read_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.allow.read_paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "#lease.manifest.allow.tools": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.allow.tools[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+        "minLength": 1
+      },
+      "#lease.manifest.allow.write_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.allow.write_paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "#lease.manifest.approvals": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.approvals[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+        "minLength": 1
+      },
+      "#lease.manifest.attestation": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.attestation.issuer": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "bridge",
+          "harness",
+          "plugin"
+        ]
+      },
+      "#lease.manifest.attestation.key_fingerprint": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lease.manifest.attestation.signature": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "#lease.manifest.budget": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.budget.cost_usd": {
+        "required": false,
+        "type": "number",
+        "minimum": 0
+      },
+      "#lease.manifest.budget.depth": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 16
+      },
+      "#lease.manifest.budget.fan_out": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 256
+      },
+      "#lease.manifest.budget.steps": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#lease.manifest.budget.tokens": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#lease.manifest.budget.wall_clock_ms": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#lease.manifest.deny": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.deny.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.deny.commands[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+        "minLength": 1
+      },
+      "#lease.manifest.deny.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.deny.hosts[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
+      },
+      "#lease.manifest.deny.paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#lease.manifest.deny.paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/"
+        ],
+        "minLength": 1
+      },
+      "#lease.manifest.intent": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#lease.manifest.intent.purpose": {
+        "required": true,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "#lease.manifest.intent.spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "#lease.manifest.intent.task_id": {
+        "required": false,
+        "type": "string"
+      },
+      "#lease.manifest.parent_lease_id": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "#lease.manifest.schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "#lease.parent_lease_id": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "#lease.schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "#lease.signature": {
+        "required": true,
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "#manifest": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.agent": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.agent.harness_version": {
+        "required": false,
+        "type": "string"
+      },
+      "#manifest.agent.kind": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "delegated-cli",
+          "external",
+          "native",
+          "plugin"
+        ]
+      },
+      "#manifest.agent.model": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.agent.model.family": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#manifest.agent.model.vendor": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#manifest.agent.model.version": {
+        "required": false,
+        "type": "string"
+      },
+      "#manifest.agent.name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "#manifest.agent.provider": {
+        "required": false,
+        "type": "string"
+      },
+      "#manifest.agent.runtime_agent": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "cdf-native",
+          "claude-code",
+          "codex-cli",
+          "gemini-code-assist",
+          "github-copilot",
+          "unknown"
+        ]
+      },
+      "#manifest.allow": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.allow.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.allow.commands[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+        "minLength": 1
+      },
+      "#manifest.allow.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.allow.hosts[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
+      },
+      "#manifest.allow.read_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.allow.read_paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "#manifest.allow.tools": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.allow.tools[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+        "minLength": 1
+      },
+      "#manifest.allow.write_paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.allow.write_paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "#manifest.approvals": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.approvals[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$",
+        "minLength": 1
+      },
+      "#manifest.attestation": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.attestation.issuer": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "agent",
+          "bridge",
+          "harness",
+          "plugin"
+        ]
+      },
+      "#manifest.attestation.key_fingerprint": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#manifest.attestation.signature": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "#manifest.budget": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.budget.cost_usd": {
+        "required": false,
+        "type": "number",
+        "minimum": 0
+      },
+      "#manifest.budget.depth": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 16
+      },
+      "#manifest.budget.fan_out": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 256
+      },
+      "#manifest.budget.steps": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#manifest.budget.tokens": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#manifest.budget.wall_clock_ms": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#manifest.deny": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.deny.commands": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.deny.commands[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$",
+        "minLength": 1
+      },
+      "#manifest.deny.hosts": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.deny.hosts[]": {
+        "required": false,
+        "type": "string",
+        "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
+        "minLength": 1,
+        "maxLength": 253
+      },
+      "#manifest.deny.paths": {
+        "required": true,
+        "type": "array"
+      },
+      "#manifest.deny.paths[]": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/"
+        ],
+        "minLength": 1
+      },
+      "#manifest.intent": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#manifest.intent.purpose": {
+        "required": true,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "#manifest.intent.spec_slug": {
+        "required": false,
+        "type": "string"
+      },
+      "#manifest.intent.task_id": {
+        "required": false,
+        "type": "string"
+      },
+      "#manifest.parent_lease_id": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "#manifest.schema_version": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "1.0"
+        ]
+      },
+      "#reasonCode": {
+        "required": false,
+        "type": "string",
+        "anyOf": 3,
+        "anyOfPatterns": [
+          "^R[1-9][0-9]?$",
+          "^runtime_error:[a-z0-9_]{1,64}$",
+          "^vendor:[a-z0-9-]{1,32}:[A-Za-z0-9_.-]{1,64}$"
+        ]
+      },
+      "#sha256": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "#usage": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#usage.cost_usd": {
+        "required": false,
+        "type": "number",
+        "minimum": 0
+      },
+      "#usage.tokens": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#uuid": {
+        "required": false,
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "at": {
+        "required": true,
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+      },
+      "by": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "string"
+        ]
+      },
+      "containment": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "advisory",
+          "enforced"
+        ]
+      },
+      "declared": {
+        "required": false,
+        "ref": "#/definitions/manifest"
+      },
+      "declared_hash": {
+        "required": false,
+        "ref": "#/definitions/sha256"
+      },
+      "event": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "attached",
+          "completed",
+          "expired",
+          "granted",
+          "heartbeat",
+          "narrowed",
+          "refused",
+          "revoked",
+          "stopped"
+        ]
+      },
+      "granted_hash": {
+        "required": false,
+        "ref": "#/definitions/sha256"
+      },
+      "lease": {
+        "required": false,
+        "ref": "#/definitions/lease"
+      },
+      "lease_id": {
+        "required": true,
+        "ref": "#/definitions/uuid"
+      },
+      "parent_lease_id": {
+        "required": false,
+        "ref": "#/definitions/uuid"
+      },
+      "platform": {
+        "required": false,
+        "type": "string",
+        "maxLength": 32
+      },
+      "reason": {
+        "required": false,
+        "type": "string",
+        "maxLength": 500
+      },
+      "reasons": {
+        "required": false,
+        "type": "array"
+      },
+      "reasons[]": {
+        "required": false,
+        "ref": "#/definitions/reasonCode"
+      },
+      "schema_version": {
+        "required": true,
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
+      },
+      "signature": {
+        "required": false,
+        "ref": "#/definitions/sha256"
+      },
+      "usage": {
+        "required": false,
+        "ref": "#/definitions/usage"
       }
     },
     "plugin-manifest.schema.json": {
