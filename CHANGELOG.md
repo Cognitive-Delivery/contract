@@ -54,6 +54,19 @@ tooling in this repository.
   job is expected to fail until the path patterns are rewritten without lookahead in the next
   change, and is made a required check then.
 
+### Added
+
+- **Narrowing vectors** (`conformance/narrowing-vectors.json`). SPEC §9 called narrowing "the heart
+  of the specification" and left it to each implementation's own tests. The corpus now carries
+  declared-and-parent pairs with the granted manifest or the refusal codes narrowing must produce:
+  every row of the §5 table, every containment row of §5.1 (including `src/*.ts` not containing
+  `src/a.ts`), every refusal of §5.2, `unknown` accepted for `external` and refused for `native`, an
+  escaping path refusing the whole manifest, and a root manifest narrowed against a root policy.
+  The vectors were generated from the reference implementation's `narrowManifest` and committed. An
+  adapter supplies `narrow(declared, parent)` and the runner compares granted manifests by canonical
+  bytes and refusal sets exactly; one that does not is reported as not checked. Every adapter has
+  the vectors checked for shape. §5.2's six conditions gain stable identifiers R1 to R6.
+
 ### Changed
 
 - **Canonical bytes are declared to be RFC 8785.** SPEC §7 now says normatively that canonical bytes

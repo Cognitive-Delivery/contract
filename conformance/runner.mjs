@@ -8,8 +8,9 @@
  *
  * It takes the implementation under test as an argument and imports nothing from any product.
  *
- * Four things are asserted. The third is the one people forget, and the fourth is the one that
- * decides whether two implementations can verify each other's signatures at all:
+ * Five things are asserted. The third is the one people forget, the fourth decides whether two
+ * implementations can verify each other's signatures at all, and the fifth is the heart of the
+ * specification:
  *
  *   1. Every valid fixture is accepted.
  *   2. Every invalid fixture is rejected — and carries a written reason why, because
@@ -21,6 +22,8 @@
  *      vectors and RFC 8785's own six (`jcs/`). Schema agreement is not interoperability: every
  *      hash in this contract is taken over canonical bytes, so two implementations that both pass
  *      1 to 3 and disagree here cannot check each other's work.
+ *   5. Narrowing matches the vectors of §5, for an adapter that offers `narrow`; every adapter
+ *      has the vectors checked for shape.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -149,9 +152,97 @@ async function checkCanonicalisation(adapter, failures) {
 }
 
 /**
+ * Section 5 of the specification, as executable vectors: a declared manifest and a parent grant,
+ * and either the granted manifest narrowing MUST produce or the refusal codes (R1 to R6 of §5.2)
+ * it MUST return. Generated once from the reference implementation and committed, so the
+ * reference implementation is the oracle and this file is the contract.
+ *
+ * Two layers. The structural layer runs for every adapter: each vector's parent, declared and
+ * granted manifests validate against the schemas, and each refusal code is one the specification
+ * defines. The behavioural layer runs when the adapter offers
+ * `narrow(declared, parent) => { granted } | { refusals: string[] }`: granted manifests are
+ * compared by canonical bytes (so an adapter must offer `canonicalise` too) and refusal sets
+ * exactly. An adapter without `narrow` is reported as not checked, never as passed.
+ */
+const REFUSAL_CODES = new Set(['R1', 'R2', 'R3', 'R4', 'R5', 'R6']);
+
+async function checkNarrowing(adapter, failures) {
+  const file = resolve(here, 'narrowing-vectors.json');
+  const doc = JSON.parse(await readFile(file, 'utf8'));
+  const behavioural = typeof adapter.narrow === 'function';
+  if (behavioural && typeof adapter.canonicalise !== 'function') {
+    failures.push('narrowing: an adapter that offers narrow must offer canonicalise, because granted manifests are compared by canonical bytes.');
+    return false;
+  }
+  for (const vector of doc.vectors) {
+    const where = `narrowing/${vector.name}`;
+    if (vector.schema_invalid === true) {
+      // The schemas refuse this declaration before any issuer sees it (§9 step 1). What the vector
+      // pins is that they do, and which §5.2 condition that enforces; a conforming implementation
+      // validates first and never narrows it, so the behavioural layer does not apply.
+      if (adapter.validate('agent-lease-manifest', vector.declared)) {
+        failures.push(`${where}: the declared manifest validates, but the schemas must refuse it — ${vector.why}`);
+      }
+      if (!Array.isArray(vector.refusals) || vector.refusals.some((c) => !REFUSAL_CODES.has(c))) {
+        failures.push(`${where}: a schema-invalid vector names the §5.2 condition(s) the schema enforces.`);
+      }
+      continue;
+    }
+    if (!adapter.validate('agent-lease-manifest', vector.declared)) {
+      failures.push(`${where}: the declared manifest does not validate; the vector is malformed.`);
+    }
+    if (!adapter.validate('agent-lease-manifest', vector.parent)) {
+      failures.push(`${where}: the parent manifest does not validate; the vector is malformed.`);
+    }
+    const hasGranted = vector.granted !== undefined;
+    const hasRefusal = Array.isArray(vector.refusals);
+    if (hasGranted === hasRefusal) {
+      failures.push(`${where}: a vector carries exactly one of granted or refusals.`);
+      continue;
+    }
+    if (hasGranted && !adapter.validate('agent-lease-manifest', vector.granted)) {
+      failures.push(`${where}: the granted manifest does not validate; the vector is malformed.`);
+    }
+    if (hasRefusal) {
+      for (const code of vector.refusals) {
+        if (!REFUSAL_CODES.has(code)) failures.push(`${where}: refusal code ${code} is not one of R1 to R6.`);
+      }
+    }
+    if (!behavioural) continue;
+
+    let result;
+    try {
+      result = adapter.narrow(vector.declared, vector.parent);
+    } catch (error) {
+      failures.push(`${where}: narrow threw (${error.message}) — ${vector.why}`);
+      continue;
+    }
+    if (hasRefusal) {
+      const got = [...new Set(result?.refusals ?? [])].sort();
+      const want = [...new Set(vector.refusals)].sort();
+      if (JSON.stringify(got) !== JSON.stringify(want)) {
+        failures.push(`${where}: expected refusal ${JSON.stringify(want)}, got ${JSON.stringify(result?.refusals ?? 'a grant')} — ${vector.why}`);
+      }
+      continue;
+    }
+    if (result?.refusals) {
+      failures.push(`${where}: expected a grant, got refusal ${JSON.stringify(result.refusals)} — ${vector.why}`);
+      continue;
+    }
+    const got = adapter.canonicalise(result.granted);
+    const want = adapter.canonicalise(vector.granted);
+    if (got !== want) {
+      failures.push(`${where}: granted manifest differs — ${vector.why}\n      expected ${want}\n      got      ${got}`);
+    }
+  }
+  return behavioural;
+}
+
+/**
  * @param adapter {{ validate(shape: string, value: unknown): boolean,
  *                   roundTrip?(shape: string, value: unknown): unknown,
- *                   canonicalise?(value: unknown): string }}
+ *                   canonicalise?(value: unknown): string,
+ *                   narrow?(declared: unknown, parent: unknown): { granted: unknown } | { refusals: string[] } }}
  * @returns a report; `failures` empty means conformant.
  */
 export async function runConformance(adapter) {
@@ -207,10 +298,14 @@ export async function runConformance(adapter) {
   // 4. Canonical bytes, if this implementation produces any.
   const canonicalChecked = await checkCanonicalisation(adapter, failures);
 
+  // 5. Narrowing: structural for everyone, behavioural for an adapter that narrows.
+  const narrowingChecked = await checkNarrowing(adapter, failures);
+
   return {
     validCount: valid.length,
     invalidCount: invalid.length,
     canonicalChecked,
+    narrowingChecked,
     failures,
   };
 }

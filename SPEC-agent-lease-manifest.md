@@ -214,18 +214,19 @@ Consequences an implementation **MUST** preserve:
 
 ### 5.2 Refusal
 
-An issuer **MUST** refuse, rather than issue a lease, in each of these cases:
+An issuer **MUST** refuse, rather than issue a lease, in each of these cases. Each carries a stable
+identifier, R1 to R6, which is what a refusal record and the conformance vectors name.
 
-1. `intent.purpose` is absent or empty.
-2. Narrowing leaves `allow.tools` empty. A lease that opens nothing is indistinguishable in later
+1. **R1.** `intent.purpose` is absent or empty.
+2. **R2.** Narrowing leaves `allow.tools` empty. A lease that opens nothing is indistinguishable in later
    evidence from a lease that was never used, and those are different facts.
-3. Any declared `allow` path escapes the workspace: a leading `/`, a `..` segment, a leading `~`, a
-   drive-letter prefix, or a backslash (§4.4). The escaping path **MUST** refuse the whole manifest
+3. **R3.** Any declared `allow` path escapes the workspace: a leading `/`, a `..` segment, a leading
+   `~`, a drive-letter prefix, or a backslash (§4.4). The escaping path **MUST** refuse the whole manifest
    rather than being silently dropped from it. Dropping it would grant a narrower lease than was
    asked for without saying so.
-4. `agent.runtime_agent` is `unknown` for a `native` or `delegated-cli` agent (§4.2).
-5. The parent's `depth` is already zero.
-6. The parent's remaining `fan_out` is zero.
+4. **R4.** `agent.runtime_agent` is `unknown` for a `native` or `delegated-cli` agent (§4.2).
+5. **R5.** The parent's `depth` is already zero.
+6. **R6.** The parent's remaining `fan_out` is zero.
 
 Every refusal **MUST** be recorded with the same weight as a grant. An implementation that records
 grants but discards refusals does not conform: "the agent was not permitted to do that" is a fact,
@@ -358,7 +359,8 @@ What this specification defends against, and what it does not.
 An implementation claiming conformance with schema set 1.0 **MUST**:
 
 1. Validate every manifest and lease against the published schemas, and refuse what does not validate.
-2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant.
+2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant, and pass
+   every vector in `conformance/narrowing-vectors.json` by supplying `narrow` on its adapter.
 3. Record every issue, narrowing and refusal.
 4. Produce canonical bytes per §7 such that its `declared_hash` for a given declaration matches the
    value another conforming implementation produces, and pass every vector in
@@ -392,8 +394,14 @@ statements are true at once.
 
 Conformance therefore has three halves, which is one more than the phrase allows and exactly the
 point: validate as the schemas say, canonicalise as §7 says, and issue or refuse as §4 and §5 say.
-The corpus checks the first two. The third is checked by the implementation's own tests, and a
-claim of conformance **SHOULD** say where those are.
+The corpus checks all three. `conformance/narrowing-vectors.json` carries declared-and-parent pairs
+with the granted manifest or the refusal codes narrowing **MUST** produce, covering every row of the
+§5 table, every containment row of §5.1 and every refusal of §5.2; an implementation runs them by
+supplying `narrow(declared, parent)` on its adapter, and one that does not is reported as unchecked
+rather than as passing. The vectors were generated from the reference implementation and committed,
+so the reference implementation is the oracle and the file is the contract: a second implementation
+that disagrees with a vector has found either its own defect or the reference's, and either is a
+finding the contract wants.
 
 ## 10. Compatibility
 
@@ -435,6 +443,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.0 | 2026-10-05 | §5.2 gives the six refusal conditions stable identifiers R1 to R6; §9 adds the narrowing vectors to the corpus, so the third half of conformance is checked by the corpus rather than left to each implementation's own tests |
 | 1.0 | 2026-10-05 | §7 states normatively that canonical bytes are RFC 8785 after undefined-removal, so existing JCS libraries and RFC 8785's own test vectors (now in the corpus) apply; the field-by-field rules become an informative restatement. Every integer field is bounded at 2^53 − 1 for I-JSON. No byte of any existing hash changes: the restatement was already RFC 8785, which is the point of saying so |
 | 1.0 | 2026-10-05 | §4.4 names the five refused `allow` path forms (adding a leading `~`, a drive-letter prefix and any backslash to the absolute and `..` forms) and permits a home-relative `deny` path; the schemas express the rule without lookahead so RE2 validators can load it. The reference implementation already refused all five; the schema and the text now agree with it |
 | 1.0 | 2026-09-19 | First published specification of schema set 1.0. Canonical bytes (§7) specified normatively for the first time — the schemas had referred to "canonical bytes" in six descriptions without defining them anywhere — down to the closed escape set and UTF-16 key ordering, with executable test vectors at §7.1 |

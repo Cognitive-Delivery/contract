@@ -86,7 +86,8 @@ const report = await runConformance(adapter);
 
 console.log(
   `Conformance: ${report.validCount} valid fixtures, ${report.invalidCount} rejections, `
-  + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}.`,
+  + `canonical bytes ${report.canonicalChecked ? 'checked' : 'NOT CHECKED (adapter offers no canonicalise)'}, `
+  + `narrowing ${report.narrowingChecked ? 'checked' : 'vectors well-formed, behaviour NOT CHECKED (the reference adapter validates only; the reference implementation runs them in its own suite)'}.`,
 );
 
 const currency = await checkVersionCurrency();
