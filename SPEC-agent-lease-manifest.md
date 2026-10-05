@@ -1,6 +1,6 @@
 # The Agent Lease Manifest
 
-**Version 1.1 · Schema set 1.1 · 2026-10-05**
+**Version 1.2 · Schema set 1.2 · 2026-10-05**
 
 A portable way for a software agent to declare what it needs, for a host to answer with a signed
 grant that is never wider than what it was given, and for both halves to be recorded so a third

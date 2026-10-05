@@ -15,10 +15,19 @@ tooling in this repository.
 
 ## [Unreleased]
 
-Schema set 1.2, in progress (CDF spec `contract-batch-two-implement-all`, DR-183): the second
-review's fourteen improvements. Every tightening below is allow-listed with the evidence that no
-conformant writer ever produced what it now refuses, and every real journal in the reference
-deployment validates with zero rejections.
+Nothing yet.
+
+## [1.2.0] — 2026-10-05
+
+Schema set 1.2 (CDF spec `contract-batch-two-implement-all`, DR-183): the second review's fourteen
+improvements, from a package that could not run its own test to a corpus that runs under six other
+validators. **Additive within 1.x by the contract's own rule, mechanically checked**: against 1.1.0
+the guard reports 115 allow-listed tightenings, each naming the exact value it admits and the
+fixture or recorded check that proves no conformant writer ever produced what it now refuses, and
+every real journal in the reference deployment validates with zero rejections (33,608 audit
+records, 19,231 CDI signals, 995 provenance records, 2 assessments, the six-line lease journal, the
+workspace config). No byte of any existing hash or signature changes. One new schema,
+`lease-record`; one field at development stability, `allow.tool_args`; everything else stable.
 
 ### Added
 
@@ -440,7 +449,8 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.1.0
 [1.0.2]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.1
