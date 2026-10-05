@@ -18,6 +18,8 @@ import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
+import { checkLeaseRules } from './lease-rules.mjs';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const schemaDir = resolve(here, '..', 'schemas');
 
@@ -76,6 +78,11 @@ export async function createAjvAdapter() {
       const expected = createHmac('sha256', Buffer.from(keyHex, 'hex')).update(canonicalise(unsigned), 'utf8').digest();
       const provided = Buffer.from(signature, 'hex');
       return provided.length === expected.length && timingSafeEqual(provided, expected);
+    },
+
+    /** SPEC §6 rules L1 to L3, the reference implementation (`lease-rules.mjs`). */
+    rules(lease, context) {
+      return checkLeaseRules(lease, context);
     },
   };
 }

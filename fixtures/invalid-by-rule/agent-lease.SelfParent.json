@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a",
+  "manifest": {
+    "schema_version": "1.0",
+    "agent": {
+      "name": "reviewer",
+      "kind": "native",
+      "runtime_agent": "unknown"
+    },
+    "intent": {
+      "purpose": "Review the diff for task 1.1."
+    },
+    "allow": {
+      "tools": [
+        "cdf_read_code_map"
+      ],
+      "read_paths": [
+        "**"
+      ],
+      "write_paths": [],
+      "hosts": [],
+      "commands": []
+    },
+    "deny": {
+      "commands": [],
+      "paths": [],
+      "hosts": []
+    },
+    "budget": {},
+    "approvals": []
+  },
+  "declared_hash": "e2fcac496b7f3e5abab92c99fb0512f97360a9139f50747f0890d8f30d0f9c50",
+  "issued_at": "2026-09-15T10:00:00.000Z",
+  "expires_at": "2026-09-15T10:15:00.000Z",
+  "issuer_session_id": "s1",
+  "key_fingerprint": "sha256:9d12c441941d9b5e",
+  "signature": "767ed44911a68219aa06d44b2d7c6b11d75da58e56ec601bf8581fb9f57f2055",
+  "parent_lease_id": "7c2e4d1a-9b3f-4e5c-8d6a-1f2e3d4c5b6a"
+}

@@ -228,6 +228,16 @@ conformance run. Every invalid fixture also carries an `.expect.json` naming the
 rejection must be reported at, and the runner checks it when your adapter reports its errors
 (`lastErrors`, Ajv's shape): rejecting a fixture for the wrong reason is not conformance.
 
+### Lease rules
+
+Draft-07 cannot compare one field with another, so "`expires_at` is after `issued_at`" (L1) and
+"not its own parent" (L2) are rules of SPEC §6 rather than patterns. `fixtures/invalid-by-rule/`
+holds leases the schema accepts and a rule refuses, each with an `.expect.json` naming the rule
+and the path. Supply `rules(lease)` on your adapter (returning `[{ rule, path }]`) and the runner
+checks every valid lease passes and every by-rule fixture fails at the named rule; omit it and the
+run says **rules NOT CHECKED** while still confirming the fixtures are schema-valid. The reference
+rules are `conformance/lease-rules.mjs`.
+
 ### Narrowing vectors
 
 `conformance/narrowing-vectors.json` is the third half of conformance made executable: a declared
@@ -290,6 +300,7 @@ schemas/                    the JSON Schemas, one file per shape, each self-cont
 fixtures/                   the corpus
   valid/                    minimal and fully populated, per shape; every one must validate
   invalid/                  each beside a .reason saying why, and an .expect.json naming where
+  invalid-by-rule/          schema-valid leases a SPEC §6 rule refuses; .expect.json names the rule
   SOURCES.md                where the vendor-format fixtures were transcribed from
   evidence/                 recorded checks of real artefacts that allow-list entries cite when no fixture can
 conformance/                the reference runner and the vectors; takes an adapter, imports no product
@@ -299,6 +310,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
   schema-checks.mjs         strict compile, the inlined granted manifest identical to its source, the version
   layout-check.mjs          this block is current
+  lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII

@@ -1,0 +1,1 @@
+`expires_at` is fifteen minutes before `issued_at`. SPEC §6 rule L1: a lease must expire after it was issued, or it opened nothing at any instant and the grant is a record of nothing. The schema validates this fixture — draft-07 cannot compare two fields — so the rule module refuses it. Named after the UCAN 1.0 fixture error `Expired`.

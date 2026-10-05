@@ -1,0 +1,1 @@
+`issued_at` is `2026-09-15T11:00:00+01:00`: the same instant as `2026-09-15T10:00:00.000Z`, in different bytes. Inside the signed bytes one form is admitted (SPEC §6, schema set 1.2), UTC with milliseconds and `Z`, so that two implementations hash one lease to one digest. The evidence schemas keep the offset-tolerant form; nothing there is signed.

@@ -151,10 +151,18 @@ export async function runGuardTests() {
     const after = base();
     after.schemas['x.schema.json'].a.pattern = '^[0-9a-f]{64}$';
     after.schemas['x.schema.json'].b.maximum = 5;
-    const allowlist = { entries: [{ finding: 'PATTERN_TIGHTENED', schema: 'x.schema.json', path: 'a', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] };
+    const allowlist = { entries: [{ finding: 'PATTERN_TIGHTENED', schema: 'x.schema.json', path: 'a', after: 'pattern=^[0-9a-f]{64}$', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] };
     const { accepted, unlisted } = applyAllowlist(compare(base(), after).findings, allowlist);
     expect('allowlist-accepts-named', accepted.map((f) => f.code), ['PATTERN_TIGHTENED']);
     expect('allowlist-leaves-unlisted', unlisted.map((f) => f.code), ['BOUND_TIGHTENED']);
+    // An entry admits ONE tightening: the same finding at the same path with a different value
+    // is a new tightening and needs its own entry. (Batch one's entry for a 2^53 maximum must
+    // not cover lowering it to 16.)
+    const other = { entries: [{ ...allowlist.entries[0], after: 'pattern=^[a-z]+$' }] };
+    expect('allowlist-refuses-other-after', applyAllowlist(compare(base(), after).findings, other).accepted.length, 0);
+    const lowered = base(); lowered.schemas['x.schema.json'].b.maximum = 5;
+    const oldBound = { entries: [{ finding: 'BOUND_TIGHTENED', schema: 'x.schema.json', path: 'b', after: 'maximum=10', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] };
+    expect('allowlist-old-bound-does-not-cover-lower', applyAllowlist(compare(base(), lowered).findings, oldBound).unlisted.map((f) => f.after), ['maximum=5']);
   }
 
   // An entry with no evidence file, or a missing field, is refused.
@@ -166,7 +174,8 @@ export async function runGuardTests() {
     expect('allowlist-refuses-missing-evidence', problems.some((p) => p.includes('does-not-exist.json')), true);
     expect('allowlist-refuses-missing-reason', problems.some((p) => p.includes('"reason"')), true);
     expect('allowlist-refuses-bad-date', problems.some((p) => p.includes('YYYY-MM-DD')), true);
-    expect('allowlist-valid-passes', await validateAllowlist({ entries: [{ finding: 'X', schema: 's', path: 'p', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] }, resolve(here, '..')), []);
+    expect('allowlist-valid-passes', await validateAllowlist({ entries: [{ finding: 'X', schema: 's', path: 'p', after: 'pattern=^x$', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] }, resolve(here, '..')), []);
+    expect('allowlist-refuses-missing-after', (await validateAllowlist({ entries: [{ finding: 'X', schema: 's', path: 'p', reason: 'r', date: '2026-10-04', evidence: 'README.md' }] }, resolve(here, '..'))).some((p) => p.includes('"after"')), true);
   }
 
   // The list is history: a baseline entry that is gone is reported.
@@ -174,7 +183,12 @@ export async function runGuardTests() {
     const entry = { finding: 'PATTERN_TIGHTENED', schema: 'x.schema.json', path: 'a' };
     expect('allowlist-entry-removed', missingAllowlistEntries({ entries: [entry] }, { entries: [] }).length, 1);
     expect('allowlist-entry-kept', missingAllowlistEntries({ entries: [entry] }, { entries: [entry] }).length, 0);
+    // A baseline entry from before `after` existed is satisfied by the same entry with an `after`;
+    // one that names its value is not satisfied by a different value.
+    const { after: _dropped, ...legacy } = { ...entry, after: 'pattern=^x$' };
+    expect('allowlist-legacy-entry-satisfied', missingAllowlistEntries({ entries: [legacy] }, { entries: [{ ...legacy, after: 'pattern=^x$' }] }).length, 0);
+    expect('allowlist-valued-entry-not-satisfied-by-other-value', missingAllowlistEntries({ entries: [{ ...legacy, after: 'pattern=^x$' }] }, { entries: [{ ...legacy, after: 'pattern=^y$' }] }).length, 1);
   }
 
-  return { present: true, count: cases.length + 17, failures };
+  return { present: true, count: cases.length + 22, failures };
 }

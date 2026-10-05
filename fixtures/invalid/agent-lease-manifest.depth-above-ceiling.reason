@@ -1,0 +1,1 @@
+`budget.depth` is 17. SPEC §4.5 (1.2): at most 16 generations; the reference root policy allows 4 and the vectors declare at most 5. A declaration above the ceiling is nonsense, refused rather than clamped.

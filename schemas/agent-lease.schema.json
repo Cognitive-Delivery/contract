@@ -326,14 +326,14 @@
             "depth": {
               "type": "integer",
               "minimum": 0,
-              "description": "How many generations of child lease may be issued beneath this one. Zero means no children.",
-              "maximum": 9007199254740991
+              "description": "How many generations of child lease may be issued beneath this one. Zero means no children. At most 16: the reference root policy allows 4, and a declaration above the ceiling is nonsense rather than something to clamp.",
+              "maximum": 16
             },
             "fan_out": {
               "type": "integer",
               "minimum": 0,
-              "description": "How many child leases may be live under this one at once.",
-              "maximum": 9007199254740991
+              "description": "How many child leases may be live under this one at once. At most 256: the reference root policy allows 8.",
+              "maximum": 256
             }
           },
           "additionalProperties": true
@@ -367,8 +367,8 @@
             },
             "signature": {
               "type": "string",
-              "pattern": "^[0-9a-f]+$",
-              "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign."
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "Lower-case hex signature over the canonical bytes of the manifest, when the issuer can sign: 64 hex characters, which is HMAC-SHA256 like the lease's own signature. An odd-length or longer value is not a signature this contract defines."
             },
             "key_fingerprint": {
               "type": "string",
@@ -422,13 +422,13 @@
     },
     "issued_at": {
       "type": "string",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
-      "description": "ISO 8601 with a timezone."
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "description": "When the lease was issued. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
     },
     "expires_at": {
       "type": "string",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
-      "description": "ISO 8601 with a timezone. After this instant the lease opens nothing, whatever its status."
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "description": "When the lease stops opening anything, whatever its recorded status; fixed at issue. One form only, because this field is inside the signed bytes: UTC with millisecond precision and a `Z` suffix (`2026-10-05T06:00:00.000Z`), which is what `Date.prototype.toISOString()` writes. An offset form would hash differently for the same instant, so two implementations could disagree about one signature. SPEC §6 rule L1: `expires_at` is after `issued_at`, checked by the runner because a schema cannot compare two fields."
     },
     "issuer_session_id": {
       "type": "string",
