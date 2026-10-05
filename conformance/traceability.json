@@ -1,0 +1,646 @@
+{
+  "_comment": [
+    "Every normative clause of SPEC-agent-lease-manifest.md (extracted by conformance/spec-clauses.mjs) mapped to what tests it: fixture:<name>, vector:<narrowing vector>, check:<runner check>, rule:<lease rule>; or excluded with a reason.",
+    "key is the clause's first sixty characters: editing a clause fails conformance/traceability-check.mjs until its entry is re-affirmed. Run `node conformance/traceability-check.mjs` to see the gaps."
+  ],
+  "clauses": {
+    "2-1": {
+      "key": "The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL*",
+      "excluded": "Defines the key words (RFC 2119); no behaviour to test."
+    },
+    "4.1-1": {
+      "key": "An implementation **MUST** reject a manifest that does not c",
+      "covers": [
+        "fixture:agent-lease-manifest.missing-purpose",
+        "fixture:agent-lease-manifest.allow-missing-hosts",
+        "fixture:agent-lease-manifest.deny-missing-hosts",
+        "check:invalid-rejected",
+        "check:valid-accepted"
+      ]
+    },
+    "4.1-2": {
+      "key": "`approvals` **MAY** be empty but **MUST** be present; an abs",
+      "covers": [
+        "fixture:agent-lease-manifest.minimal"
+      ],
+      "note": "approvals present and empty in the minimal fixture; absent is refused by the required list (4.1-1)."
+    },
+    "4.1-3": {
+      "key": "`schema_version` **MUST** be a version this specification de",
+      "covers": [
+        "fixture:agent-lease-manifest.schema-version-major-only"
+      ]
+    },
+    "4.1-4": {
+      "key": "An implementation that does not recognise the value **MUST**",
+      "covers": [
+        "fixture:agent-lease-manifest.schema-version-major-only"
+      ],
+      "note": "The schema refuses a value that is not major.minor; refusing a well-formed version this specification has not defined is issuer behaviour the corpus does not exercise."
+    },
+    "4.2-1": {
+      "key": "`agent.kind` **MUST** be one of `native`, `delegated-cli`, `",
+      "covers": [
+        "fixture:agent-lease-manifest.unknown-kind"
+      ]
+    },
+    "4.2-2": {
+      "key": "`agent.runtime_agent` **MUST** be drawn from the closed runt",
+      "covers": [
+        "fixture:agent-lease-manifest.unknown-runtime-agent"
+      ]
+    },
+    "4.2-3": {
+      "key": "For `kind` of `external` or `plugin`, `unknown` **MUST** be ",
+      "covers": [
+        "vector:unknown-accepted-for-external",
+        "vector:unknown-accepted-for-plugin"
+      ]
+    },
+    "4.2-4": {
+      "key": "For `kind` of `native` or `delegated-cli`, `unknown` **MUST*",
+      "covers": [
+        "vector:R4-unknown-refused-for-native",
+        "vector:R4-unknown-refused-for-delegated-cli"
+      ]
+    },
+    "4.2-5": {
+      "key": "`agent.model`, when present, **MUST** carry `vendor` and `fa",
+      "covers": [
+        "fixture:agent-lease-manifest.model-without-family"
+      ]
+    },
+    "4.2-6": {
+      "key": "It **MUST NOT** carry a prompt, a key, or any credential.",
+      "excluded": "A prompt, a key or a credential is a string like any other; no shape refuses it. Covered by the writer's sanitiser and §8, not by the corpus."
+    },
+    "4.2-7": {
+      "key": "An implementation **MUST NOT** place model input or output i",
+      "excluded": "Implementation behaviour (what an implementation places in a manifest); not expressible as a fixture."
+    },
+    "4.2-8": {
+      "key": "It is not an identity and **MUST NOT** be a person's name, e",
+      "covers": [
+        "fixture:agent-lease-manifest.name-too-long"
+      ],
+      "note": "The length half is tested; \"not a person's name\" is not expressible by shape."
+    },
+    "4.3-1": {
+      "key": "`intent.purpose` **MUST** be present and non-empty.",
+      "covers": [
+        "fixture:agent-lease-manifest.missing-purpose",
+        "vector:R1-empty-purpose"
+      ]
+    },
+    "4.3-2": {
+      "key": "A manifest without a stated purpose **MUST** be refused.",
+      "covers": [
+        "vector:R1-empty-purpose"
+      ]
+    },
+    "4.3-3": {
+      "key": "`purpose` is recorded in an audit trail, so it **MUST NOT** ",
+      "covers": [
+        "fixture:agent-lease-manifest.purpose-too-long"
+      ],
+      "note": "The cap is tested; prompt text and personal data are not expressible by shape."
+    },
+    "4.4-1": {
+      "key": "`allow` **MUST** carry all five lists — `tools`, `read_paths",
+      "covers": [
+        "fixture:agent-lease-manifest.allow-missing-hosts",
+        "fixture:agent-lease-manifest.minimal"
+      ]
+    },
+    "4.4-2": {
+      "key": "`deny` **MUST** carry `commands`, `paths` and `hosts`, each ",
+      "covers": [
+        "fixture:agent-lease-manifest.deny-missing-hosts",
+        "fixture:agent-lease-manifest.minimal"
+      ]
+    },
+    "4.4-3": {
+      "key": "Paths **MUST** be workspace-relative POSIX globs.",
+      "covers": [
+        "fixture:agent-lease-manifest.write-path-escapes",
+        "fixture:agent-lease-manifest.write-path-home",
+        "fixture:agent-lease-manifest.write-path-tilde",
+        "fixture:agent-lease-manifest.write-path-drive-letter",
+        "fixture:agent-lease-manifest.write-path-backslash-drive",
+        "fixture:agent-lease-manifest.write-path-backslash-traversal",
+        "fixture:agent-lease-manifest.write-path-embedded-backslash-traversal",
+        "vector:paths-parent-star-star-contains-everything",
+        "vector:paths-dir-star-star-contains-prefix"
+      ]
+    },
+    "4.4-4": {
+      "key": "An implementation **MUST** reject an `allow` path that has a",
+      "covers": [
+        "fixture:agent-lease-manifest.write-path-escapes",
+        "fixture:agent-lease-manifest.write-path-home",
+        "fixture:agent-lease-manifest.write-path-tilde",
+        "fixture:agent-lease-manifest.write-path-drive-letter",
+        "fixture:agent-lease-manifest.write-path-backslash-drive",
+        "fixture:agent-lease-manifest.write-path-backslash-traversal",
+        "fixture:agent-lease-manifest.write-path-embedded-backslash-traversal"
+      ]
+    },
+    "4.4-5": {
+      "key": "A `deny` path **MAY** be home-relative (`~/.ssh/**`), becaus",
+      "covers": [
+        "fixture:agent-lease-manifest.deny-home-relative",
+        "vector:R3-home-relative-allow-path"
+      ]
+    },
+    "4.4-6": {
+      "key": "An implementation **MUST** also re-check the resolved path a",
+      "excluded": "Use-time behaviour (re-checking a resolved path against the workspace root); the corpus validates artefacts, not file systems."
+    },
+    "4.4-7": {
+      "key": "Two conforming implementations **MUST NOT** disagree about w",
+      "covers": [
+        "fixture:agent-lease-manifest.host-scheme",
+        "fixture:agent-lease-manifest.host-port",
+        "fixture:agent-lease-manifest.host-path",
+        "fixture:agent-lease-manifest.host-space",
+        "fixture:agent-lease-manifest.host-uppercase",
+        "fixture:agent-lease-manifest.host-trailing-dot",
+        "fixture:agent-lease-manifest.host-wildcard-interior",
+        "fixture:agent-lease-manifest.deny-host-scheme",
+        "fixture:agent-lease-manifest.command-path",
+        "fixture:agent-lease-manifest.command-args",
+        "fixture:agent-lease-manifest.command-shell-operator",
+        "fixture:agent-lease-manifest.deny-command-path",
+        "fixture:agent-lease-manifest.tool-star",
+        "fixture:agent-lease-manifest.tool-whitespace",
+        "fixture:agent-lease-manifest.tool-space-inside",
+        "fixture:agent-lease-manifest.approval-star",
+        "fixture:agent-lease-manifest.identity-forms"
+      ]
+    },
+    "4.4-8": {
+      "key": "A host entry **MUST** be compared lower-case and **MUST NOT*",
+      "covers": [
+        "fixture:agent-lease-manifest.host-uppercase",
+        "fixture:agent-lease-manifest.host-port",
+        "vector:hosts-wildcard-label-containment"
+      ]
+    },
+    "4.4-9": {
+      "key": "`*.example.com` **MUST** match `api.example.com` and **MUST ",
+      "covers": [
+        "vector:hosts-wildcard-label-containment",
+        "vector:hosts-star-contains-everything"
+      ]
+    },
+    "4.4-10": {
+      "key": "It is a declaration and not a grant: an issuer **MAY** omit ",
+      "covers": [
+        "vector:tool-args-dropped",
+        "fixture:agent-lease-manifest.tool-args",
+        "fixture:agent-lease-manifest.tool-args-bad-key",
+        "fixture:agent-lease-manifest.tool-args-not-object"
+      ]
+    },
+    "4.5-1": {
+      "key": "Every field of `budget` is **OPTIONAL** and **MUST** be non-",
+      "covers": [
+        "fixture:agent-lease-manifest.negative-budget",
+        "fixture:agent-lease-manifest.budget-above-2-53",
+        "fixture:agent-lease-manifest.minimal"
+      ]
+    },
+    "4.5-2": {
+      "key": "A child that declares nothing inherits its parent's remainde",
+      "covers": [
+        "vector:budget-clamped-to-parent-remaining",
+        "vector:depth-decrements-and-clamps"
+      ]
+    },
+    "4.5-3": {
+      "key": "An implementation **MUST NOT** treat an absent child budget ",
+      "covers": [
+        "vector:budget-clamped-to-parent-remaining",
+        "vector:fan-out-bounded-by-parent-remaining"
+      ]
+    },
+    "4.5-4": {
+      "key": "`budget.depth` **MUST NOT** exceed 16 and `budget.fan_out` *",
+      "covers": [
+        "fixture:agent-lease-manifest.depth-above-ceiling"
+      ]
+    },
+    "4.6-1": {
+      "key": "`attestation` is **OPTIONAL**, because an agent presenting i",
+      "covers": [
+        "fixture:agent-lease-manifest.minimal"
+      ],
+      "note": "The minimal fixture carries no attestation and validates."
+    },
+    "4.6-2": {
+      "key": "When present, `issuer` **MUST** name which party produced th",
+      "covers": [
+        "fixture:agent-lease-manifest.attestation-unknown-issuer",
+        "fixture:agent-lease-manifest.populated"
+      ]
+    },
+    "4.6-3": {
+      "key": "`key_fingerprint`, when present, **MUST** identify the key w",
+      "excluded": "What a fingerprint reveals is not expressible by shape; the populated fixture shows the form."
+    },
+    "4.6-4": {
+      "key": "An implementation **MUST NOT** place key material in a manif",
+      "excluded": "Key material is a string like any other; refused by review and, in plugin manifests, by the credential patterns. See §8."
+    },
+    "4.6-5": {
+      "key": "When `attestation.signature` is present it **MUST** be 64 lo",
+      "covers": [
+        "fixture:agent-lease-manifest.attestation-odd-signature",
+        "fixture:agent-lease-manifest.populated"
+      ]
+    },
+    "5-1": {
+      "key": "An issuer **MUST** compute the granted manifest from the dec",
+      "covers": [
+        "vector:tools-intersect-by-exact-name",
+        "vector:commands-intersect-by-exact-name",
+        "vector:deny-and-approvals-union",
+        "vector:budget-clamped-to-parent-remaining",
+        "vector:identity-intent-attestation-preserved",
+        "check:narrowing"
+      ]
+    },
+    "5.1-1": {
+      "key": "An implementation **MUST** implement at least these cases an",
+      "covers": [
+        "vector:paths-parent-star-star-contains-everything",
+        "vector:paths-dir-star-star-contains-prefix",
+        "vector:paths-glob-contains-only-identical-glob",
+        "vector:paths-literal-contains-only-identical-path",
+        "vector:hosts-wildcard-label-containment",
+        "vector:hosts-star-contains-everything"
+      ]
+    },
+    "5.1-2": {
+      "key": "That last row has a consequence implementers find surprising",
+      "covers": [
+        "vector:paths-glob-contains-only-identical-glob"
+      ]
+    },
+    "5.1-3": {
+      "key": "Consequences an implementation **MUST** preserve:",
+      "covers": [
+        "vector:deny-and-approvals-union",
+        "vector:budget-clamped-to-parent-remaining",
+        "vector:root-manifest-narrowed-against-root-policy",
+        "vector:R5-parent-depth-exhausted"
+      ]
+    },
+    "5.1-4": {
+      "key": "A child **MUST NOT** hold any capability its parent lacks.",
+      "covers": [
+        "vector:tools-intersect-by-exact-name",
+        "vector:commands-intersect-by-exact-name",
+        "vector:hosts-wildcard-label-containment",
+        "vector:paths-dir-star-star-contains-prefix"
+      ]
+    },
+    "5.1-5": {
+      "key": "A child **MUST NOT** shed a denial its parent carries.",
+      "covers": [
+        "vector:deny-and-approvals-union"
+      ]
+    },
+    "5.1-6": {
+      "key": "A manifest presented with no parent **MUST** be narrowed aga",
+      "covers": [
+        "vector:root-manifest-narrowed-against-root-policy"
+      ]
+    },
+    "5.1-7": {
+      "key": "An implementation **MUST NOT** treat the absence of a parent",
+      "covers": [
+        "vector:root-manifest-narrowed-against-root-policy"
+      ]
+    },
+    "5.1-8": {
+      "key": "Where `depth` reaches zero, the issuer **MUST** refuse to is",
+      "covers": [
+        "vector:R5-parent-depth-exhausted",
+        "vector:depth-decrements-and-clamps"
+      ]
+    },
+    "5.2-1": {
+      "key": "An issuer **MUST** refuse, rather than issue a lease, in eac",
+      "covers": [
+        "vector:R1-empty-purpose",
+        "vector:R2-tools-empty-after-narrowing",
+        "vector:R2-tools-declared-empty",
+        "vector:R3-escaping-path-refuses-whole-manifest",
+        "vector:R3-home-relative-allow-path",
+        "vector:R4-unknown-refused-for-native",
+        "vector:R4-unknown-refused-for-delegated-cli",
+        "vector:R5-parent-depth-exhausted",
+        "vector:R6-parent-fan-out-exhausted",
+        "vector:R1-and-R2-both-reported"
+      ]
+    },
+    "5.2-2": {
+      "key": "The escaping path **MUST** refuse the whole manifest rather ",
+      "covers": [
+        "vector:R3-escaping-path-refuses-whole-manifest"
+      ]
+    },
+    "5.2-3": {
+      "key": "A refusal record's `reasons` **MUST** be codes in one of thr",
+      "covers": [
+        "fixture:lease-record.reason-outside-reserved-forms",
+        "fixture:lease-record.refused",
+        "fixture:lease-record.refused-runtime-error"
+      ]
+    },
+    "5.2-4": {
+      "key": "Every refusal **MUST** be recorded with the same weight as a",
+      "covers": [
+        "fixture:lease-record.refused",
+        "fixture:lease-record.refused-without-reasons"
+      ]
+    },
+    "6-1": {
+      "key": "It **MUST** carry `schema_version`, `lease_id`, `manifest`, ",
+      "covers": [
+        "fixture:agent-lease.missing-expiry",
+        "fixture:agent-lease.minimal",
+        "check:valid-accepted"
+      ]
+    },
+    "6-2": {
+      "key": "`lease_id` **MUST** be the only key that opens anything.",
+      "excluded": "Issuer behaviour (what opens access); not expressible as an artefact."
+    },
+    "6-3": {
+      "key": "An implementation **MUST NOT** grant access on the basis of ",
+      "excluded": "Issuer behaviour; not expressible as an artefact."
+    },
+    "6-4": {
+      "key": "`manifest` **MUST** be the *granted* manifest.",
+      "covers": [
+        "check:narrowing"
+      ],
+      "note": "The vectors compare the granted manifest by canonical bytes."
+    },
+    "6-5": {
+      "key": "`declared_hash` **MUST** be the SHA-256 of the canonical byt",
+      "covers": [
+        "check:signatures"
+      ],
+      "note": "The signature vectors check hash(declared) equals declared_hash."
+    },
+    "6-6": {
+      "key": "`expires_at` **MUST** be honoured.",
+      "excluded": "Runtime behaviour after expiry; the shape of the instant is tested by rule L1 (6-8)."
+    },
+    "6-7": {
+      "key": "After that instant the lease **MUST** open nothing, whatever",
+      "excluded": "Runtime behaviour after expiry."
+    },
+    "6-8": {
+      "key": "**L1.** `expires_at` **MUST** be after `issued_at`.",
+      "covers": [
+        "rule:L1",
+        "fixture:agent-lease.Expired",
+        "fixture:agent-lease.TooEarly"
+      ]
+    },
+    "6-9": {
+      "key": "**L2.** `parent_lease_id`, when present, **MUST NOT** equal ",
+      "covers": [
+        "rule:L2",
+        "fixture:agent-lease.SelfParent"
+      ]
+    },
+    "6-10": {
+      "key": "`issued_at` and `expires_at` are inside the signed bytes, so",
+      "covers": [
+        "fixture:agent-lease.offset-timestamp",
+        "fixture:agent-lease.minimal"
+      ]
+    },
+    "6.1-1": {
+      "key": "The journal is append-only; a reader folds every lease's sta",
+      "excluded": "Journal behaviour (append-only, folded); the corpus validates lines, not files."
+    },
+    "6.1-2": {
+      "key": "Nine events, with what each **MUST** carry beyond `schema_ve",
+      "covers": [
+        "fixture:lease-record.minimal",
+        "fixture:lease-record.populated",
+        "fixture:lease-record.refused",
+        "fixture:lease-record.refused-runtime-error",
+        "fixture:lease-record.narrowed",
+        "fixture:lease-record.attached",
+        "fixture:lease-record.revoked",
+        "fixture:lease-record.revoked-by-issuer",
+        "fixture:lease-record.stopped",
+        "fixture:lease-record.completed",
+        "fixture:lease-record.expired",
+        "fixture:lease-record.refused-without-reasons",
+        "fixture:lease-record.revoked-without-by",
+        "fixture:lease-record.attached-without-containment",
+        "fixture:lease-record.unknown-event"
+      ]
+    },
+    "6.1-3": {
+      "key": "A reader meeting a `granted` record from a 1.1 writer, witho",
+      "covers": [
+        "fixture:lease-record.populated"
+      ],
+      "note": "A reader MAY compute granted_hash; the populated record carries it, computed from lease.manifest."
+    },
+    "6.1-4": {
+      "key": "**Revocation.** A `revoked` record **MUST** name `by`: the `",
+      "covers": [
+        "fixture:lease-record.revoked",
+        "fixture:lease-record.revoked-by-issuer",
+        "fixture:lease-record.revoked-without-by"
+      ]
+    },
+    "6.1-5": {
+      "key": "From the record's `at` the lease **MUST** open nothing.",
+      "excluded": "Runtime behaviour after revocation."
+    },
+    "6.1-6": {
+      "key": "A reader meeting a `by` that is neither **MUST** treat the r",
+      "covers": [
+        "rule:L3",
+        "fixture:lease-record.RevokedByStranger"
+      ]
+    },
+    "6.2-1": {
+      "key": "A reader **MUST** compare the major only: within a major eve",
+      "covers": [
+        "fixture:audit-event.schema-version-major-only",
+        "fixture:agent-lease-manifest.schema-version-major-only"
+      ]
+    },
+    "6.2-2": {
+      "key": "The reference writer's first segments are reserved for its v",
+      "covers": [
+        "fixture:audit-event.uppercase-event-type",
+        "fixture:audit-event.empty-event-type",
+        "fixture:audit-event.runtime-agent"
+      ],
+      "note": "The runtime-agent fixture carries a vendor-named event_type."
+    },
+    "6.2-3": {
+      "key": "An audit event **MAY** carry `actor.runtime_agent` from the ",
+      "covers": [
+        "fixture:audit-event.runtime-agent",
+        "fixture:audit-event.unknown-runtime-agent"
+      ]
+    },
+    "7-1": {
+      "key": "An implementation **MAY** use any RFC 8785 library for the s",
+      "covers": [
+        "check:jcs"
+      ]
+    },
+    "7-2": {
+      "key": "An implementation **MUST NOT** escape a character this list ",
+      "covers": [
+        "check:canonical"
+      ]
+    },
+    "7-3": {
+      "key": "A number **MUST** be finite.",
+      "covers": [
+        "check:canonical"
+      ],
+      "note": "The must_fail entries of canonical-vectors.json."
+    },
+    "7-4": {
+      "key": "A non-finite number **MUST** cause serialisation to fail rat",
+      "covers": [
+        "check:canonical"
+      ],
+      "note": "The must_fail entries of canonical-vectors.json."
+    },
+    "7-5": {
+      "key": "Element order is significant and **MUST** be preserved.",
+      "covers": [
+        "check:canonical",
+        "check:jcs"
+      ]
+    },
+    "7-6": {
+      "key": "Members whose value is absent **MUST** be omitted entirely, ",
+      "covers": [
+        "check:canonical"
+      ]
+    },
+    "7-7": {
+      "key": "Implementations **SHOULD** restrict member names to ASCII, w",
+      "excluded": "A SHOULD about member names in an implementation's own artefacts; the corpus carries ASCII names."
+    },
+    "7-8": {
+      "key": "`signature` **MUST** be computed over the canonical bytes of",
+      "covers": [
+        "check:signatures"
+      ]
+    },
+    "7-9": {
+      "key": "This specification does **not** require a particular algorit",
+      "covers": [
+        "check:signatures",
+        "fixture:agent-lease.bad-signature-shape"
+      ],
+      "note": "The signature vectors stop verifying when a byte changes; stating the algorithm is a claim the runner reports, not checks."
+    },
+    "7-10": {
+      "key": "A verifier **MUST** refuse any lease signed with it outside ",
+      "excluded": "Verifier behaviour outside a conformance run; SECURITY.md names the test key in scope."
+    },
+    "7.1-1": {
+      "key": "`conformance/jcs/` carries RFC 8785's own six reference vect",
+      "covers": [
+        "check:jcs"
+      ]
+    },
+    "8-1": {
+      "key": "| Credentials leaking through the record | Manifests and lea",
+      "covers": [
+        "fixture:plugin-manifest.mcp-env-github-token",
+        "fixture:plugin-manifest.hook-http-headers-bearer"
+      ],
+      "note": "Credential shapes are refused in plugin manifests; in a lease manifest a key is a string like any other (4.2-6)."
+    },
+    "9-1": {
+      "key": "An implementation claiming conformance with schema set 1.0 *",
+      "covers": [
+        "check:valid-accepted",
+        "check:invalid-rejected",
+        "check:rejection-path",
+        "check:round-trip",
+        "check:canonical",
+        "check:narrowing",
+        "check:signatures",
+        "check:lease-rules"
+      ]
+    },
+    "9-2": {
+      "key": "An implementation that only *reads* artefacts and never issu",
+      "excluded": "What an implementation says when it claims conformance; the runner reports unchecked halves by name."
+    },
+    "9-3": {
+      "key": "Apply the lease rules of §6 (L1, L2) and pass every fixture ",
+      "covers": [
+        "check:lease-rules",
+        "fixture:agent-lease.Expired",
+        "fixture:agent-lease.TooEarly",
+        "fixture:agent-lease.SelfParent",
+        "fixture:lease-record.RevokedByStranger"
+      ]
+    },
+    "9-4": {
+      "key": "An implementation **SHOULD** publish the result of running t",
+      "excluded": "A SHOULD about publishing results."
+    },
+    "9-5": {
+      "key": "**The corpus tests schema validity, not issuance.** These ar",
+      "covers": [
+        "fixture:agent-lease-manifest.minimal",
+        "vector:R4-unknown-refused-for-native"
+      ]
+    },
+    "9-6": {
+      "key": "`agent-lease-manifest.minimal.json` is the clearest case: it",
+      "covers": [
+        "fixture:agent-lease-manifest.minimal",
+        "vector:R4-unknown-refused-for-native",
+        "vector:R2-tools-declared-empty"
+      ]
+    },
+    "9-7": {
+      "key": "`conformance/narrowing-vectors.json` carries declared-and-pa",
+      "covers": [
+        "check:narrowing",
+        "vector:R1-empty-purpose",
+        "vector:R2-tools-empty-after-narrowing",
+        "vector:R2-tools-declared-empty",
+        "vector:R3-escaping-path-refuses-whole-manifest",
+        "vector:R3-home-relative-allow-path",
+        "vector:R4-unknown-refused-for-native",
+        "vector:R4-unknown-refused-for-delegated-cli",
+        "vector:R5-parent-depth-exhausted",
+        "vector:R6-parent-fan-out-exhausted",
+        "vector:R1-and-R2-both-reported"
+      ]
+    },
+    "10-1": {
+      "key": "Within a major version, changes are **additive only**: new o",
+      "covers": [
+        "check:additive-guard"
+      ]
+    }
+  }
+}

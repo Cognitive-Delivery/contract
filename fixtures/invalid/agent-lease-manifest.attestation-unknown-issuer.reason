@@ -1,0 +1,1 @@
+`attestation.issuer` is `ci`, outside `agent`, `bridge`, `harness`, `plugin`. SPEC §4.6: the issuer names which party produced the declaration, from the closed set.

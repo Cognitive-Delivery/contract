@@ -17,6 +17,7 @@ import { runSchemaChecks } from './schema-checks.mjs';
 import { runLayoutCheck } from './layout-check.mjs';
 import { idFor } from './ids.mjs';
 import { changelogSection } from './changelog.mjs';
+import { runTraceabilityCheck } from './traceability-check.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -127,7 +128,12 @@ console.log(layout.checked
   ? `Layout: README.md names every entry at the top level and under conformance/, fixtures/ and tooling/, ${layout.failures.length} failure(s).`
   : 'Layout: NOT CHECKED (published package; the repository check runs from a clone).');
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures];
+// Every normative clause of the SPEC is answered by a named fixture, vector, check or rule, or
+// excluded with a reason; an edited clause must be re-affirmed.
+const trace = await runTraceabilityCheck();
+console.log(`Traceability: ${trace.clauseCount} SPEC clauses mapped, ${trace.excluded} excluded with a reason, ${trace.failures.length} failure(s).`);
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...trace.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

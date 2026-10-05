@@ -30,6 +30,17 @@ as do the guard's own scenario tests (`conformance/guard-tests.mjs`): every find
 fire and every additive change seen to pass, because a guard nobody has watched fail is a
 sentence in a README.
 
+## Changing the SPEC
+
+Every normative clause of `SPEC-agent-lease-manifest.md` is mapped in `conformance/traceability.json`.
+Adding a clause (a sentence with a bold **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT** or
+**MAY**) fails `npm test` until you add its entry: run `node conformance/traceability-check.mjs` to
+see the id and key it was given, then map it to the fixture, vector, check or rule that tests it,
+or exclude it with a reason. Editing a clause changes its key and fails the same way: re-affirm the
+entry by updating its `key`. Inserting a clause earlier in a section renumbers the ones after it,
+which the check reports as stale entries plus unmapped clauses; add new clauses at the end of a
+section where you can.
+
 ## Tightening a schema within 1.x
 
 Sometimes a schema must refuse what it used to accept: a hash field that was always meant to be

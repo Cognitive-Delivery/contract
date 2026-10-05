@@ -1,0 +1,1 @@
+`allow` has no `hosts` list. SPEC §4.4: all five lists are present and may be empty; an absent list and an empty list mean different things and are not conflated.

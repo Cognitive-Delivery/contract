@@ -239,6 +239,18 @@ conformance run. Every invalid fixture also carries an `.expect.json` naming the
 rejection must be reported at, and the runner checks it when your adapter reports its errors
 (`lastErrors`, Ajv's shape): rejecting a fixture for the wrong reason is not conformance.
 
+### Every clause has a test
+
+`conformance/traceability.json` maps every normative clause of the SPEC (every sentence, table row
+or list item carrying a bold RFC 2119 key word, extracted by `conformance/spec-clauses.mjs` with an
+id like `4.4-3`) to the fixtures, narrowing vectors, runner checks or lease rules that test it, or
+excludes it with a reason (runtime behaviour, a SHOULD, a definition). `npm test` fails on a clause
+with no entry, an entry for a clause that no longer exists, a mapping that names nothing, and, since
+each entry carries the clause's first sixty characters, on a clause whose wording changed until the
+mapping is re-affirmed. It is a floor, and it says so: it proves every clause has a named test, not
+that the test is good. The practice is the Model Context Protocol's requirement-to-test traceability
+for its enhancement proposals, applied to a schema contract.
+
 ### Lease rules
 
 Draft-07 cannot compare one field with another, so "`expires_at` is after `issued_at`" (L1) and
@@ -333,6 +345,9 @@ conformance/                the reference runner and the vectors; takes an adapt
   inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
   layout-check.mjs          this block is current
   lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
+  spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key
+  traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
+  traceability-check.mjs    fails `npm test` on an unmapped, stale or edited clause, or a mapping that names nothing
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII

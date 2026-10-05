@@ -1,0 +1,1 @@
+`schema_version` is `1`. SPEC §4.1: the version is one this specification defines, written `major.minor` (§6.2); a bare major names no schema set.
