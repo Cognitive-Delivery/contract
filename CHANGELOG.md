@@ -122,6 +122,14 @@ deployment validates with zero rejections.
   silently). Issue templates for a defect and a proposal, a pull-request template with the checks
   the automation cannot see, Dependabot for npm and Actions weekly, and the proposal template with
   Backward compatibility and Security sections and a status lifecycle.
+- **Every release frozen at its own URL, and an index.** `pages.yml` now lays out `/<version>/`
+  for every `v1.*` tag beside the `/1.x/` alias, byte for byte as tagged and never rewritten, and
+  runs on the tag push so the frozen copy appears with the release; `release.yml` checks it serves
+  the tagged bytes (patiently, and reported rather than failed while the deploy is still landing).
+  `schemas/index.json`, written by `npm run lock` and validated by `npm test`, lists every schema
+  with `file`, `$id`, `title`, `dialect` and `fileMatch`; it is served beside the schemas. A
+  SchemaStore catalogue entry is proposed for `**/.cdf/config.yaml`, pointing at the served
+  `config-core` schema.
 
 ## [1.1.0] — 2026-10-05
 

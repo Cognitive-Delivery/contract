@@ -218,7 +218,8 @@ function contentModelOf(schema) {
  */
 export async function buildLock(options = {}) {
   const dir = options.schemaDir ?? schemaDir;
-  const files = (await readdir(dir)).filter((n) => n.endsWith('.json')).sort();
+  // `.schema.json` only: `schemas/index.json` is the index of the schemas, not one of them.
+  const files = (await readdir(dir)).filter((n) => n.endsWith('.schema.json')).sort();
   const schemas = {};
   const contentModels = {};
 

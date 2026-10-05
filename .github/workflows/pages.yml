@@ -3,14 +3,19 @@ name: pages
 # Serves every schema at its `$id`. A schema whose `$id` returns 404 is a dangling identifier,
 # which is what 1.0.x shipped: https://cognitivedelivery.co.uk/contract/1.0.0/… never existed.
 #
-# The site is built from `schemas/` at the commit being deployed and holds nothing else: no
-# copy of the schemas is committed anywhere, so there is nothing to drift. Pages must be
-# enabled on the repository with source "GitHub Actions" (Settings → Pages); until it is, this
-# workflow fails at the deploy step and the schemas keep validating locally exactly as before.
+# Two kinds of directory, from one deploy:
+#   /<major>.x/        the current schemas on main, which every `$id` names (the 1.x alias)
+#   /<version>/        the schemas AS TAGGED, one directory per v1.* tag, byte for byte, never
+#                      rewritten: a reader that pinned 1.1.0 can fetch exactly what 1.1.0 shipped
+# plus `index.json` beside each set and a plain index page. Nothing is committed anywhere for
+# the site; it is laid out from `schemas/` on main and from each tag's `schemas/` at deploy time,
+# so there is nothing to drift. Runs on a push to main and on a tag push, so a release's frozen
+# copy appears when the release does.
 
 on:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -27,30 +32,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # One directory per major, named as `$id` names it (`1.x`), plus a plain index.
-      - name: Lay out the site from schemas/
+      - name: Lay out the site from main and from every v1.* tag
         run: |
+          set -e
           MAJOR="$(node -p "require('./package.json').version.split('.')[0]")"
           mkdir -p "_site/${MAJOR}.x"
           cp schemas/*.schema.json "_site/${MAJOR}.x/"
+          [ -f schemas/index.json ] && cp schemas/index.json "_site/${MAJOR}.x/"
+          git fetch --tags --quiet
+          for tag in $(git tag -l "v${MAJOR}.*" | sort -V); do
+            version="${tag#v}"
+            mkdir -p "_site/${version}"
+            for f in $(git ls-tree --name-only "${tag}:schemas" | grep -E '\.json$'); do
+              git show "${tag}:schemas/${f}" > "_site/${version}/${f}"
+            done
+            echo "froze ${tag} -> /${version}/ ($(ls "_site/${version}" | wc -l) files)"
+          done
           node -e '
             const fs = require("fs");
             const major = process.argv[1];
-            const files = fs.readdirSync(`_site/${major}.x`).sort();
+            const files = fs.readdirSync(`_site/${major}.x`).filter((f) => f.endsWith(".schema.json")).sort();
             for (const f of files) {
               const id = JSON.parse(fs.readFileSync(`_site/${major}.x/${f}`, "utf8")).$id;
               const wanted = `https://cognitive-delivery.github.io/contract/${major}.x/${f}`;
               if (id !== wanted) { console.error(`${f}: $id is ${id}, not ${wanted}`); process.exit(1); }
             }
+            const versions = fs.readdirSync("_site").filter((d) => /^\d+\.\d+\.\d+$/.test(d)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
             const items = files.map((f) => `<li><a href="${major}.x/${f}">${f}</a></li>`).join("\n");
-            fs.writeFileSync("_site/index.html", `<!doctype html><meta charset="utf-8"><title>Cognitive Delivery governance contract</title><h1>Cognitive Delivery governance contract</h1><p>The schema set, served at each schema\x27s <code>$id</code>. Source, corpus and specification: <a href="https://github.com/Cognitive-Delivery/contract">github.com/Cognitive-Delivery/contract</a>.</p><ul>${items}</ul>`);
+            const frozen = versions.map((v) => `<li><a href="${v}/">${v}/</a> — the schemas as tagged v${v}, frozen</li>`).join("\n");
+            fs.writeFileSync("_site/index.html", `<!doctype html><meta charset="utf-8"><title>Cognitive Delivery governance contract</title><h1>Cognitive Delivery governance contract</h1><p>The schema set, served at each schema\x27s <code>$id</code> (the current <code>${major}.x</code>), with <a href="${major}.x/index.json">index.json</a>. Source, corpus and specification: <a href="https://github.com/Cognitive-Delivery/contract">github.com/Cognitive-Delivery/contract</a>.</p><h2>Current (${major}.x)</h2><ul>${items}</ul><h2>Released, frozen</h2><ul>${frozen}</ul>`);
+            for (const v of versions) {
+              const vf = fs.readdirSync(`_site/${v}`).sort().map((f) => `<li><a href="${f}">${f}</a></li>`).join("\n");
+              fs.writeFileSync(`_site/${v}/index.html`, `<!doctype html><meta charset="utf-8"><title>contract ${v}</title><h1>@cognitive-delivery/contract ${v}</h1><p>Byte for byte as tagged. Never rewritten.</p><ul>${vf}</ul>`);
+            }
           ' "$MAJOR"
-          ls -R _site
+          find _site -type f | sort
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -52,7 +52,7 @@
   },
   "scripts": {
     "test": "node ./conformance/run.mjs",
-    "lock": "node ./tooling/sync-version.mjs && node ./generate-schemas-lock.mjs && node ./tooling/export-suite.mjs",
+    "lock": "node ./tooling/sync-version.mjs && node ./generate-schemas-lock.mjs && node ./tooling/export-suite.mjs && node ./tooling/generate-index.mjs",
     "check:additive": "node ./check-additive.mjs",
     "generate": "node ./generate-contract-types.mjs",
     "check": "node ./generate-contract-types.mjs --check",
