@@ -1,0 +1,9 @@
+{
+  "name": "x-plugin",
+  "commands": {
+    "about": {
+      "source": "./commands/about.md",
+      "content": "Explain."
+    }
+  }
+}

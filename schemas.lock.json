@@ -1348,6 +1348,24 @@
           "1.0"
         ]
       },
+      "#channel": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#channel.displayName": {
+        "required": false,
+        "type": "string"
+      },
+      "#channel.server": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#channel.userConfig": {
+        "required": false,
+        "ref": "#/definitions/userConfig"
+      },
       "#check": {
         "required": false,
         "type": "object",
@@ -1370,6 +1388,55 @@
         ],
         "minLength": 1
       },
+      "#commandEntry": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#commandEntry.allowedTools": {
+        "required": false,
+        "type": "array"
+      },
+      "#commandEntry.allowedTools[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#commandEntry.argumentHint": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.content": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.description": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.model": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.source": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#commands": {
+        "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#commands[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
       "#componentPath": {
         "required": false,
         "anyOf": 2,
@@ -1384,6 +1451,15 @@
         "minLength": 1
       },
       "#componentSource": {
+        "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#componentSource[]": {
         "required": false,
         "anyOf": 2,
         "anyOfTypes": [
@@ -1435,6 +1511,186 @@
       "#contributes.trackers[]": {
         "required": false,
         "ref": "#/definitions/tracker"
+      },
+      "#dependencies": {
+        "required": false,
+        "type": "array"
+      },
+      "#dependencies[]": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "object",
+          "string"
+        ]
+      },
+      "#dependencies[].marketplace": {
+        "required": false,
+        "type": "string"
+      },
+      "#dependencies[].name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#dependencies[].version": {
+        "required": false,
+        "type": "string"
+      },
+      "#experimental": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#experimental.evals": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#experimental.monitors": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "array",
+          "string"
+        ]
+      },
+      "#experimental.monitors[]": {
+        "required": false,
+        "ref": "#/definitions/monitor"
+      },
+      "#experimental.themes": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#lspServer": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#lspServer.args": {
+        "required": false,
+        "type": "array"
+      },
+      "#lspServer.args[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServer.command": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lspServer.diagnostics": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#lspServer.env": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#lspServer.env.*": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServer.extensionToLanguage": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#lspServer.extensionToLanguage.*": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lspServer.initializationOptions": {
+        "required": false,
+        "type": "object"
+      },
+      "#lspServer.maxRestarts": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.requestTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.restartOnCrash": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#lspServer.settings": {
+        "required": false,
+        "type": "object"
+      },
+      "#lspServer.shutdownTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.startupTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.transport": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "socket",
+          "stdio"
+        ]
+      },
+      "#lspServer.workspaceFolder": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServers": {
+        "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#lspServers[]": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "object",
+          "string"
+        ]
+      },
+      "#monitor": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#monitor.command": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.description": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.when": {
+        "required": false,
+        "type": "string"
       },
       "#prices": {
         "required": false,
@@ -1545,6 +1801,88 @@
         "type": "string",
         "minLength": 1
       },
+      "#userConfig": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#userConfig.*": {
+        "required": false,
+        "ref": "#/definitions/userConfigOption"
+      },
+      "#userConfigOption": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#userConfigOption.default": {
+        "required": false,
+        "anyOf": 4,
+        "anyOfTypes": [
+          "array",
+          "boolean",
+          "number",
+          "string"
+        ]
+      },
+      "#userConfigOption.default[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#userConfigOption.description": {
+        "required": true,
+        "type": "string"
+      },
+      "#userConfigOption.max": {
+        "required": false,
+        "type": "number"
+      },
+      "#userConfigOption.min": {
+        "required": false,
+        "type": "number"
+      },
+      "#userConfigOption.multiple": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.options": {
+        "required": false,
+        "type": "array"
+      },
+      "#userConfigOption.options[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "#userConfigOption.required": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.sensitive": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.title": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#userConfigOption.type": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "boolean",
+          "directory",
+          "file",
+          "number",
+          "string"
+        ]
+      },
+      "$schema": {
+        "required": false,
+        "type": "string"
+      },
       "agents": {
         "required": false,
         "ref": "#/definitions/componentPath"
@@ -1561,13 +1899,25 @@
         "required": false,
         "ref": "#/definitions/cdf"
       },
+      "channels": {
+        "required": false,
+        "type": "array"
+      },
+      "channels[]": {
+        "required": false,
+        "ref": "#/definitions/channel"
+      },
       "commands": {
         "required": false,
-        "ref": "#/definitions/componentPath"
+        "ref": "#/definitions/commands"
       },
       "defaultEnabled": {
         "required": false,
         "type": "boolean"
+      },
+      "dependencies": {
+        "required": false,
+        "ref": "#/definitions/dependencies"
       },
       "description": {
         "required": false,
@@ -1577,6 +1927,15 @@
         "required": false,
         "type": "string"
       },
+      "documentationUrl": {
+        "required": false,
+        "type": "string",
+        "pattern": "^https://"
+      },
+      "experimental": {
+        "required": false,
+        "ref": "#/definitions/experimental"
+      },
       "homepage": {
         "required": false,
         "type": "string"
@@ -1584,6 +1943,18 @@
       "hooks": {
         "required": false,
         "ref": "#/definitions/componentSource"
+      },
+      "icon": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
       },
       "keywords": {
         "required": false,
@@ -1600,7 +1971,7 @@
       },
       "lspServers": {
         "required": false,
-        "ref": "#/definitions/componentSource"
+        "ref": "#/definitions/lspServers"
       },
       "mcpServers": {
         "required": false,
@@ -1613,19 +1984,76 @@
       "name": {
         "required": true,
         "type": "string",
-        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+      },
+      "outputStyles": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "privacyPolicyUrl": {
+        "required": false,
+        "type": "string",
+        "pattern": "^https://"
       },
       "repository": {
         "required": false,
         "ref": "#/definitions/repository"
       },
+      "settings": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
       "skills": {
         "required": false,
         "ref": "#/definitions/componentPath"
       },
+      "supportUrl": {
+        "required": false,
+        "type": "string",
+        "pattern": "^https://"
+      },
+      "termsOfServiceUrl": {
+        "required": false,
+        "type": "string",
+        "pattern": "^https://"
+      },
+      "themes": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "array",
+          "string"
+        ]
+      },
+      "themes[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "types": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "userConfig": {
+        "required": false,
+        "ref": "#/definitions/userConfig"
+      },
       "version": {
         "required": false,
         "type": "string"
+      },
+      "workflows": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
       }
     },
     "plugin-marketplace.schema.json": {
@@ -1714,6 +2142,73 @@
         ],
         "minLength": 1
       },
+      "#channel": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#channel.displayName": {
+        "required": false,
+        "type": "string"
+      },
+      "#channel.server": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#channel.userConfig": {
+        "required": false,
+        "ref": "#/definitions/userConfig"
+      },
+      "#commandEntry": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#commandEntry.allowedTools": {
+        "required": false,
+        "type": "array"
+      },
+      "#commandEntry.allowedTools[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#commandEntry.argumentHint": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.content": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.description": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.model": {
+        "required": false,
+        "type": "string"
+      },
+      "#commandEntry.source": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#commands": {
+        "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#commands[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
       "#componentPath": {
         "required": false,
         "anyOf": 2,
@@ -1729,11 +2224,45 @@
       },
       "#componentSource": {
         "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#componentSource[]": {
+        "required": false,
         "anyOf": 2,
         "anyOfTypes": [
           "object",
           "string"
         ]
+      },
+      "#dependencies": {
+        "required": false,
+        "type": "array"
+      },
+      "#dependencies[]": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "object",
+          "string"
+        ]
+      },
+      "#dependencies[].marketplace": {
+        "required": false,
+        "type": "string"
+      },
+      "#dependencies[].name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#dependencies[].version": {
+        "required": false,
+        "type": "string"
       },
       "#entry": {
         "required": false,
@@ -1756,13 +2285,25 @@
         "required": false,
         "ref": "#/definitions/entryCdf"
       },
+      "#entry.channels": {
+        "required": false,
+        "type": "array"
+      },
+      "#entry.channels[]": {
+        "required": false,
+        "ref": "#/definitions/channel"
+      },
       "#entry.commands": {
         "required": false,
-        "ref": "#/definitions/componentPath"
+        "ref": "#/definitions/commands"
       },
       "#entry.defaultEnabled": {
         "required": false,
         "type": "boolean"
+      },
+      "#entry.dependencies": {
+        "required": false,
+        "ref": "#/definitions/dependencies"
       },
       "#entry.description": {
         "required": false,
@@ -1771,6 +2312,10 @@
       "#entry.displayName": {
         "required": false,
         "type": "string"
+      },
+      "#entry.experimental": {
+        "required": false,
+        "ref": "#/definitions/experimental"
       },
       "#entry.headers": {
         "required": false,
@@ -1809,20 +2354,37 @@
       },
       "#entry.lspServers": {
         "required": false,
-        "ref": "#/definitions/componentSource"
+        "ref": "#/definitions/lspServers"
       },
       "#entry.mcpServers": {
         "required": false,
         "ref": "#/definitions/componentSource"
       },
+      "#entry.metadata": {
+        "required": false,
+        "type": "object"
+      },
       "#entry.name": {
         "required": true,
         "type": "string",
-        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+      },
+      "#entry.outputStyles": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#entry.relevance": {
+        "required": false,
+        "ref": "#/definitions/relevance"
       },
       "#entry.repository": {
         "required": false,
         "ref": "#/definitions/repository"
+      },
+      "#entry.settings": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
       },
       "#entry.skills": {
         "required": false,
@@ -1845,9 +2407,33 @@
         "type": "string",
         "minLength": 1
       },
+      "#entry.themes": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#entry.types": {
+        "required": false,
+        "type": "string",
+        "notPatterns": [
+          "(^|/)\\.\\.(/|$)",
+          "\\\\",
+          "^/",
+          "^[A-Za-z]:",
+          "^~"
+        ],
+        "minLength": 1
+      },
+      "#entry.userConfig": {
+        "required": false,
+        "ref": "#/definitions/userConfig"
+      },
       "#entry.version": {
         "required": false,
         "type": "string"
+      },
+      "#entry.workflows": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
       },
       "#entryCdf": {
         "required": false,
@@ -1862,6 +2448,137 @@
         "required": false,
         "type": "string",
         "pattern": "^[0-9a-f]{64}$"
+      },
+      "#experimental": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#experimental.evals": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#experimental.monitors": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "array",
+          "string"
+        ]
+      },
+      "#experimental.monitors[]": {
+        "required": false,
+        "ref": "#/definitions/monitor"
+      },
+      "#experimental.themes": {
+        "required": false,
+        "ref": "#/definitions/componentPath"
+      },
+      "#lspServer": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#lspServer.args": {
+        "required": false,
+        "type": "array"
+      },
+      "#lspServer.args[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServer.command": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lspServer.diagnostics": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#lspServer.env": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#lspServer.env.*": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServer.extensionToLanguage": {
+        "required": true,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#lspServer.extensionToLanguage.*": {
+        "required": false,
+        "type": "string",
+        "minLength": 1
+      },
+      "#lspServer.initializationOptions": {
+        "required": false,
+        "type": "object"
+      },
+      "#lspServer.maxRestarts": {
+        "required": false,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.requestTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.restartOnCrash": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#lspServer.settings": {
+        "required": false,
+        "type": "object"
+      },
+      "#lspServer.shutdownTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.startupTimeout": {
+        "required": false,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "#lspServer.transport": {
+        "required": false,
+        "type": "string",
+        "enum": [
+          "socket",
+          "stdio"
+        ]
+      },
+      "#lspServer.workspaceFolder": {
+        "required": false,
+        "type": "string"
+      },
+      "#lspServers": {
+        "required": false,
+        "anyOf": 3,
+        "anyOfTypes": [
+          "array",
+          "object",
+          "string"
+        ]
+      },
+      "#lspServers[]": {
+        "required": false,
+        "anyOf": 2,
+        "anyOfTypes": [
+          "object",
+          "string"
+        ]
       },
       "#metadata": {
         "required": false,
@@ -1880,6 +2597,30 @@
         "required": false,
         "type": "string"
       },
+      "#monitor": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#monitor.command": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.description": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.name": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#monitor.when": {
+        "required": false,
+        "type": "string"
+      },
       "#owner": {
         "required": false,
         "type": "object",
@@ -1895,6 +2636,18 @@
         "minLength": 1
       },
       "#owner.url": {
+        "required": false,
+        "type": "string"
+      },
+      "#relevance": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": true
+      },
+      "#relevance.signals": {
+        "required": false
+      },
+      "#relevance.topic": {
         "required": false,
         "type": "string"
       },
@@ -1921,7 +2674,7 @@
       "#sourceArchive.sha256": {
         "required": false,
         "type": "string",
-        "pattern": "^[0-9a-f]{64}$"
+        "pattern": "^[0-9a-fA-F]{64}$"
       },
       "#sourceArchive.source": {
         "required": true,
@@ -1947,7 +2700,11 @@
       },
       "#sourceCommand.mode": {
         "required": false,
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "copy",
+          "link"
+        ]
       },
       "#sourceCommand.source": {
         "required": true,
@@ -1959,8 +2716,8 @@
       "#sourceCommand.timeout": {
         "required": false,
         "type": "integer",
-        "minimum": 0,
-        "maximum": 9007199254740991
+        "minimum": 1,
+        "maximum": 600
       },
       "#sourceGitSubdir": {
         "required": false,
@@ -2097,6 +2854,84 @@
         "type": "string",
         "minLength": 1
       },
+      "#userConfig": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema"
+      },
+      "#userConfig.*": {
+        "required": false,
+        "ref": "#/definitions/userConfigOption"
+      },
+      "#userConfigOption": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": false
+      },
+      "#userConfigOption.default": {
+        "required": false,
+        "anyOf": 4,
+        "anyOfTypes": [
+          "array",
+          "boolean",
+          "number",
+          "string"
+        ]
+      },
+      "#userConfigOption.default[]": {
+        "required": false,
+        "type": "string"
+      },
+      "#userConfigOption.description": {
+        "required": true,
+        "type": "string"
+      },
+      "#userConfigOption.max": {
+        "required": false,
+        "type": "number"
+      },
+      "#userConfigOption.min": {
+        "required": false,
+        "type": "number"
+      },
+      "#userConfigOption.multiple": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.options": {
+        "required": false,
+        "type": "array"
+      },
+      "#userConfigOption.options[]": {
+        "required": false,
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "#userConfigOption.required": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.sensitive": {
+        "required": false,
+        "type": "boolean"
+      },
+      "#userConfigOption.title": {
+        "required": true,
+        "type": "string",
+        "minLength": 1
+      },
+      "#userConfigOption.type": {
+        "required": true,
+        "type": "string",
+        "enum": [
+          "boolean",
+          "directory",
+          "file",
+          "number",
+          "string"
+        ]
+      },
       "$schema": {
         "required": false,
         "type": "string"
@@ -2114,6 +2949,10 @@
         "required": false,
         "type": "string"
       },
+      "forceRemoveDeletedPlugins": {
+        "required": false,
+        "type": "boolean"
+      },
       "metadata": {
         "required": false,
         "ref": "#/definitions/metadata"
@@ -2121,7 +2960,7 @@
       "name": {
         "required": true,
         "type": "string",
-        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
       },
       "owner": {
         "required": true,

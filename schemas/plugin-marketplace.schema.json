@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-marketplace.schema.json",
   "title": "CDF Plugin Marketplace",
-  "description": "A marketplace's `marketplace.json`, read from `.claude-plugin/marketplace.json`. A strict superset of Claude Code's: the same owner, metadata, renames and `plugins[]` entries, with the same nested `source` union, plus `local` for a marketplace that lists plugins already in the repository, plus an optional per-entry `cdf` block carrying a declared digest and the capabilities the entry expects. Every source form is DECLARED here, including the three the harness cannot yet fetch, because a marketplace that uses one must parse and be reported rather than fail to load. A listing is not an installation, and a declared digest is a claim to be checked, never a verdict.",
+  "description": "A marketplace's `marketplace.json`, read from `.claude-plugin/marketplace.json`. Models every key the Claude Code plugin manifest and marketplace references, read 2026-10-05 document: owner, metadata, renames, forceRemoveDeletedPlugins, allowCrossMarketplaceDependenciesOn and the `plugins[]` entries with Claude Code's seven `source` forms, plus two CDF extensions the README names: a `local` source form for a marketplace that lists plugins already on disk, and an optional per-entry `cdf` block carrying a declared digest and the capabilities the entry expects. Every source form is DECLARED here, including the three the harness cannot yet fetch, because a marketplace that uses one must parse and be reported rather than fail to load. A listing is not an installation, and a declared digest is a claim to be checked, never a verdict.",
   "definitions": {
     "author": {
       "description": "Who publishes the plugin. An object is the documented form; a bare string is accepted because marketplaces in the wild carry one, and a reader that refused it would refuse a real plugin.",
@@ -134,7 +134,7 @@
       "additionalProperties": true
     },
     "componentPath": {
-      "description": "A component directory or file, or a list of them. Claude Code accepts a single string or an array of strings for `skills`, `commands` and `agents`, and scans `skills/`, `commands/` and `agents/` when the key is absent, so an absent key is not an empty contribution.",
+      "description": "A component directory or file, or a list of them. Claude Code accepts a single string or an array of strings for `skills`, `commands`, `agents`, `outputStyles`, `workflows` and `experimental.themes`, and scans the default folder when the key is absent, so an absent key is not an empty contribution. Every path starts with `./` (`skills` also accepts `\".\"`). Claude Code plugin manifest and marketplace references, read 2026-10-05.",
       "anyOf": [
         {
           "type": "string",
@@ -150,7 +150,7 @@
       ]
     },
     "componentSource": {
-      "description": "A component declared inline as an object, or a path to the file that declares it. Claude Code accepts both spellings for `hooks`, `mcpServers` and `lspServers`.",
+      "description": "A component declared inline as an object, a path to a `.json` file that declares it, or an array mixing both. Claude Code accepts all three for `hooks`, `mcpServers` and `lspServers`; for `mcpServers` the string may also be an `.mcpb` or `.dxt` bundle path or an `https://` bundle URL. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
       "anyOf": [
         {
           "type": "object"
@@ -158,6 +158,20 @@
         {
           "type": "string",
           "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
         }
       ]
     },
@@ -171,7 +185,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
         },
         "source": {
           "$ref": "#/definitions/source"
@@ -225,7 +239,7 @@
           "$ref": "#/definitions/componentPath"
         },
         "commands": {
-          "$ref": "#/definitions/componentPath"
+          "$ref": "#/definitions/commands"
         },
         "agents": {
           "$ref": "#/definitions/componentPath"
@@ -237,7 +251,7 @@
           "$ref": "#/definitions/componentSource"
         },
         "lspServers": {
-          "$ref": "#/definitions/componentSource"
+          "$ref": "#/definitions/lspServers"
         },
         "headers": {
           "type": "object",
@@ -249,13 +263,94 @@
         "headersHelper": {
           "type": "string",
           "minLength": 1,
-          "description": "A path inside the marketplace to a helper that produces request headers at fetch time."
+          "description": "A path or command that produces this entry's archive-download headers at fetch time. Claude Code requires the entry to set `\"strict\": false`, and the schema enforces that with if/then. Claude Code plugin manifest and marketplace references, read 2026-10-05."
+        },
+        "relevance": {
+          "$ref": "#/definitions/relevance"
+        },
+        "dependencies": {
+          "$ref": "#/definitions/dependencies"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Free-form publisher metadata on the entry. Carried, never interpreted."
+        },
+        "settings": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "userConfig": {
+          "$ref": "#/definitions/userConfig"
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/channel"
+          }
+        },
+        "outputStyles": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "workflows": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "themes": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "experimental": {
+          "$ref": "#/definitions/experimental"
+        },
+        "types": {
+          "type": "string",
+          "minLength": 1,
+          "allOf": [
+            {
+              "not": {
+                "pattern": "^/"
+              }
+            },
+            {
+              "not": {
+                "pattern": "(^|/)\\.\\.(/|$)"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^~"
+              }
+            },
+            {
+              "not": {
+                "pattern": "^[A-Za-z]:"
+              }
+            },
+            {
+              "not": {
+                "pattern": "\\\\"
+              }
+            }
+          ]
         },
         "cdf": {
           "$ref": "#/definitions/entryCdf"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "if": {
+        "required": [
+          "headersHelper"
+        ]
+      },
+      "then": {
+        "required": [
+          "strict"
+        ],
+        "properties": {
+          "strict": {
+            "const": false
+          }
+        }
+      }
     },
     "entryCdf": {
       "type": "object",
@@ -371,8 +466,8 @@
         },
         "sha256": {
           "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "The archive digest, lower-case hex."
+          "pattern": "^[0-9a-fA-F]{64}$",
+          "description": "The archive digest as 64 hex characters, upper or lower case as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
         }
       },
       "additionalProperties": true
@@ -397,11 +492,17 @@
         },
         "timeout": {
           "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
+          "minimum": 1,
+          "maximum": 600,
+          "description": "Seconds, 1 to 600; Claude Code defaults to 60. Claude Code plugin manifest and marketplace references, read 2026-10-05."
         },
         "mode": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "copy",
+            "link"
+          ],
+          "description": "`copy` (default) copies the printed directory; `link` loads it in place. Claude Code plugin manifest and marketplace references, read 2026-10-05."
         }
       },
       "additionalProperties": true
@@ -503,7 +604,7 @@
     },
     "sourceLocal": {
       "type": "object",
-      "description": "A path already on disk. The seventh form, beyond Claude Code's six: CDF's own marketplace lists first-party plugins that ship in the repository, and a local source is the only one with nothing to fetch and nothing to pin.",
+      "description": "A path already on disk. A CDF extension, not a Claude Code source form: Claude Code's only local form is the relative-path string. CDF's own marketplace lists first-party plugins that ship in the repository, and a local source is the one with nothing to fetch and nothing to pin. The README names it as such.",
       "required": [
         "source",
         "path"
@@ -579,6 +680,379 @@
         }
       },
       "additionalProperties": true
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Plugins that must be enabled for this one to work. Each entry is `\"name\"`, `\"name@marketplace\"`, or an object with `name`, `marketplace` and `version`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "marketplace": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "userConfigOption": {
+      "type": "object",
+      "description": "One user-configuration option. A STRICT object in Claude Code: an unknown key stops the plugin loading, so the contract refuses it too, which is the one place the contract closes a content model to mean what Claude Code means. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "required": [
+        "type",
+        "title",
+        "description"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "directory",
+            "file"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "sensitive": {
+          "type": "boolean"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "userConfig": {
+      "type": "object",
+      "description": "Values Claude Code prompts the user for when the plugin is enabled. Keys are identifiers of letters, digits and underscores not starting with a digit. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/userConfigOption"
+      }
+    },
+    "channel": {
+      "type": "object",
+      "description": "A message channel bound to one of the plugin's MCP servers. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "required": [
+        "server"
+      ],
+      "properties": {
+        "server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "userConfig": {
+          "$ref": "#/definitions/userConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "lspServer": {
+      "type": "object",
+      "description": "One language server. A STRICT object in Claude Code: `command` and `extensionToLanguage` are required and an unknown key fails validation. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "required": [
+        "command",
+        "extensionToLanguage"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extensionToLanguage": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^\\."
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "socket"
+          ]
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "initializationOptions": {
+          "type": "object"
+        },
+        "settings": {
+          "type": "object"
+        },
+        "workspaceFolder": {
+          "type": "string"
+        },
+        "startupTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "shutdownTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "requestTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "restartOnCrash": {
+          "type": "boolean"
+        },
+        "maxRestarts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "diagnostics": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "lspServers": {
+      "description": "`.json` LSP config files, an inline map of server name to config, or an array of either. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/lspServer"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/definitions/lspServer"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "commandEntry": {
+      "type": "object",
+      "description": "One command in the `commands` object map. Exactly one of `source` (a path) or `content` (inline Markdown) is set. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "argumentHint": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "allowedTools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "source"
+          ]
+        },
+        {
+          "required": [
+            "content"
+          ]
+        }
+      ],
+      "additionalProperties": true
+    },
+    "commands": {
+      "description": "Flat `.md` command files, directories of them, or an object map of command name to `source` or `content`. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commandEntry"
+          }
+        }
+      ]
+    },
+    "monitor": {
+      "type": "object",
+      "description": "One background monitor. A STRICT object in Claude Code. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "required": [
+        "name",
+        "command",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "experimental": {
+      "type": "object",
+      "description": "Container for `themes`, `monitors` and `evals`, whose manifest shape Claude Code says may still change. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "properties": {
+        "themes": {
+          "$ref": "#/definitions/componentPath"
+        },
+        "monitors": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/monitor"
+              }
+            }
+          ]
+        },
+        "evals": {
+          "$ref": "#/definitions/componentPath"
+        }
+      },
+      "additionalProperties": true
+    },
+    "relevance": {
+      "type": "object",
+      "description": "Signals that tell Claude Code when to suggest the plugin: `topic` and `signals`. Carried, not interpreted. Claude Code plugin manifest and marketplace references, read 2026-10-05.",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "signals": {}
+      },
+      "additionalProperties": true
     }
   },
   "type": "object",
@@ -593,8 +1067,8 @@
     },
     "name": {
       "type": "string",
-      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-      "description": "The marketplace id: lower-case kebab-case."
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "The marketplace id: letters, digits, `.`, `_` and `-`, starting with a letter or digit, no `..`, as Claude Code accepts. Claude Code plugin manifest and marketplace references, read 2026-10-05."
     },
     "owner": {
       "$ref": "#/definitions/owner"
@@ -632,6 +1106,10 @@
       "items": {
         "$ref": "#/definitions/entry"
       }
+    },
+    "forceRemoveDeletedPlugins": {
+      "type": "boolean",
+      "description": "When true, a plugin removed from `plugins` is uninstalled on users' machines. Claude Code plugin manifest and marketplace references, read 2026-10-05."
     }
   },
   "additionalProperties": true

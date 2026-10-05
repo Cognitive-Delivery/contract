@@ -329,6 +329,46 @@
       "reason": "every integer is bounded at 2^53 - 1 because canonical bytes are RFC 8785, which presumes I-JSON; a larger integer can hash differently in two correct parsers. No real value approaches it (budgets, tiers, line numbers, timeouts).",
       "date": "2026-10-05",
       "evidence": "fixtures/invalid/agent-lease-manifest.budget-above-2-53.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-manifest.schema.json",
+      "path": "name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#entry.name",
+      "reason": "the pattern was LOOSENED, not tightened: kebab-case only became Claude Code's rule (letters, digits, dot, underscore, hyphen; leading alphanumeric). The guard cannot tell the direction of a pattern change, so the widening is recorded here with a valid fixture that the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "PATTERN_TIGHTENED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceArchive.sha256",
+      "reason": "loosened: Claude Code accepts the archive digest in upper or lower case; the populated fixture now carries an upper-case one the old pattern refused.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/valid/plugin-marketplace.populated.json"
+    },
+    {
+      "finding": "ENUM_NARROWED",
+      "schema": "plugin-marketplace.schema.json",
+      "path": "#sourceCommand.mode",
+      "reason": "Claude Code accepts only copy and link for a command source's mode; a third value never loaded a plugin on any host, and the harness does not fetch command sources at all, so no real artefact is affected.",
+      "date": "2026-10-05",
+      "evidence": "fixtures/invalid/plugin-marketplace.command-mode-unknown.json"
     }
   ]
 }

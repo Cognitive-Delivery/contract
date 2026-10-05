@@ -1,0 +1,1 @@
+An entry sets `headersHelper` without `"strict": false`. Claude Code refuses this combination (`Plugin "p" sets headersHelper but is not "strict": false`), because a helper that produces headers at fetch time is a component the marketplace adds, and strict mode says the plugin.json is the only authority on components. The schema enforces it with if/then.

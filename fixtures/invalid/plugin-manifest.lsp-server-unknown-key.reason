@@ -1,0 +1,1 @@
+`lspServers.go` carries an unknown key `colour`. An LSP server config is a STRICT object in Claude Code: an unknown key stops the plugin loading, which is the one case where honouring the key "with the same meaning" means refusing, not carrying.
