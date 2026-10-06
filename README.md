@@ -364,8 +364,9 @@ most 200 characters; `schema_version` is `major.minor` everywhere and compared o
 provenance `spec` is a slug; an assessment has exactly six integer-scored dimensions; a sealed config
 path is well-formed and names a field the file carries. `actor.runtime` stays open, because the real
 journal spells it eleven ways, and `actor.runtime_agent` carries the closed identity. Every one of
-the reference deployment's 33,608 audit records, 19,207 signals, provenance records and assessments
-validates under these rules.
+the reference deployment's records validates under these rules: 33,608 audit records, 19,231 signals,
+995 provenance records and 2 assessments at the 5 October check (`fixtures/evidence/`), and 33,665,
+19,287, 4,588 and 2 at the 1.2.1 pin on 6 October (`docs/conformance/cdf-harness.md`).
 
 ## Layout
 

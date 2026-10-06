@@ -15,7 +15,30 @@ tooling in this repository.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- `docs/implementing.md` (the adapter interface in one place, with a worked example from the installed
+  package), `docs/upgrading-1.0-to-1.2.md` (what the allow-listed tightenings refuse and what a 1.2
+  writer owes), `docs/decisions.md` (each release to the harness decision records and the three review
+  documents), `docs/conformance/cdf-harness.md` (the reference implementation's conformance report),
+  and five proposal records under `docs/proposals/` for the 1.2 semantic changes (four accepted, host
+  ports rejected for 1.x), written after the fact under harness DR-184.
+
+### Changed
+
+- Every statement current at 1.2.1 (harness DR-184, a read-only audit of 6 October 2026): the 1.1.0
+  self-test defect is attributed to the release candidate (`main` at e91afb0) rather than the
+  published tarball; "eleven words" is ten in the CHANGELOG and in the `details` descriptions of
+  `audit-event` and `cdi-signal` (description text only; the suite export regenerated, the lock and
+  the index unchanged); `allow.tool_args` is described as a `` of `stability: development`;
+  the 1.1.0 section carries one `Added`, one `Changed` and one `Fixed`; SPEC §9 names schema set 1.2
+  and rule L3 (clauses 9-1 and 9-3 re-affirmed in `conformance/traceability.json`, a §13 editorial
+  row); CONTRIBUTING lists everything `npm test` checks and which guard findings need which lock
+  format; GOVERNANCE's release step says `release.yml` dispatches `pages.yml` on `main`; SECURITY's
+  lease-escape surface names `lease-record`; the README names `/1.2.1/`, both development-stability
+  fields and rule L3; header comments in `conformance/runner.mjs`, `ids.mjs`, `schema-checks.mjs`,
+  `check-additive.mjs`, `generate-schemas-lock.mjs`, `generate-contract-types.mjs` and the two
+  workflows say what the code does today.
 
 ## [1.2.1] — 2026-10-06
 
