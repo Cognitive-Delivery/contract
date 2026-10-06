@@ -417,6 +417,8 @@ tooling/                    repository tooling; not in the package
   generate-index.mjs        writes schemas/index.json; run by `npm run lock`
   inline-granted-manifest.mjs rewrites every inlined copy of the manifest schema from its source
   regex-portability/        the Go program CI runs to compile every pattern under RE2
+  build-site.mjs            builds the GitHub Pages site into a directory from the repository tree; `npm run site`
+  site.css                  the site's one stylesheet, copied beside the pages by the generator
 SPEC-agent-lease-manifest.md the normative specification
 README.md                   this file
 CHANGELOG.md                what changed, per release
