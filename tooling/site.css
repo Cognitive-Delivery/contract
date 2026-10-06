@@ -106,7 +106,7 @@ footer .legal { border-top: 1px solid var(--footer-rule); margin: 36px 0 0; padd
 
 main { max-width: var(--maxw); margin: 0 auto; padding: 24px 28px 48px; }
 /* A reading measure for prose; tables and code keep the full width. */
-main > p, main > ul, main > ol, main > dl, main > blockquote, main > .quoted, main > h1, main > h2, main > h3, main > h4, main > .eyebrow { max-width: 78ch; }
+/* Prose fills the frame: the owner asked for much less white space on the sides (DR-186, task 2.2). */
 h4 { color: var(--teal); font-weight: 600; font-size: 17px; margin: 1.6em 0 .4em; }
 p.lead { font-size: 19px; }
 /* Links in prose: teal, and always underlined so a link is never told apart by colour alone; the
