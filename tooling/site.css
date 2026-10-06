@@ -169,6 +169,28 @@ th {
   background: var(--panel);
 }
 
+table.reference td.path {
+  white-space: nowrap;
+}
+
+table.reference small.note,
+p.note {
+  color: var(--muted);
+  white-space: normal;
+}
+
+td.stability-development {
+  font-weight: 600;
+}
+
+td.deprecated {
+  text-decoration: underline dotted;
+}
+
+ul.legend li {
+  margin-bottom: 0.25rem;
+}
+
 blockquote, .quoted {
   margin: 1rem 0;
   padding: 0.25rem 1rem;

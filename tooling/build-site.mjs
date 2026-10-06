@@ -26,7 +26,8 @@
  * builds nothing.
  *
  * The schema reference (`/reference/`, one page per schema from `schemas/*.schema.json`) is
- * `buildReference` below, the extension point the walker fills.
+ * `buildReference` below, which hands the schema files to the walker in `tooling/site-reference.mjs`
+ * and places its pages in the template; the walker's self-test runs under the same flag.
  */
 
 import { copyFile, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
@@ -36,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 import { Marked } from 'marked';
 
 import { idFor } from '../conformance/ids.mjs';
+import { loadReferenceInputs, referencePages, selfTestReference } from './site-reference.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
@@ -226,9 +228,10 @@ function createRenderer(sourcePath, ctx, { versionAnchors = false } = {}) {
 // The page template: one function, no library.
 // ---------------------------------------------------------------------------------------------
 
-function template({ title, body, path, ctx }) {
+/** `section` names the nav entry a page belongs to when that is not its own path (a reference page). */
+function template({ title, body, path, section, ctx }) {
   const items = NAV.map(([label, href]) => {
-    const current = href === path ? ' aria-current="page"' : '';
+    const current = href === (section ?? path) ? ' aria-current="page"' : '';
     return `<li><a href="${SITE_BASE}${href}"${current}>${label}</a></li>`;
   }).join('');
   return `<!doctype html>
@@ -523,37 +526,15 @@ ${template ?? '<p>No template is present.</p>'}
 }
 
 /**
- * The schema reference: the extension point for the walker.
- *
- * Today this writes the index only: every schema with its title, description and raw JSON at its
- * `$id`. The walker replaces this function's body with one page per schema at
- * `/reference/<name>/` (title, description, `$id`, stability, every property with its path, type,
- * requirement, description, constraints and stability, conditional requirements shown as such)
- * and adds the property counts to the index. `pageFor` already maps `schemas/<name>.schema.json`
- * to `/reference/<name>/`, so a Markdown link to a schema will resolve once those pages exist.
+ * The schema reference: `/reference/` and one page per schema at `/reference/<name>/`, from the
+ * walker in `site-reference.mjs`. The schema files are the ones laid out under `<major>.x/` (the
+ * `$id` copies of `schemas/`), read from `schemas/` so the pages describe the tree being built.
+ * `pageFor` maps `schemas/<name>.schema.json` to `/reference/<name>/`, so a Markdown link to a
+ * schema resolves to its page.
  */
 async function buildReference(ctx) {
-  const entries = [];
-  for (const file of ctx.schemaFiles) {
-    const schema = JSON.parse(await readRepo(`schemas/${file}`));
-    const raw = site(`/${ctx.major}.x/${file}`);
-    entries.push(
-      `<tr><td><code>${esc(file.replace(/\.schema\.json$/, ''))}</code></td>`
-      + `<td>${esc(schema.title ?? '')}</td>`
-      + `<td>${esc(schema.description ?? '')}</td>`
-      + `<td>${link(raw, 'JSON')}</td></tr>`,
-    );
-  }
-  const body = `<h1>Schema reference</h1>
-<p>The ${entries.length} schemas of set ${esc(ctx.major)}.x, each served as JSON at its <code>$id</code>.</p>
-<table>
-<thead><tr><th>Schema</th><th>Title</th><th>Description</th><th>Raw</th></tr></thead>
-<tbody>
-${entries.join('\n')}
-</tbody>
-</table>
-`;
-  return [{ path: '/reference/', title: `Schema reference · ${SITE_NAME}`, body }];
+  const inputs = await loadReferenceInputs(ctx.schemaFiles, ROOT);
+  return referencePages(inputs, { base: SITE_BASE, major: ctx.major, siteName: SITE_NAME });
 }
 
 /** `/versions/`: every frozen directory, its GitHub Release and its changelog section. */
@@ -690,6 +671,7 @@ const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLT
 if (invokedDirectly) {
   if (process.env.CDF_SITE_SELF_TEST === '1') {
     selfTest();
+    await selfTestReference();
   } else {
     const outDir = process.argv[2];
     if (!outDir) {
