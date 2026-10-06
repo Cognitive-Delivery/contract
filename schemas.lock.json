@@ -4005,6 +4005,16 @@
         ],
         "minLength": 1
       },
+      "#capabilities.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "#capabilities.tool_args.*": {
+        "required": false,
+        "type": "object"
+      },
       "#capabilities.tools": {
         "required": false,
         "type": "array",
@@ -4125,6 +4135,18 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "#cdf.capabilities.tool_args": {
+        "required": false,
+        "via": "#capabilities.tool_args",
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "#cdf.capabilities.tool_args.*": {
+        "required": false,
+        "via": "#capabilities.tool_args.*",
+        "type": "object"
       },
       "#cdf.capabilities.tools": {
         "required": false,
@@ -7219,6 +7241,18 @@
         ],
         "minLength": 1
       },
+      "cdf.capabilities.tool_args": {
+        "required": false,
+        "via": "#capabilities.tool_args",
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "cdf.capabilities.tool_args.*": {
+        "required": false,
+        "via": "#capabilities.tool_args.*",
+        "type": "object"
+      },
       "cdf.capabilities.tools": {
         "required": false,
         "via": "#capabilities.tools",
@@ -9062,6 +9096,16 @@
         ],
         "minLength": 1
       },
+      "#capabilities.tool_args": {
+        "required": false,
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "#capabilities.tool_args.*": {
+        "required": false,
+        "type": "object"
+      },
       "#capabilities.tools": {
         "required": false,
         "type": "array",
@@ -9484,6 +9528,18 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "#entry.cdf.capabilities.tool_args": {
+        "required": false,
+        "via": "#capabilities.tool_args",
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "#entry.cdf.capabilities.tool_args.*": {
+        "required": false,
+        "via": "#capabilities.tool_args.*",
+        "type": "object"
       },
       "#entry.cdf.capabilities.tools": {
         "required": false,
@@ -11243,6 +11299,18 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "#entryCdf.capabilities.tool_args": {
+        "required": false,
+        "via": "#capabilities.tool_args",
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "#entryCdf.capabilities.tool_args.*": {
+        "required": false,
+        "via": "#capabilities.tool_args.*",
+        "type": "object"
       },
       "#entryCdf.capabilities.tools": {
         "required": false,
@@ -13914,6 +13982,18 @@
           "^~"
         ],
         "minLength": 1
+      },
+      "plugins[].cdf.capabilities.tool_args": {
+        "required": false,
+        "via": "#capabilities.tool_args",
+        "type": "object",
+        "additionalProperties": "schema",
+        "stability": "development"
+      },
+      "plugins[].cdf.capabilities.tool_args.*": {
+        "required": false,
+        "via": "#capabilities.tool_args.*",
+        "type": "object"
       },
       "plugins[].cdf.capabilities.tools": {
         "required": false,
