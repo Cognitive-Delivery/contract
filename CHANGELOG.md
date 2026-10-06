@@ -15,6 +15,15 @@ tooling in this repository.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.2.1] — 2026-10-06
+
+Tooling only; the schema set is still 1.2 and `/1.x/` serves the same bytes. Found by pinning the
+reference implementation to 1.2.0: the type generator, the Pages deploy on a tag, and the narrowing
+vectors being the reference's own bytes. One additive field, `capabilities.tool_args` on the plugin
+schemas, so `capabilities` stays the lease `allow` shape property for property.
+
 ### Fixed
 
 - **The type generator reads `.schema.json` only, names `lease-record`, and says what a type cannot.**
@@ -466,7 +475,8 @@ the additive-only lock.
 - The published tarball is 88 files. `package.json`'s `files` field is the authority on what ships;
   the generators and the CI configuration stay in the repository and are not published.
 
-[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Cognitive-Delivery/contract/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.2.1
 [1.2.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.1.0
 [1.0.2]: https://github.com/Cognitive-Delivery/contract/releases/tag/v1.0.2
