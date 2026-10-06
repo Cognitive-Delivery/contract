@@ -436,6 +436,7 @@ tooling/                    repository tooling; not in the package
   build-site.mjs            builds the GitHub Pages site into a directory from the repository tree; `npm run site`
   site-reference.mjs        the site's schema reference: one page per schema, walked from the schema files; `build-site.mjs` calls it
   site.css                  the site's one stylesheet, copied beside the pages by the generator
+  site/                     the brand as files, copied into the site: fonts/ (three variable woff2 with their two OFL texts), img/ (two logos, three icons) and BRAND-NOTICE.md
 SPEC-agent-lease-manifest.md the normative specification
 README.md                   this file
 CHANGELOG.md                what changed, per release

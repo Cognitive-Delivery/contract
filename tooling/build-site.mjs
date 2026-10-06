@@ -22,15 +22,26 @@
  * that does not exist in the repository aborts the build naming the page and the link; the site
  * check relies on that.
  *
- * `CDF_SITE_SELF_TEST=1 node tooling/build-site.mjs` runs the slug and link-map assertions and
- * builds nothing.
+ * The brand (spec `contract-documentation-site-follow-cognitivedelivery`, harness DR-186) travels as
+ * files under `tooling/site/`: the fonts with their licences, the logos and icons, and the brand
+ * notice. The generator copies `fonts/` and `img/` into the output beside `site.css` and renders
+ * the notice at `/brand-notice/` through the ordinary Markdown path; every page's header carries the
+ * teal logo (the white one under a dark scheme, by `<picture>`, no script), every footer the white
+ * logo and the legal line. Nothing is fetched from another host.
+ *
+ * `CDF_SITE_SELF_TEST=1 node tooling/build-site.mjs` runs the slug and link-map assertions, the
+ * stylesheet assertions (no literal colour outside `:root`, the one data URI is the theme's mark,
+ * relative font urls) and one build into a temporary directory to check the copied assets and the
+ * template; it leaves nothing behind. `CDF_SITE_THEME_FIGURES=<path>` names the website's
+ * `figures.css` when it is to hand, and the embedded mark is then also compared with the theme's.
  *
  * The schema reference (`/reference/`, one page per schema from `schemas/*.schema.json`) is
  * `buildReference` below, which hands the schema files to the walker in `tooling/site-reference.mjs`
  * and places its pages in the template; the walker's self-test runs under the same flag.
  */
 
-import { copyFile, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { dirname, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,6 +60,21 @@ const REPO_URL = 'https://github.com/Cognitive-Delivery/contract';
 const NPM_URL = 'https://www.npmjs.com/package/@cognitive-delivery/contract';
 const SCHEMASTORE_URL = 'https://www.schemastore.org/';
 const SPEC_FILE = 'SPEC-agent-lease-manifest.md';
+const BRAND_NOTICE = 'tooling/site/BRAND-NOTICE.md';
+/** The brand as files: `fonts/` and `img/` are copied into the output, byte for byte, in sorted order. */
+const SITE_ASSETS = resolve(here, 'site');
+const ASSET_DIRS = ['fonts', 'img'];
+const FONT_FILES = ['jetbrains-mono-variable.woff2', 'source-sans-3-italic-variable.woff2', 'source-sans-3-variable.woff2'];
+const IMAGE_FILES = ['apple-touch-icon.png', 'favicon-32.png', 'favicon.ico', 'logo-teal.png', 'logo-white.png'];
+/** The website's eyebrow mark (its `.eyebrow::before`), the one data URI the site carries; the self-test holds `site.css` to it. */
+const EYEBROW_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 L15 5 L8 9 L1 5 Z' fill='%237FCBD9'/%3E%3Cpath d='M1 5 L8 9 L8 15 L1 11 Z' fill='%234FB6C9'/%3E%3Cpath d='M15 5 L8 9 L8 15 L15 11 Z' fill='%233A93A5'/%3E%3C/svg%3E";
+/** The website's `:root` tokens, in order; `site.css` carries the block verbatim and the self-test checks each line. */
+const THEME_TOKENS = [
+  '--teal: #1F4E5F', '--teal2: #2D6878', '--teal3: #4A8A9A', '--teal4: #88BAC4', '--cyan: #4FB6C9',
+  '--white: #FFFFFF', '--ink: #2D3D44', '--slate: #607079', '--hair: #DCE5E8', '--surface: #F4F8FA',
+  '--cream: #FFF7E6', '--orange: #E89B2C', '--mint: #E8F4EC', '--rose: #FBEFEF',
+  "--sans: 'Source Sans 3', sans-serif", "--mono: 'JetBrains Mono', monospace", '--maxw: 1200px',
+];
 
 const NAV = [
   ['Reference', '/reference/'],
@@ -109,6 +135,7 @@ export function pageFor(repoPath) {
     'CONTRIBUTING.md': '/contributing/',
     'SECURITY.md': '/security/',
     'CHANGELOG.md': '/changelog/',
+    [BRAND_NOTICE]: '/brand-notice/',
     'docs/conformance/': '/conformance/',
     'docs/proposals/': '/governance/proposals/',
   };
@@ -228,11 +255,25 @@ function createRenderer(sourcePath, ctx, { versionAnchors = false } = {}) {
 // The page template: one function, no library.
 // ---------------------------------------------------------------------------------------------
 
-/** `section` names the nav entry a page belongs to when that is not its own path (a reference page). */
+/**
+ * On a generated page, a heading that only labels the table or list beneath it is an eyebrow (the
+ * website's section label), keeping its id so a fragment link still resolves. A heading that
+ * carries the page's structure (one with headings under it) stays an `<h2>`.
+ */
+function eyebrow(id, label) {
+  return `<p class="eyebrow" id="${esc(id)}">${label}</p>`;
+}
+
+/**
+ * `section` names the nav entry a page belongs to when that is not its own path (a reference page).
+ * The header and footer are the website's: the logo (teal, and white under a dark scheme through
+ * `<picture>`, no script) with the site's name beside it as text, the seven sections, and the teal
+ * footer with the white logo, the contract's links, the terms and the legal line.
+ */
 function template({ title, body, path, section, ctx }) {
   const items = NAV.map(([label, href]) => {
     const current = href === (section ?? path) ? ' aria-current="page"' : '';
-    return `<li><a href="${SITE_BASE}${href}"${current}>${label}</a></li>`;
+    return `<a href="${SITE_BASE}${href}"${current}>${label}</a>`;
   }).join('');
   return `<!doctype html>
 <html lang="en">
@@ -241,16 +282,31 @@ function template({ title, body, path, section, ctx }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <link rel="stylesheet" href="${SITE_BASE}/site.css">
+<link rel="icon" href="${SITE_BASE}/img/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" href="${SITE_BASE}/img/favicon-32.png">
+<link rel="apple-touch-icon" href="${SITE_BASE}/img/apple-touch-icon.png">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header>
-<p class="site"><a href="${SITE_BASE}/">${SITE_NAME}</a> <span class="version">${esc(ctx.version)}</span></p>
-<nav aria-label="Sections"><ul>${items}</ul></nav>
+<nav aria-label="Sections">
+<a class="brand" href="${SITE_BASE}/"><picture><source srcset="${SITE_BASE}/img/logo-white.png" media="(prefers-color-scheme: dark)"><img src="${SITE_BASE}/img/logo-teal.png" alt="Cognitive Delivery" width="132" height="38"></picture></a>
+<span class="site-name">governance contract <span class="version">${esc(ctx.version)}</span></span>
+<div class="navlinks">${items}</div>
+</nav>
 </header>
 <main id="main">
 ${body}</main>
-<footer><p>${esc(ctx.licence)}. Source, corpus and specification: <a href="${REPO_URL}">github.com/Cognitive-Delivery/contract</a>.</p></footer>
+<footer>
+<div class="wrap">
+<div class="ft">
+<a class="brand" href="${SITE_BASE}/"><img src="${SITE_BASE}/img/logo-white.png" alt="Cognitive Delivery" width="145" height="42"></a>
+<div class="col"><h3>Contract</h3><a href="${REPO_URL}">Repository</a><a href="${NPM_URL}">npm</a><a href="${SCHEMASTORE_URL}">SchemaStore</a></div>
+<div class="col"><h3>Terms</h3><a href="${SITE_BASE}/brand-notice/">Brand notice</a><a href="${SITE_BASE}/security/">Security</a><a href="${SITE_BASE}/governance/">Governance</a></div>
+</div>
+<p class="legal">${esc(ctx.licence)} for the contract. The Cognitive Delivery name and logo are marks of their owner (see the brand notice). Fonts under the SIL Open Font Licence.</p>
+</div>
+</footer>
 </body>
 </html>
 `;
@@ -395,7 +451,7 @@ async function frontPage(ctx) {
 <p class="lead">${readmeInline(opening)}</p>
 <p>For the implementer of a second reader or writer of these artefacts, in any language, and for anyone checking a claim that an implementation conforms.</p>
 <ul class="ways">
-${ways.map(([label, path, blurb]) => `<li><a href="${site(path)}"><strong>${label}</strong></a> <span>${blurb}</span></li>`).join('\n')}
+${ways.map(([label, path, blurb]) => `<li class="card"><a class="btn" href="${site(path)}">${label}</a> <span>${blurb}</span></li>`).join('\n')}
 </ul>
 <dl class="facts">
 <dt>Current version</dt><dd>${esc(ctx.version)}</dd>
@@ -405,12 +461,12 @@ ${ways.map(([label, path, blurb]) => `<li><a href="${site(path)}"><strong>${labe
 <dt>Package</dt><dd>${link(NPM_URL, '@cognitive-delivery/contract on npm')}</dd>
 <dt>Registry</dt><dd>${link(SCHEMASTORE_URL, 'SchemaStore')}</dd>
 </dl>
-<h2 id="current">Current (${esc(ctx.major)}.x)</h2>
+${eyebrow('current', `Current (${esc(ctx.major)}.x)`)}
 <p>The schema set, served at each schema's <code>$id</code> (the current <code>${esc(ctx.major)}.x</code>)${indexJson}.</p>
 <ul>
 ${current}
 </ul>
-<h2 id="released">Released, frozen</h2>
+${eyebrow('released', 'Released, frozen')}
 ${frozen}
 <p>${link(site('/versions/'), 'Versions')} links each release to its GitHub Release and its changelog section.</p>
 `;
@@ -483,9 +539,9 @@ async function conformancePage(ctx) {
 <p>What an implementation must do to claim conformance, as <a href="${esc(specAnchor)}">SPEC §${esc(sectionNumber)}</a> states it today:</p>
 <div class="quoted">
 ${specRenderer.block(section.body)}</div>
-<h2 id="implementation-reports">Implementation reports</h2>
+${eyebrow('implementation-reports', 'Implementation reports')}
 ${reports.length === 0 ? '<p>No implementation report has been recorded yet.</p>' : `<ul>\n${reports.join('\n')}\n</ul>`}
-<h2 id="recorded-portability">Recorded portability</h2>
+${eyebrow('recorded-portability', 'Recorded portability')}
 <p>From the README, as written:</p>
 <blockquote>
 ${quoted}
@@ -519,7 +575,7 @@ async function proposalsPage(ctx) {
   const body = `<h1>Proposals</h1>
 <p>One page per semantic change to the contract, kept as the record. ${link(site('/governance/'), 'GOVERNANCE')} says which changes need one.</p>
 ${rows.length === 0 ? '<p>No proposal has been recorded.</p>' : `<table>\n<thead><tr><th>Proposal</th><th>Status</th><th>Date</th></tr></thead>\n<tbody>\n${rows.join('\n')}\n</tbody>\n</table>`}
-<h2 id="the-template">The template</h2>
+${eyebrow('the-template', 'The template')}
 ${template ?? '<p>No template is present.</p>'}
 `;
   return { path: '/governance/proposals/', title: `Proposals · ${SITE_NAME}`, body };
@@ -534,7 +590,22 @@ ${template ?? '<p>No template is present.</p>'}
  */
 async function buildReference(ctx) {
   const inputs = await loadReferenceInputs(ctx.schemaFiles, ROOT);
-  return referencePages(inputs, { base: SITE_BASE, major: ctx.major, siteName: SITE_NAME });
+  return referencePages(inputs, { base: SITE_BASE, major: ctx.major, siteName: SITE_NAME }).map(eyebrowReferenceLabels);
+}
+
+/**
+ * The walker's headings that only label a table or a list (`Properties` and `Conditional
+ * requirements` on a schema page, `Stability` on the index) rendered as eyebrows, ids kept.
+ * `Definitions` keeps its `<h2>`: it has an `<h3>` per definition under it. The walker itself is not
+ * changed; this is presentation, applied to its output.
+ */
+const REFERENCE_LABELS = ['properties', 'conditional-requirements', 'stability'];
+function eyebrowReferenceLabels(page) {
+  let body = page.body;
+  for (const id of REFERENCE_LABELS) {
+    body = body.replace(new RegExp(`<h2 id="${id}">([^<]*)</h2>`), (_, label) => eyebrow(id, label));
+  }
+  return { ...page, body };
 }
 
 /** `/versions/`: every frozen directory, its GitHub Release and its changelog section. */
@@ -602,9 +673,31 @@ export async function buildSite(outDir, { log = console.log } = {}) {
     seen.add(page.path);
     await writePage(out, page, ctx, log);
   }
+  if (!seen.has(pageFor(BRAND_NOTICE))) {
+    throw new SiteError(`${BRAND_NOTICE} is absent, and every footer links the brand notice`);
+  }
   await copyFile(resolve(here, 'site.css'), resolve(out, 'site.css'));
+  await copyAssets(out, log);
   log(`Site: ${pages.length} pages written to ${outDir}`);
   return pages.length;
+}
+
+/** `tooling/site/fonts/` and `tooling/site/img/` into the output, every file, byte for byte, in sorted order. */
+async function copyAssets(out, log) {
+  for (const dir of ASSET_DIRS) {
+    const from = resolve(SITE_ASSETS, dir);
+    let names;
+    try {
+      names = (await readdir(from)).sort();
+    } catch {
+      throw new SiteError(`tooling/site/${dir}/ is absent, and the stylesheet and the template reach into it`);
+    }
+    await mkdir(resolve(out, dir), { recursive: true });
+    for (const name of names) {
+      await copyFile(resolve(from, name), resolve(out, dir, name));
+      log(`copied ${dir}/${name}`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -663,8 +756,108 @@ function selfTest() {
   let refused = false;
   try { siteHref('docs/missing.md', 'README.md', ctx); } catch (error) { refused = error instanceof SiteError; }
   check(refused, true, 'a link to a path not in the tree is refused');
-  count += 0;
+  check(pageFor(BRAND_NOTICE), '/brand-notice/', 'the brand notice has its page');
   console.log(`build-site self-test: ${count} assertions passed`);
+}
+
+/** Every `.html` under `dir`, as paths relative to it, sorted. */
+async function htmlFiles(dir, prefix = '') {
+  const out = [];
+  for (const name of (await readdir(dir)).sort()) {
+    const rel = prefix === '' ? name : `${prefix}/${name}`;
+    if ((await stat(resolve(dir, name))).isDirectory()) out.push(...(await htmlFiles(resolve(dir, name), rel)));
+    else if (name.endsWith('.html')) out.push(rel);
+  }
+  return out;
+}
+
+/**
+ * The brand: the stylesheet is on the website's tokens and nothing else, the assets are copied
+ * byte for byte, the notice is a page, and every page's header and footer carry the logos.
+ */
+async function selfTestBrand() {
+  let count = 0;
+  const check = (ok, what) => {
+    if (!ok) throw new Error(`brand self-test: ${what}`);
+    count += 1;
+  };
+  const css = await readFile(resolve(here, 'site.css'), 'utf8');
+
+  // The website's token block, verbatim: the first :root block, line for line in order.
+  const rootBlocks = [...css.matchAll(/:root\s*\{([^{}]*)\}/g)].map((m) => m[1]);
+  check(rootBlocks.length === 3, 'site.css has three :root blocks: the website tokens, the hoisted values, the dark scheme');
+  const tokenLines = rootBlocks[0].split('\n').map((l) => l.trim().replace(/;$/, '')).filter((l) => l !== '');
+  check(tokenLines.join('\n') === THEME_TOKENS.join('\n'), 'the first :root block is the website token block, verbatim');
+
+  // No literal colour outside the :root blocks and the one data URI, which is the theme's mark.
+  const uris = [...css.matchAll(/data:[^")]*/g)].map((m) => m[0]);
+  check(uris.length === 1 && uris[0] === EYEBROW_MARK, 'the one data URI in site.css is the website eyebrow mark');
+  const outside = css.replace(/:root\s*\{[^{}]*\}/g, '').split('\n').filter((l) => !l.includes('data:image/svg+xml')).join('\n');
+  const hex = outside.match(/#[0-9a-fA-F]{3,8}\b/g);
+  check(hex === null, `no hex colour outside the :root blocks and the data URI (found ${hex?.join(', ')})`);
+  check(!/\brgba?\(|\bhsla?\(/.test(outside), 'no rgb() or hsl() colour outside the :root blocks');
+  check(!/https?:\/\//.test(outside), 'no http URL in site.css outside the data URI');
+  check(!/@import/.test(css), 'site.css has no @import');
+  if (process.env.CDF_SITE_THEME_FIGURES) {
+    const theme = await readFile(process.env.CDF_SITE_THEME_FIGURES, 'utf8');
+    check(theme.includes(EYEBROW_MARK), `the embedded eyebrow mark is the one in ${process.env.CDF_SITE_THEME_FIGURES}`);
+  }
+
+  // The three font faces, relative to the stylesheet, swapped in.
+  const faces = [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
+  check(faces.length === 3, 'three @font-face rules');
+  const fontUrls = faces.map((f) => /src:\s*url\(fonts\/([a-z0-9-]+\.woff2)\)/.exec(f)?.[1]);
+  check(fontUrls.every((u) => u && FONT_FILES.includes(u)), 'each @font-face is a relative fonts/ url naming a shipped file');
+  check(faces.every((f) => /font-display:\s*swap/.test(f)), 'each @font-face is font-display: swap');
+  check(/font-family: 'Source Sans 3';\s*font-style: normal;\s*font-weight: 300 700;/.test(css), 'Source Sans 3 upright is the 300 to 700 range');
+  check(/font-family: 'Source Sans 3';\s*font-style: italic;\s*font-weight: 400;/.test(css), 'Source Sans 3 italic is 400');
+  check(/font-family: 'JetBrains Mono';\s*font-style: normal;\s*font-weight: 400 500;/.test(css), 'JetBrains Mono is the 400 to 500 range');
+  check(!/--cream\)/.test(css), 'cream is reserved and no rule uses it');
+
+  // One build, into a directory that is removed afterwards.
+  const tmp = await mkdtemp(resolve(tmpdir(), 'contract-site-self-test-'));
+  try {
+    const major = JSON.parse(await readRepo('package.json')).version.split('.')[0];
+    await mkdir(resolve(tmp, `${major}.x`), { recursive: true });
+    for (const name of (await readdir(resolve(ROOT, 'schemas'))).filter((n) => n.endsWith('.json')).sort()) {
+      await copyFile(resolve(ROOT, 'schemas', name), resolve(tmp, `${major}.x`, name));
+    }
+    await buildSite(tmp, { log: () => {} });
+    for (const [dir, expected] of [['fonts', FONT_FILES], ['img', IMAGE_FILES]]) {
+      const names = (await readdir(resolve(SITE_ASSETS, dir))).sort();
+      check(expected.every((n) => names.includes(n)), `tooling/site/${dir}/ holds ${expected.join(', ')}`);
+      for (const name of names) {
+        const [a, b] = await Promise.all([readFile(resolve(SITE_ASSETS, dir, name)), readFile(resolve(tmp, dir, name))]);
+        check(a.length > 0 && a.equals(b), `${dir}/${name} is copied byte for byte`);
+      }
+    }
+    check((await readdir(resolve(tmp, 'fonts'))).filter((n) => n.startsWith('OFL-')).length === 2, 'both OFL texts ship beside the fonts');
+    const notice = await readFile(resolve(tmp, 'brand-notice', 'index.html'), 'utf8');
+    check(notice.includes('<h1 id="brand-notice">Brand notice</h1>'), '/brand-notice/ is rendered from tooling/site/BRAND-NOTICE.md');
+    for (const page of await htmlFiles(tmp)) {
+      const html = await readFile(resolve(tmp, page), 'utf8');
+      const head = html.slice(0, html.indexOf('</head>'));
+      const header = html.slice(html.indexOf('<header>'), html.indexOf('</header>'));
+      const footer = html.slice(html.indexOf('<footer>'), html.indexOf('</footer>'));
+      check(head.includes(`<link rel="icon" href="${SITE_BASE}/img/favicon.ico" sizes="32x32">`)
+        && head.includes(`<link rel="icon" type="image/png" href="${SITE_BASE}/img/favicon-32.png">`)
+        && head.includes(`<link rel="apple-touch-icon" href="${SITE_BASE}/img/apple-touch-icon.png">`), `${page}: the three favicon links`);
+      check(header.includes(`<img src="${SITE_BASE}/img/logo-teal.png" alt="Cognitive Delivery"`)
+        && header.includes(`<source srcset="${SITE_BASE}/img/logo-white.png" media="(prefers-color-scheme: dark)">`), `${page}: the header carries the teal logo with the white one for a dark scheme`);
+      check(footer.includes(`<img src="${SITE_BASE}/img/logo-white.png" alt="Cognitive Delivery"`)
+        && footer.includes(`<a href="${SITE_BASE}/brand-notice/">Brand notice</a>`), `${page}: the footer carries the white logo and links the brand notice`);
+      check(!/https?:\/\/[^"]*\.(woff2?|png|ico|css)\b/.test(html), `${page}: no resource from another host`);
+    }
+    const front = await readFile(resolve(tmp, 'index.html'), 'utf8');
+    check(front.includes('<p class="eyebrow" id="current">') && front.includes('<p class="eyebrow" id="released">'), 'the front page labels are eyebrows');
+    check((front.match(/<a class="btn" /g) ?? []).length === 3, 'the three ways in are buttons');
+    const reference = await readFile(resolve(tmp, 'reference', 'agent-lease-manifest', 'index.html'), 'utf8');
+    check(reference.includes('<p class="eyebrow" id="properties">Properties</p>') && reference.includes('<h2 id="definitions">Definitions</h2>'), 'a schema page has the Properties eyebrow and keeps Definitions as a heading');
+    check(reference.includes(`<a href="${SITE_BASE}/reference/" aria-current="page">Reference</a>`), 'a schema page marks Reference as current');
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+  console.log(`brand self-test: ${count} assertions passed`);
 }
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -672,6 +865,7 @@ if (invokedDirectly) {
   if (process.env.CDF_SITE_SELF_TEST === '1') {
     selfTest();
     await selfTestReference();
+    await selfTestBrand();
   } else {
     const outDir = process.argv[2];
     if (!outDir) {
