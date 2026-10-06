@@ -133,7 +133,8 @@ emit one.
 
 Since 1.2 every declared property says which promise it is under: a `$comment` of
 `stability: stable` (held to the additive rule) or `stability: development` (may change within the
-major, and says so; `allow.tool_args` is the one such field today). Lowering a field from stable to
+major, and says so; `allow.tool_args` and the plugin schemas' `capabilities.tool_args` are the only
+such fields today). Lowering a field from stable to
 development is a breaking change the guard reports; retiring a field is `; deprecated: <replacement>`
 on its comment, which is additive, and the field stays until the next major.
 
@@ -158,7 +159,7 @@ nothing else. Each schema is also served at its `$id`
 identifiers finds the current 1.x schema there; the version a document was written against is its
 own `schema_version` field.
 Each release is also served frozen at `https://cognitive-delivery.github.io/contract/<version>/`
-(`/1.1.0/`, `/1.2.0/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
+(`/1.1.0/`, `/1.2.0/`, `/1.2.1/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
 version can fetch exactly what it shipped; and `schemas/index.json`, served beside both, lists every
 schema with its `$id`, title, dialect and the file patterns it describes (`**/.cdf/config.yaml` for
 `config-core`, the `.claude-plugin/` files for the plugin schemas), which is what a registry such as
@@ -224,7 +225,10 @@ The full rules, including the six conditions that require a refusal, are in
 
 ```
 npm ci
-npm test                 # the corpus, the vectors and the guard's own tests, against the reference adapter
+npm test                 # the corpus (valid, invalid at the named path, round trip), the canonical,
+                         # narrowing and signature vectors, the lease rules, the guard's own scenarios,
+                         # the schema and meta-schema checks, the Layout block, traceability, suite and
+                         # index currency and the version statement, against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
@@ -245,8 +249,10 @@ The latest result is the `contract` workflow's run on `main`:
 
 The same `npm test` runs from the **installed package**, not only from a clone: CI packs the
 tarball, installs it into an empty directory with `ajv`, and runs the installed package's own test.
-1.1.0's package could not, because two files it imported were not in the tarball, and no check in
-the clone could see that. Every file under `conformance/` and `schemas.lock.json` are importable
+The 1.1.0 release candidate (`main` at e91afb0, before the tag) could not, because two files it
+imported were not in `files`, and no check in the clone could see that; the fix landed before
+v1.1.0 was tagged, so the published 1.1.0 tarball runs its own test. Every file under
+`conformance/` and `schemas.lock.json` are importable
 through `exports`, so `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves.
 From the tarball the additive guard's scenarios are reported as not present rather than passed,
 because the guard ships with the repository.
@@ -277,12 +283,16 @@ for its enhancement proposals, applied to a schema contract.
 ### Lease rules
 
 Draft-07 cannot compare one field with another, so "`expires_at` is after `issued_at`" (L1) and
-"not its own parent" (L2) are rules of SPEC §6 rather than patterns. `fixtures/invalid-by-rule/`
-holds leases the schema accepts and a rule refuses, each with an `.expect.json` naming the rule
-and the path. Supply `rules(lease)` on your adapter (returning `[{ rule, path }]`) and the runner
-checks every valid lease passes and every by-rule fixture fails at the named rule; omit it and the
-run says **rules NOT CHECKED** while still confirming the fixtures are schema-valid. The reference
-rules are `conformance/lease-rules.mjs`.
+"not its own parent" (L2) are rules of SPEC §6 rather than patterns, and "a `revoked` record's
+`by` names the issuer or an ancestor lease" (L3, SPEC §6.1) needs the journal, which no schema
+holds. `fixtures/invalid-by-rule/` holds leases and records the schema accepts and a rule refuses,
+each with an `.expect.json` naming the rule and the path; the L3 fixture's also carries
+`context.chain`, the ancestors of the revoked lease. Supply `rules(lease, context)` on your adapter
+(returning `[{ rule, path }]`) and the runner checks every valid lease and record passes and every
+by-rule fixture fails at the named rule, handing L3 its chain as `context.chainOf(leaseId)`; a rule
+that needs the journal applies only when the chain is supplied. Omit `rules` and the run says
+**rules NOT CHECKED** while still confirming the fixtures are schema-valid. The reference rules are
+`conformance/lease-rules.mjs`.
 
 ### Narrowing vectors
 

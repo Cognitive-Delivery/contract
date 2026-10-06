@@ -19,7 +19,9 @@ Nothing yet.
 
 ## [1.2.1] — 2026-10-06
 
-Tooling only; the schema set is still 1.2 and `/1.x/` serves the same bytes. Found by pinning the
+Tooling only; the SPEC's schema set stays 1.2 (no normative change) and `/1.x/` serves the 1.2.1
+schemas, additive over 1.2.0 by one field; `schemaSetVersion` and `index.json`'s `schema_set`
+follow the package version, of which only the major is load-bearing. Found by pinning the
 reference implementation to 1.2.0: the type generator, the Pages deploy on a tag, and the narrowing
 vectors being the reference's own bytes. One additive field, `capabilities.tool_args` on the plugin
 schemas, so `capabilities` stays the lease `allow` shape property for property.
@@ -48,8 +50,9 @@ schemas, so `capabilities` stays the lease `allow` shape property for property.
 Schema set 1.2 (CDF spec `contract-batch-two-implement-all`, DR-183): the second review's fourteen
 improvements, from a package that could not run its own test to a corpus that runs under six other
 validators. **Additive within 1.x by the contract's own rule, mechanically checked**: against 1.1.0
-the guard reports 115 allow-listed tightenings, each naming the exact value it admits and the
-fixture or recorded check that proves no conformant writer ever produced what it now refuses, and
+the guard reports 115 allow-listed tightenings, covered by 110 entries (an entry at a definition's
+path covers every property in its schema that refers to it), each naming the exact value it
+admits and the fixture or recorded check that proves no conformant writer ever produced what it now refuses, and
 every real journal in the reference deployment validates with zero rejections (33,608 audit
 records, 19,231 CDI signals, 995 provenance records, 2 assessments, the six-line lease journal, the
 workspace config). No byte of any existing hash or signature changes. One new schema,
@@ -118,8 +121,8 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   exactly six dimensions, each id once, with integer scores; a sealed config path is dotted lower-case
   and the runner checks it names a field the fixture carries. Ten invalid fixtures, one valid. Every
   real audit record, signal, provenance record and assessment in the reference deployment validates.
-- **`allow.tool_args`** (SPEC §4.4), a per-tool argument-schema declaration marked `x-stability:
-  development`: an issuer MAY omit it from the grant and MUST NOT treat it as authority, because
+- **`allow.tool_args`** (SPEC §4.4), a per-tool argument-schema declaration at development
+  stability (a `$comment` of `stability: development`): an issuer MAY omit it from the grant and MUST NOT treat it as authority, because
   the reference gate does not yet evaluate argument schemas and a rule without an enforcing gate is
   a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it.
   The stability marker is a `$comment` (draft-07 defines it): Bowtie showed Ajv's strict mode in
@@ -142,8 +145,9 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   its reason in the workflow). Two orphan `componentSource` definitions the typed hook and MCP
   shapes had left behind are removed, and the marketplace's empty `relevance.signals` schema
   gained a description, both found by that lint.
-- **Every property says what it promises.** All 664 declared properties carry a `$comment` of
-  `stability: stable` or `stability: development` (only `allow.tool_args` is development), with
+- **Every property says what it promises.** All 664 declared properties (666 at 1.2.1, with
+  `capabilities.tool_args` on both plugin schemas) carry a `$comment` of `stability: stable` or
+  `stability: development` (only `allow.tool_args` is development), with
   `; deprecated: <replacement>` for retiring a field. `conformance/metaschema.json` holds that and
   the other conventions (dialect, `$id`, title, description, no `format`) and `npm test` validates
   every schema against it. Lock format 5 records `stability`, `deprecated` and the names an
@@ -159,7 +163,8 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   Backward compatibility and Security sections and a status lifecycle.
 - **Every release frozen at its own URL, and an index.** `pages.yml` now lays out `/<version>/`
   for every `v1.*` tag beside the `/1.x/` alias, byte for byte as tagged and never rewritten, and
-  runs on the tag push so the frozen copy appears with the release; `release.yml` checks it serves
+  runs on the tag push so the frozen copy appears with the release (1.2.1: the tag trigger is gone;
+  `release.yml` dispatches `pages.yml` on `main`); `release.yml` checks it serves
   the tagged bytes (patiently, and reported rather than failed while the deploy is still landing).
   `schemas/index.json`, written by `npm run lock` and validated by `npm test`, lists every schema
   with `file`, `$id`, `title`, `dialect` and `fileMatch`; it is served beside the schemas. A
@@ -212,10 +217,8 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 - **A regex-portability job.** `tooling/regex-portability` compiles every `pattern` in every schema
   with Go's `regexp` (RE2: no lookahead, no backreferences), because Go validators use it
   unconditionally and a pattern RE2 rejects is a schema set a Go implementation cannot load. The
-  job is expected to fail until the path patterns are rewritten without lookahead in the next
-  change, and is made a required check then.
-
-### Added
+  job failed until the path patterns were rewritten without lookahead later in this release (see
+  Changed below), and is now a required check.
 
 - **Narrowing vectors** (`conformance/narrowing-vectors.json`). SPEC §9 called narrowing "the heart
   of the specification" and left it to each implementation's own tests. The corpus now carries
@@ -287,7 +290,7 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 - **The privacy properties are enforced by shape, not prose.** `request_hash`, `prompt_hash`,
   `steering_hash` and `content_hash` require a 64-character lower-case hex digest; `details` on the
   audit event and the CDI signal refuses by `propertyNames` any key whose segment is one of the
-  reference writer's eleven words (`authorization`, `content`, `file`, `password`, `path`, `payload`,
+  reference writer's ten words (`authorization`, `content`, `file`, `password`, `path`, `payload`,
   `prompt`, `request`, `secret`, `token`), split on non-alphanumerics and camelCase boundaries
   exactly as the writer does; `summary` is capped at 300 characters and `reasoning` at 500, the
   writer's own caps. Before this a raw prompt in `request_hash` validated, which SECURITY.md itself
@@ -343,9 +346,8 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 - **`package.json` said `schemaSetVersion` 1.0.0.** It had been stale since 1.0.1, and the version
   currency check added in 1.0.2 did not read it. It now reads it.
 
-### Fixed
-
-- **The published package runs its own `npm test`.** 1.1.0's tarball could not: `conformance/run.mjs`
+- **The published package runs its own `npm test`.** The 1.1.0 release candidate (e91afb0, before
+  the tag) could not: `conformance/run.mjs`
   imported `idFor` from `tooling/sync-version.mjs` and `guard-tests.mjs` imported
   `check-additive.mjs`, and neither is in `files`, so the installed package failed with
   ERR_MODULE_NOT_FOUND before validating a single fixture (review of 5 October 2026, defect 1).

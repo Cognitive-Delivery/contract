@@ -147,7 +147,7 @@ jobs:
               sleep 20
             done
             if [ "$code" != "200" ]; then
-              echo "::warning::${url} is not served yet (${code} after four minutes); pages.yml deploys it from the tag."
+              echo "::warning::${url} is not served yet (${code} after four minutes); the pages.yml run dispatched above lays it out from main, and the daily id-watch covers what follows."
               continue
             fi
             if ! cmp -s /tmp/frozen.json "$f"; then

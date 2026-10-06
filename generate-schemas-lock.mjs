@@ -6,8 +6,8 @@
  * For every schema it records, per property path: its type, whether it is required, any
  * closed enum, and — since lock format 2 — the constraints that can be TIGHTENED without
  * changing the type: `pattern`, the `allOf[].not.pattern` set, `minLength`, `maxLength`,
- * `minimum`, `maximum`, `additionalProperties`, the number of `anyOf` branches and the key patterns `propertyNames` refuses. Per
- * schema it records the content model (open or closed) at the root.
+ * `minimum`, `maximum`, `additionalProperties` and the number of `anyOf` branches. Per schema it
+ * records the content model (open or closed) at the root.
  *
  * That is enough for check-additive.mjs to detect every change that breaks `1.x`:
  *
@@ -22,6 +22,20 @@
  * Lock format 1 recorded only the first four, which is how 1.0.x could have tightened a
  * pattern unseen. A baseline in format 1 is still comparable for those four; the newer
  * findings are reported as not comparable rather than silently passed.
+ *
+ * Later formats, each recorded on the entry beside the above:
+ *
+ *   - format 3  a union's branch types and branch patterns on the PARENT entry (`anyOfTypes`,
+ *               `anyOfPatterns`), because format 2 let the last branch overwrite the path's own
+ *               type; and the key patterns `propertyNames` refuses (`keyNotPatterns`).
+ *   - format 4  a local `$ref` is followed and the definition's constraints are digested AT the
+ *               referring path, with `ref` recorded beside them and `via` naming where the
+ *               constraint lives in the definition, so re-pointing a property to a stricter
+ *               definition is a visible change rather than a changed string (see resolveRef).
+ *   - format 5  `stability` and `deprecated` from the property's `$comment`, and
+ *               `conditionalRequired`, the names an `allOf[].if/then` makes required.
+ *
+ * `LOCK_FORMAT` below is the current one.
  *
  * Run via `npm run lock`. The comparison lives in check-additive.mjs.
  */

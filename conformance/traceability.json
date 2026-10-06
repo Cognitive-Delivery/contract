@@ -575,7 +575,7 @@
       "note": "Credential shapes are refused in plugin manifests; in a lease manifest a key is a string like any other (4.2-6)."
     },
     "9-1": {
-      "key": "An implementation claiming conformance with schema set 1.0 *",
+      "key": "An implementation claiming conformance with schema set 1.2 (",
       "covers": [
         "check:valid-accepted",
         "check:invalid-rejected",
@@ -592,7 +592,7 @@
       "excluded": "What an implementation says when it claims conformance; the runner reports unchecked halves by name."
     },
     "9-3": {
-      "key": "Apply the lease rules of §6 (L1, L2) and pass every fixture ",
+      "key": "Apply the lease rules of §6 and §6.1 (L1, L2, and L3 when th",
       "covers": [
         "check:lease-rules",
         "fixture:agent-lease.Expired",

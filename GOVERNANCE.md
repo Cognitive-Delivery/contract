@@ -55,7 +55,9 @@ tooling: within a major, changes are additive only, and the guard enforces it.
 3. `release.yml` runs the corpus and the guard again, publishes to npm through trusted publishing
    with provenance, creates the GitHub Release with the CHANGELOG section and the tarball, and
    checks that every `$id` serves the tagged bytes.
-4. `pages.yml` serves the released schemas at `/X.Y.Z/` beside the `/X.x/` alias, frozen.
+4. `release.yml` then dispatches `pages.yml` on `main` (a tag push cannot deploy: the github-pages
+   environment admits `main` only), which lays out `/X.Y.Z/` for every `v1.*` tag beside the
+   `/X.x/` alias, frozen, and the release job checks the frozen copy serves the tagged bytes.
 
 A release cannot be unpublished from npm after 72 hours and is never rewritten on Pages; a
 mistake is corrected by the next version.
