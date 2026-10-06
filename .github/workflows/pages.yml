@@ -9,13 +9,14 @@ name: pages
 #                      rewritten: a reader that pinned 1.1.0 can fetch exactly what 1.1.0 shipped
 # plus `index.json` beside each set and a plain index page. Nothing is committed anywhere for
 # the site; it is laid out from `schemas/` on main and from each tag's `schemas/` at deploy time,
-# so there is nothing to drift. Runs on a push to main and on a tag push, so a release's frozen
-# copy appears when the release does.
+# so there is nothing to drift. Runs on a push to main and on dispatch; release.yml dispatches it
+# after publishing, so a release's frozen copy appears when the release does. (A tag push cannot
+# deploy directly: the github-pages environment's branch policy admits `main` only, and the
+# v1.2.0 tag run was refused at the deploy step for exactly that reason.)
 
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:

@@ -18,6 +18,7 @@ on:
 permissions:
   contents: write # to create the GitHub Release for the tag; nothing else is written
   id-token: write # the OIDC token npm checks. Without it the publish is unauthenticated.
+  actions: write # to dispatch pages.yml on main, which lays out the frozen /<version>/ copy
 
 jobs:
   publish:
@@ -121,11 +122,17 @@ jobs:
           done
           exit $status
 
-      # The frozen copy, /<version>/, is laid out by pages.yml on the tag push and takes a minute
-      # or two to deploy. Checked with patience and reported, not failed, when still absent after
-      # that: the release has already happened, and the daily $id watch covers what follows. Bytes
-      # that differ from the tag ARE a failure, because a frozen copy that is not the tag's bytes is
-      # the one thing the directory promises not to be.
+      # The frozen copy, /<version>/, is laid out by pages.yml from main, which fetches every tag.
+      # A tag push cannot deploy Pages itself (the environment admits main only), so it is
+      # dispatched from here once the tag exists, then checked with patience and reported, not
+      # failed, when still absent after that: the release has already happened, and the daily $id
+      # watch covers what follows. Bytes that differ from the tag ARE a failure, because a frozen
+      # copy that is not the tag's bytes is the one thing the directory promises not to be.
+      - name: Deploy the frozen copy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
+
       - name: The frozen copy serves the tagged schemas
         run: |
           VERSION="${GITHUB_REF_NAME#v}"

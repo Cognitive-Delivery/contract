@@ -15,7 +15,12 @@ tooling in this repository.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **The frozen copy deploys after a release.** The github-pages environment admits `main` only, so
+  the tag push that was meant to lay out `/1.2.0/` was refused at the deploy step; `release.yml` now
+  dispatches `pages.yml` on `main` after publishing (it fetches every tag), and the tag trigger is
+  gone. 1.2.0's copy was deployed by hand the same way and is byte-identical to the tag.
 
 ## [1.2.0] — 2026-10-05
 
