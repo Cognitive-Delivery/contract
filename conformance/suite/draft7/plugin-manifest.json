@@ -1963,7 +1963,7 @@
                 "hooks": [
                   {
                     "type": "agent",
-                    "prompt": "Review the written file for secrets.",
+                    "prompt": "Review the written file for credentials.",
                     "model": "claude-sonnet-5-5"
                   }
                 ]
