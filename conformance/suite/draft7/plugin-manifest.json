@@ -1976,11 +1976,11 @@
                     "type": "http",
                     "url": "https://hooks.example/session",
                     "headers": {
-                      "Authorization": "Bearer $HOOK_TOKEN",
+                      "Authorization": "${HOOK_AUTH}",
                       "X-Source": "cdf"
                     },
                     "allowedEnvVars": [
-                      "HOOK_TOKEN"
+                      "HOOK_AUTH"
                     ]
                   },
                   {
@@ -2022,7 +2022,7 @@
               "type": "http",
               "url": "https://mcp.example/docs",
               "headers": {
-                "Authorization": "Bearer ${DOCS_TOKEN}"
+                "Authorization": "${DOCS_AUTH}"
               },
               "headersHelper": "./scripts/docs-auth.sh",
               "timeout": 600000,
