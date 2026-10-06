@@ -368,6 +368,21 @@ the reference deployment's records validates under these rules: 33,608 audit rec
 995 provenance records and 2 assessments at the 5 October check (`fixtures/evidence/`), and 33,665,
 19,287, 4,588 and 2 at the 1.2.1 pin on 6 October (`docs/conformance/cdf-harness.md`).
 
+## The site
+
+Everything above is also served as a site at <https://cognitive-delivery.github.io/contract/>, built by
+`tooling/build-site.mjs` on every deploy from the files `npm test` checks, so a page cannot say what
+the repository does not: the front page with three ways in (read a schema, implement the contract,
+upgrade a writer); the schema reference, one page per schema walked from the schema files with every
+property's description, constraints and stability; the SPEC, this README, GOVERNANCE, CONTRIBUTING,
+SECURITY and the CHANGELOG as pages; the implementing guide, the upgrading note and the decision index;
+the conformance page with the claim rule, the implementation reports and the recorded portability
+results; the proposals; and the versions, each frozen copy linked to its release. The schema bytes at
+every `$id` and under each `/<version>/` are laid out by the workflow and never touched by the
+generator. No page carries a script or reaches another host. `conformance/site-check.mjs` builds the
+site in `npm test` and fails on a broken link, a changed schema byte, a script tag or a non-deterministic
+build; from the installed package, which carries no `tooling/`, it reports NOT CHECKED.
+
 ## Layout
 
 Every entry at the top level and one level down in `conformance/`, `fixtures/` and `tooling/`

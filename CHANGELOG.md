@@ -17,6 +17,14 @@ tooling in this repository.
 
 ### Added
 
+- **The documentation site** at <https://cognitive-delivery.github.io/contract/>, generated on every
+  deploy by `tooling/build-site.mjs` from the files `npm test` checks: a front page, the schema
+  reference (`tooling/site-reference.mjs`, one page per schema with every property's description,
+  constraints and stability), the SPEC, README, GOVERNANCE, CONTRIBUTING, SECURITY and CHANGELOG as
+  pages, the guides, conformance, proposals and versions; `conformance/site-check.mjs` in `npm test`
+  (links, anchors, schema bytes, no script or external resource, determinism); `marked` 18.1.0 pinned
+  as a devDependency; `pages.yml` calls the generator after its unchanged schema layout (harness
+  DR-185).
 - `docs/implementing.md` (the adapter interface in one place, with a worked example from the installed
   package), `docs/upgrading-1.0-to-1.2.md` (what the allow-listed tightenings refuse and what a 1.2
   writer owes), `docs/decisions.md` (each release to the harness decision records and the three review
