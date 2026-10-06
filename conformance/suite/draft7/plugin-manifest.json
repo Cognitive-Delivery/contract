@@ -1,6 +1,6 @@
 [
   {
-    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.2.0): fixtures, part 1 of 2",
+    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.2.1): fixtures, part 1 of 2",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",
@@ -3153,7 +3153,7 @@
     ]
   },
   {
-    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.2.0): fixtures, part 2 of 2",
+    "description": "CDF Plugin Manifest (plugin-manifest.schema.json, @cognitive-delivery/contract 1.2.1): fixtures, part 2 of 2",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/plugin-manifest.schema.json",

@@ -1,6 +1,6 @@
 [
   {
-    "description": "CDF governance audit event (audit-event.schema.json, @cognitive-delivery/contract 1.2.0): every fixture of the conformance corpus",
+    "description": "CDF governance audit event (audit-event.schema.json, @cognitive-delivery/contract 1.2.1): every fixture of the conformance corpus",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/audit-event.schema.json",

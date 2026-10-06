@@ -1,6 +1,6 @@
 [
   {
-    "description": "Agent Lease Manifest (agent-lease-manifest.schema.json, @cognitive-delivery/contract 1.2.0): every fixture of the conformance corpus",
+    "description": "Agent Lease Manifest (agent-lease-manifest.schema.json, @cognitive-delivery/contract 1.2.1): every fixture of the conformance corpus",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease-manifest.schema.json",
