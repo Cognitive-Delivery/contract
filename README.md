@@ -302,7 +302,9 @@ codes (R1 to R6 of SPEC §5.2) it must return. Supply `narrow(declared, parent)`
 the runner compares granted manifests by canonical bytes and refusal sets exactly; omit it and the
 run says **behaviour NOT CHECKED** while still checking every vector's shape. The vectors were
 generated from the reference implementation and committed, so a disagreement is a finding about one
-of the two implementations, and either kind is wanted.
+of the two implementations, and either kind is wanted. The reference implementation's own report, with
+the hooks it supplies and the run that produced it, is
+[docs/conformance/cdf-harness.md](docs/conformance/cdf-harness.md).
 
 ### Canonical bytes
 
@@ -325,6 +327,16 @@ adapter and the runner checks all fifteen; omit it and the run reports **NOT CHE
 passing quietly. The restated rules are section 7 of
 [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) — the escape set is closed, keys sort
 by UTF-16 code unit, and an absent member is omitted rather than nulled.
+
+## Implementing the contract
+
+[docs/implementing.md](docs/implementing.md) is the adapter interface in one place: each hook as the
+runner calls it, what sits beside an invalid fixture, how a validator that is not the runner consumes
+`conformance/suite/draft7/`, what every NOT CHECKED line means, and a worked example from the
+installed package. [docs/upgrading-1.0-to-1.2.md](docs/upgrading-1.0-to-1.2.md) is for a reader or
+writer built against 1.0: what the schemas now refuse, what a 1.2 writer owes, and what did not
+change. [docs/conformance/](docs/conformance/) holds conformance reports, the reference
+implementation's first.
 
 ## Privacy properties that must not be lost
 
@@ -409,7 +421,7 @@ README.md                   this file
 CHANGELOG.md                what changed, per release
 CONTRIBUTING.md             how to run the checks and tighten a schema within 1.x
 GOVERNANCE.md               who decides, what needs a proposal, how a change lands, how a release is cut
-docs/                       proposals: one page per semantic change, on docs/proposals/TEMPLATE.md, kept as the record
+docs/                       implementing.md, upgrading-1.0-to-1.2.md, decisions.md, conformance/cdf-harness.md, and proposals/ (one page per semantic change, on TEMPLATE.md, kept as the record)
 SECURITY.md                 what counts as a vulnerability here, and where to report one
 LICENSE                     Apache-2.0
 package.json                the npm package; `files` is the tarball's allow-list
@@ -428,3 +440,8 @@ schemas with a corpus let them demonstrate it, and let anyone else check the cla
 
 The implementations remain PolyForm Noncommercial 1.0.0. Reading and writing the format is open;
 building a competing governed-delivery product out of this codebase is not.
+
+The decision records that shaped each release live in the harness repository, under that licence.
+[docs/decisions.md](docs/decisions.md) indexes them from here, release by release, with the three
+reviews, so a CHANGELOG entry can be followed back to its decision without crossing the boundary
+unread.
