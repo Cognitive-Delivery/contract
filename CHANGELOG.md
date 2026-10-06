@@ -47,6 +47,16 @@ tooling in this repository.
   fields and rule L3; header comments in `conformance/runner.mjs`, `ids.mjs`, `schema-checks.mjs`,
   `check-additive.mjs`, `generate-schemas-lock.mjs`, `generate-contract-types.mjs` and the two
   workflows say what the code does today.
+- **The site carries the cognitivedelivery.co.uk brand** (harness DR-186): the website's design tokens
+  in `tooling/site.css` (one `:root` palette, no literal colour outside it), Source Sans 3 and
+  JetBrains Mono self-hosted as variable woff2 files under the SIL Open Font Licence with its text
+  beside them, the teal and white logos and the three favicons under `tooling/site/`, every page's
+  header and footer carrying the logo, and `tooling/site/BRAND-NOTICE.md`, rendered at
+  `/brand-notice/` and linked from every footer, stating that the name and logo are the owner's marks
+  outside the Apache-2.0 licence. `conformance/site-check.mjs` now admits a `<link>` (`stylesheet`,
+  `icon` or `apple-touch-icon` only), an `<img src>`, a `<source srcset>` and a stylesheet `url()`
+  only when site-internal and resolving to a written file, the one eyebrow-mark data URI by exact
+  match, refuses `@import` and any other host, and reports the distinct targets as `assets`.
 
 ## [1.2.1] — 2026-10-06
 

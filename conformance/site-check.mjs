@@ -11,30 +11,48 @@
  *   (a) the build itself: `<tmp>/<major>.x/` laid out from `schemas/*.json` as the workflow lays
  *       it out, then `buildSite`; a refusal (`SiteError`, which already names the page and the
  *       link) is a failure line, not a crash;
- *   (b) every `href` and `src` on every page: a site-internal one resolves to a file written
- *       (`<path>` or `<path>/index.html`) and, when it carries a fragment, to an `id` (or `name`)
- *       on that page; one that is neither site-internal nor absolute is a failure;
+ *   (b) every `href` on every page: a site-internal one resolves to a file written (`<path>` or
+ *       `<path>/index.html`) and, when it carries a fragment, to an `id` (or `name`) on that page;
+ *       one that is neither site-internal nor absolute is a failure;
  *   (c) every schema has a page under `/reference/<name>/`, every `docs/**\/*.md` has its page,
  *       and the fixed pages (README, SPEC, GOVERNANCE, CONTRIBUTING, SECURITY, CHANGELOG) exist;
  *   (d) the `.json` files under `<tmp>/<major>.x/` are byte-identical to `schemas/` after the
  *       build, and the generator wrote no `.json` anywhere else;
- *   (e) no page carries `<script`, a `<link` to anything but the site, an inline `on<event>=`
- *       handler, or a `src=` to another host; the hosts the pages link to by `href` are returned
- *       as information (`externalHosts`), not failed, so the reader sees the list;
- *   (f) determinism: a second build into a second directory is byte-identical to the first.
+ *   (e) every resource a page loads is the site's own: a `<link>` only with `rel` of `stylesheet`,
+ *       `icon` or `apple-touch-icon` and a site-internal `href` that resolves to a written file;
+ *       `src=` on any tag and every URL of a `srcset=` only when site-internal and resolving;
+ *       inside every `.css` written, each `url()` either a relative or site-internal path that
+ *       resolves to a written file or the one data URI below (the website's eyebrow mark, admitted
+ *       by exact match); no page carries `<script` or an inline `on<event>=` handler, no stylesheet
+ *       carries `@import`, and any other `<link>`, any other data URI and any URL to another host
+ *       in a resource position fails. The hosts the pages link to by `<a href>` are returned as
+ *       information (`externalHosts`), not failed, so the reader sees the list. The distinct
+ *       targets resolved this way are counted once each as `assets`;
+ *   (f) determinism: a second build into a second directory is byte-identical to the first, the
+ *       copied binaries included.
  * Both directories are removed afterwards, on failure too.
  *
  * `tooling/` and `marked` are not in the published package (`files` in package.json; `marked` is
  * a devDependency), so from the installed tarball the check reports itself as not run, with the
  * reason, rather than failing a package that is by design a subset — the same posture as the
- * additive guard's tests and the Layout check.
+ * additive guard's tests and the Layout check. The data URI constant lives here, not imported
+ * from `tooling/`, so the module loads from the package too.
  */
 
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, posix, resolve } from 'node:path';
 
 const FIXED_PAGES = ['README.md', 'SPEC-agent-lease-manifest.md', 'GOVERNANCE.md', 'CONTRIBUTING.md', 'SECURITY.md', 'CHANGELOG.md'];
+
+/** The `rel` values a `<link>` may carry; anything else is refused. */
+const LINK_RELS = ['stylesheet', 'icon', 'apple-touch-icon'];
+
+/**
+ * The one data URI a stylesheet may carry: the website's eyebrow mark (`.eyebrow::before` in
+ * `tooling/site.css`), byte for byte. Any other data URI fails.
+ */
+const PERMITTED_DATA_URI = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 L15 5 L8 9 L1 5 Z' fill='%237FCBD9'/%3E%3Cpath d='M1 5 L8 9 L8 15 L1 11 Z' fill='%234FB6C9'/%3E%3Cpath d='M15 5 L8 9 L8 15 L15 11 Z' fill='%233A93A5'/%3E%3C/svg%3E";
 
 /** Every file under `dir`, as POSIX paths relative to it, sorted. */
 async function walk(dir, prefix = '') {
@@ -83,13 +101,18 @@ async function loadGenerator(root) {
   }
 }
 
-/** The attributes of every tag on a page: `[{ tag, name, value }]`, in document order. */
-function attributes(html) {
+/**
+ * Every tag on a page with its attributes: `[{ tag, text, attrs: [{ name, value }] }]`, in
+ * document order. `text` is the tag as written, for a failure line to name it.
+ */
+function tags(html) {
   const out = [];
   for (const tag of html.matchAll(/<([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/g)) {
+    const attrs = [];
     for (const attr of tag[2].matchAll(/\s([a-zA-Z-]+)\s*=\s*"([^"]*)"/g)) {
-      out.push({ tag: tag[1].toLowerCase(), name: attr[1].toLowerCase(), value: attr[2] });
+      attrs.push({ name: attr[1].toLowerCase(), value: attr[2] });
     }
+    out.push({ tag: tag[1].toLowerCase(), text: tag[0], attrs });
   }
   return out;
 }
@@ -105,49 +128,115 @@ function hostOf(href) {
 
 const isAbsolute = (href) => /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//');
 
+/** The URLs of a `srcset` list: each candidate's first token, the descriptor dropped. */
+function srcsetUrls(value) {
+  return value.split(',').map((c) => c.trim().split(/\s+/)[0]).filter((u) => u !== '');
+}
+
+/** Every `url(...)` in a stylesheet, unquoted, in order. */
+function cssUrls(css) {
+  const out = [];
+  for (const m of css.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)"'\s]*))\s*\)/g)) {
+    out.push(m[1] ?? m[2] ?? m[3]);
+  }
+  return out;
+}
+
 /**
- * Checks one built site at `out`. Returns `{ pages, links, failures, externalHosts }` for the
- * files it finds; the caller has already built the site and decided what to compare it with.
+ * Checks one built site at `out`. Returns `{ pages, links, assets, failures, externalHosts }` for
+ * the files it finds; the caller has already built the site and decided what to compare it with.
  */
 async function checkBuilt(out, { root, siteBase, pageFor, major, schemaJson }) {
   const failures = [];
   const externalHosts = new Set();
+  const assets = new Set();
   const files = await walk(out);
   const htmlFiles = files.filter((f) => f.endsWith('.html'));
+  const cssFiles = files.filter((f) => f.endsWith('.css'));
   const fileSet = new Set(files);
   const idsOf = new Map();
   const pageIds = async (rel) => {
     if (!idsOf.has(rel)) {
       const html = await readFile(join(out, rel), 'utf8');
       const ids = new Set();
-      for (const a of attributes(html)) if (a.name === 'id' || a.name === 'name') ids.add(a.value);
+      for (const t of tags(html)) for (const a of t.attrs) if (a.name === 'id' || a.name === 'name') ids.add(a.value);
       idsOf.set(rel, ids);
     }
     return idsOf.get(rel);
   };
   let links = 0;
 
-  // (b) and (e): every page's attributes.
+  /**
+   * A resource URL (a stylesheet, an icon, an image, a font) to the file it names in the output:
+   * `{ rel }` when it is site-internal and written, `{ error }` saying why otherwise. `fromDir`
+   * is the directory a relative URL resolves against (a stylesheet's); pages pass `null`, since a
+   * page's resource must be site-internal.
+   */
+  const resolveResource = (url, fromDir) => {
+    if (url.startsWith('data:')) return { error: url === PERMITTED_DATA_URI ? null : 'is not the permitted data URI', data: true };
+    if (isAbsolute(url)) return { error: 'loads from another host' };
+    const path = url.split(/[#?]/)[0];
+    let rel;
+    if (path === siteBase || path.startsWith(`${siteBase}/`)) {
+      rel = path === siteBase ? '' : path.slice(siteBase.length + 1);
+    } else if (fromDir !== null && !path.startsWith('/')) {
+      rel = posix.normalize(posix.join(fromDir, path));
+      if (rel.startsWith('../') || rel === '..') return { error: `names ${rel}, which is outside the site` };
+    } else {
+      return { error: `is neither relative nor under ${siteBase}/` };
+    }
+    if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+    if (!fileSet.has(rel)) return { error: `names ${rel}, which the build did not write` };
+    return { rel };
+  };
+
+  // (b) and (e): every page's tags.
   for (const page of htmlFiles) {
     const html = await readFile(join(out, page), 'utf8');
     if (/<script/i.test(html)) failures.push(`site: ${page}: contains <script`);
-    for (const a of attributes(html)) {
-      if (/^on[a-z]+$/.test(a.name)) {
-        failures.push(`site: ${page}: <${a.tag}> carries an inline event handler ${a.name}=`);
-        continue;
+    for (const t of tags(html)) {
+      const attr = (name) => t.attrs.find((a) => a.name === name)?.value;
+      for (const a of t.attrs) {
+        if (/^on[a-z]+$/.test(a.name)) failures.push(`site: ${page}: <${t.tag}> carries an inline event handler ${a.name}=`);
       }
-      if (a.name !== 'href' && a.name !== 'src') continue;
-      links += 1;
-      const href = a.value;
-      if (a.tag === 'link' && !href.startsWith(`${siteBase}/`)) {
-        failures.push(`site: ${page}: <link> to ${href}, which is not the site`);
-        continue;
-      }
-      if (isAbsolute(href)) {
-        if (a.name === 'src') {
-          failures.push(`site: ${page}: <${a.tag} src="${href}"> loads from another host`);
+
+      // A <link> is a resource load: three rel values, site-internal, written.
+      if (t.tag === 'link') {
+        const href = attr('href');
+        if (href !== undefined) links += 1;
+        const rel = (attr('rel') ?? '').trim().toLowerCase();
+        if (!LINK_RELS.includes(rel)) {
+          failures.push(`site: ${page}: ${t.text} is a <link> whose rel is not ${LINK_RELS.join(', ')}`);
           continue;
         }
+        if (href === undefined) {
+          failures.push(`site: ${page}: ${t.text} is a <link> without an href`);
+          continue;
+        }
+        const resolved = resolveResource(href, null);
+        if (resolved.error) failures.push(`site: ${page}: ${t.text} ${resolved.error}`);
+        else assets.add(resolved.rel);
+        continue;
+      }
+
+      // src= on any tag and every URL of a srcset= are resource loads: site-internal, written.
+      for (const a of t.attrs) {
+        if (a.name !== 'src' && a.name !== 'srcset') continue;
+        if (a.name === 'src') links += 1;
+        const urls = a.name === 'src' ? [a.value] : srcsetUrls(a.value);
+        for (const url of urls) {
+          const resolved = resolveResource(url, null);
+          if (resolved.error) failures.push(`site: ${page}: <${t.tag} ${a.name}="${a.value}"> ${resolved.error}`);
+          else assets.add(resolved.rel);
+        }
+      }
+
+      // href= elsewhere (an <a>): site-internal and resolving, with its fragment, or absolute
+      // and reported as an external host.
+      const href = attr('href');
+      if (href === undefined) continue;
+      links += 1;
+      if (isAbsolute(href)) {
         externalHosts.add(hostOf(href));
         continue;
       }
@@ -171,6 +260,18 @@ async function checkBuilt(out, { root, siteBase, pageFor, major, schemaJson }) {
       if (fragment !== null && target.endsWith('.html') && !(await pageIds(target)).has(fragment)) {
         failures.push(`site: ${page}: ${href} names #${fragment}, which is not an id on ${target}`);
       }
+    }
+  }
+
+  // (e), the stylesheets: no @import; every url() relative or site-internal and written, or the
+  // one permitted data URI.
+  for (const cssFile of cssFiles) {
+    const css = await readFile(join(out, cssFile), 'utf8');
+    if (/@import\b/.test(css)) failures.push(`site: ${cssFile}: carries @import, and the site loads nothing but its own files`);
+    for (const url of cssUrls(css)) {
+      const resolved = resolveResource(url, posix.dirname(cssFile) === '.' ? '' : posix.dirname(cssFile));
+      if (resolved.error) failures.push(`site: ${cssFile}: url(${url}) ${resolved.error}`);
+      else if (!resolved.data) assets.add(resolved.rel);
     }
   }
 
@@ -212,18 +313,19 @@ async function checkBuilt(out, { root, siteBase, pageFor, major, schemaJson }) {
     if (!fileSet.has(`${idDir}/${name}`)) failures.push(`site: ${idDir}/${name} is missing after the build`);
   }
 
-  return { pages: htmlFiles.length, links, failures, externalHosts: [...externalHosts].sort(), files };
+  return { pages: htmlFiles.length, links, assets: assets.size, failures, externalHosts: [...externalHosts].sort(), files };
 }
 
 /**
- * Returns `{ checked, reason, pages, links, failures, externalHosts }`. `checked` is false, with
- * `reason`, when the generator or its dependency is not present (the published package).
+ * Returns `{ checked, reason, pages, links, assets, failures, externalHosts }`. `checked` is
+ * false, with `reason`, when the generator or its dependency is not present (the published
+ * package).
  */
 export async function runSiteCheck(root) {
   const repo = resolve(root);
   const loaded = await loadGenerator(repo);
   if (loaded.reason) {
-    return { checked: false, reason: loaded.reason, pages: 0, links: 0, failures: [], externalHosts: [] };
+    return { checked: false, reason: loaded.reason, pages: 0, links: 0, assets: 0, failures: [], externalHosts: [] };
   }
   const { buildSite, SITE_BASE, SiteError, pageFor } = loaded.module;
   const major = JSON.parse(await readFile(join(repo, 'package.json'), 'utf8')).version.split('.')[0];
@@ -236,7 +338,7 @@ export async function runSiteCheck(root) {
       await buildSite(first, { log: () => {} });
     } catch (error) {
       if (error instanceof SiteError) {
-        return { checked: true, pages: 0, links: 0, failures: [`site: the generator refused the build: ${error.message}`], externalHosts: [] };
+        return { checked: true, pages: 0, links: 0, assets: 0, failures: [`site: the generator refused the build: ${error.message}`], externalHosts: [] };
       }
       throw error;
     }

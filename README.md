@@ -380,8 +380,15 @@ the conformance page with the claim rule, the implementation reports and the rec
 results; the proposals; and the versions, each frozen copy linked to its release. The schema bytes at
 every `$id` and under each `/<version>/` are laid out by the workflow and never touched by the
 generator. No page carries a script or reaches another host. `conformance/site-check.mjs` builds the
-site in `npm test` and fails on a broken link, a changed schema byte, a script tag or a non-deterministic
-build; from the installed package, which carries no `tooling/`, it reports NOT CHECKED.
+site in `npm test` and fails on a broken link, a changed schema byte, a script tag, a resource from
+another host or a non-deterministic build; from the installed package, which carries no `tooling/`,
+it reports NOT CHECKED. The site carries the cognitivedelivery.co.uk identity: the website's token
+palette, Source Sans 3 and JetBrains Mono under the SIL Open Font Licence, the logo and the favicons,
+all served from the site itself with no request to any other host, which the site check enforces by
+admitting a stylesheet, icon, image, `srcset` or `url()` reference only when it is site-internal and
+resolves to a written file. The assets and their terms live under `tooling/site/`, with
+`tooling/site/BRAND-NOTICE.md` stating that the Cognitive Delivery name and logo are the owner's marks,
+outside the Apache-2.0 licence.
 
 ## Layout
 
@@ -406,7 +413,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
   metaschema.json           the conventions every schema is held to: dialect, $id, title, no `format`, a stability $comment on every property
   layout-check.mjs          this block is current
-  site-check.mjs            the site, built twice into temporary directories: links, anchors, every page present, $id bytes untouched, no script, the same bytes; reported not checked in the published package
+  site-check.mjs            the site, built twice into temporary directories: links, anchors, every page present, $id bytes untouched, no script, every stylesheet, icon, image and font the site's own file, the same bytes; reported not checked in the published package
   lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
   spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason

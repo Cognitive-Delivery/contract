@@ -132,12 +132,13 @@ console.log(layout.checked
 
 // The site, built twice into temporary directories from this tree and checked before anything
 // deploys it: every link and anchor resolves, every schema and document has a page, the `$id`
-// bytes are untouched, no page carries a script or reaches another host, and the two builds are
-// the same bytes. The generator and `marked` are not in the package, so from the tarball the
-// check says so rather than failing a documented subset.
+// bytes are untouched, no page carries a script, every stylesheet, icon, image and font a page
+// loads is the site's own file (`assets`), and the two builds are the same bytes. The generator
+// and `marked` are not in the package, so from the tarball the check says so rather than failing
+// a documented subset.
 const site = await runSiteCheck(resolve(here, '..'));
 if (site.checked) {
-  console.log(`Site: ${site.pages} pages, ${site.links} links, ${site.failures.length} failure(s).`);
+  console.log(`Site: ${site.pages} pages, ${site.links} links, ${site.assets} assets, ${site.failures.length} failure(s).`);
   console.log(`Site: external hosts linked by href: ${site.externalHosts.length > 0 ? site.externalHosts.join(', ') : 'none'}.`);
 } else {
   console.log(`Site: NOT CHECKED (${site.reason}).`);
