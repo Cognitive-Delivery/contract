@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "agent",
-            "prompt": "Review the written file for secrets.",
+            "prompt": "Review the written file for credentials.",
             "model": "claude-sonnet-5-5"
           }
         ]
@@ -65,11 +65,11 @@
             "type": "http",
             "url": "https://hooks.example/session",
             "headers": {
-              "Authorization": "Bearer $HOOK_TOKEN",
+              "X-Hook-Auth": "${HOOK_AUTH}",
               "X-Source": "cdf"
             },
             "allowedEnvVars": [
-              "HOOK_TOKEN"
+              "HOOK_AUTH"
             ]
           },
           {
@@ -111,7 +111,7 @@
       "type": "http",
       "url": "https://mcp.example/docs",
       "headers": {
-        "Authorization": "Bearer ${DOCS_TOKEN}"
+        "X-Docs-Auth": "${DOCS_AUTH}"
       },
       "headersHelper": "./scripts/docs-auth.sh",
       "timeout": 600000,

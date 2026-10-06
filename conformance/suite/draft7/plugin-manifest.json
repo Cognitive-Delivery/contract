@@ -180,6 +180,18 @@
                 "description": "An executable the plugin asks to run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
               },
               "$comment": "stability: stable"
+            },
+            "tool_args": {
+              "type": "object",
+              "description": "DECLARED argument constraints per tool a plugin asks for, as in the lease manifest it becomes (schema set 1.2, development stability): tool name to a JSON Schema the agent proposes for its own calls to that tool, after Progent's argument-schema policies. A declaration, not a grant: in 1.x an issuer MAY omit it from the granted manifest and MUST NOT treat it as granted authority, because the reference gate does not yet evaluate argument schemas and a narrowing rule without an enforcing gate is a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it. It becomes a rule when a gate enforces it.",
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
+              },
+              "$comment": "stability: development; a declaration an issuer MAY omit from the grant (SPEC 4.4); becomes a rule when a gate enforces it"
             }
           },
           "additionalProperties": true
@@ -1951,7 +1963,7 @@
                 "hooks": [
                   {
                     "type": "agent",
-                    "prompt": "Review the written file for secrets.",
+                    "prompt": "Review the written file for credentials.",
                     "model": "claude-sonnet-5-5"
                   }
                 ]
@@ -1964,11 +1976,11 @@
                     "type": "http",
                     "url": "https://hooks.example/session",
                     "headers": {
-                      "Authorization": "Bearer $HOOK_TOKEN",
+                      "X-Hook-Auth": "${HOOK_AUTH}",
                       "X-Source": "cdf"
                     },
                     "allowedEnvVars": [
-                      "HOOK_TOKEN"
+                      "HOOK_AUTH"
                     ]
                   },
                   {
@@ -2010,7 +2022,7 @@
               "type": "http",
               "url": "https://mcp.example/docs",
               "headers": {
-                "Authorization": "Bearer ${DOCS_TOKEN}"
+                "X-Docs-Auth": "${DOCS_AUTH}"
               },
               "headersHelper": "./scripts/docs-auth.sh",
               "timeout": 600000,
@@ -3321,6 +3333,18 @@
                 "description": "An executable the plugin asks to run. The basename of the executable, at most 128 characters: letters, digits, `.`, `_`, `+`, `-`. No path separator (identity is the resolved executable's basename, not where it was found), no whitespace (an argument is not part of the name) and no shell operator."
               },
               "$comment": "stability: stable"
+            },
+            "tool_args": {
+              "type": "object",
+              "description": "DECLARED argument constraints per tool a plugin asks for, as in the lease manifest it becomes (schema set 1.2, development stability): tool name to a JSON Schema the agent proposes for its own calls to that tool, after Progent's argument-schema policies. A declaration, not a grant: in 1.x an issuer MAY omit it from the granted manifest and MUST NOT treat it as granted authority, because the reference gate does not yet evaluate argument schemas and a narrowing rule without an enforcing gate is a claim the corpus cannot test. The vector `tool-args-dropped` shows the reference dropping it. It becomes a rule when a gate enforces it.",
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "description": "A JSON Schema. Not validated as one here: draft-07 cannot validate a schema as data without a meta-schema `$ref`, which the self-contained rule forbids."
+              },
+              "$comment": "stability: development; a declaration an issuer MAY omit from the grant (SPEC 4.4); becomes a rule when a gate enforces it"
             }
           },
           "additionalProperties": true

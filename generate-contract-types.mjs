@@ -55,7 +55,27 @@ const TYPE_NAMES = {
   'agent-lease.schema.json': 'AgentLease',
   'plugin-manifest.schema.json': 'ContractPluginManifest',
   'plugin-marketplace.schema.json': 'ContractPluginMarketplace',
+  'lease-record.schema.json': 'LeaseRecord',
 };
+
+/**
+ * Keywords a TypeScript type cannot express. They are collected while rendering and listed in the
+ * generated file's header, so a reader of the types knows which constraints only the schema
+ * holds: `allOf` with `if`/`then` (the lease record's per-event requirements), `propertyNames`,
+ * `minProperties`, `contains`, `pattern`, `minLength`, `maxLength`, `minimum`, `maximum`,
+ * `minItems`, `maxItems`. Silently ignoring them was the defect the second contract review named.
+ */
+const UNEXPRESSIBLE = ['allOf', 'oneOf', 'not', 'if', 'then', 'else', 'propertyNames', 'minProperties', 'maxProperties', 'contains', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'minItems', 'maxItems', 'uniqueItems', 'dependencies'];
+const unexpressible = new Map();
+function noteUnexpressible(node, where) {
+  for (const key of UNEXPRESSIBLE) {
+    if (key in node) {
+      const list = unexpressible.get(key) ?? [];
+      list.push(where);
+      unexpressible.set(key, list);
+    }
+  }
+}
 
 function pascal(name) {
   return name.replace(/(^|[^a-zA-Z0-9])([a-zA-Z0-9])/g, (_m, _s, c) => c.toUpperCase());
@@ -67,7 +87,8 @@ function refName(root, ref) {
 }
 
 /** Render one schema node as a TypeScript type expression. */
-function renderType(node, rootName, indent) {
+function renderType(node, rootName, indent, where = rootName) {
+  noteUnexpressible(node, where);
   if (node.$ref) {
     return refName(rootName, node.$ref);
   }
@@ -149,7 +170,8 @@ function renderObject(node, rootName, indent) {
 }
 
 async function build() {
-  const files = (await readdir(schemaDir)).filter((name) => name.endsWith('.json')).sort();
+  // `.schema.json` only: schemas/index.json is the index of the schemas, not one of them.
+  const files = (await readdir(schemaDir)).filter((name) => name.endsWith('.schema.json')).sort();
   const blocks = [];
 
   for (const file of files) {
@@ -184,6 +206,11 @@ async function build() {
     ' * guarantee more about what it writes — writing narrow and reading wide is correct — so',
     ' * its own writer types can be narrower, and a compile-time assignability check proves',
     ' * they still satisfy the contract.',
+    ' *',
+    ' * WHAT A TYPE CANNOT SAY. The schemas hold constraints TypeScript has no words for, and this',
+    ' * generator used to drop them without a trace. They are listed here so a reader of the types',
+    ' * knows to validate with the schema as well; the count is per keyword across all schemas:',
+    ...[...unexpressible.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([keyword, sites]) => ` *   ${keyword.padEnd(18)} ${sites.length} site(s), e.g. ${sites[0]}`),
     ' */',
     '',
     `export const CONTRACT_SCHEMA_VERSION = '${version}' as const;`,

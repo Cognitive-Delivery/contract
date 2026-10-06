@@ -17,6 +17,18 @@ tooling in this repository.
 
 ### Fixed
 
+- **The type generator reads `.schema.json` only, names `lease-record`, and says what a type cannot.**
+  It tripped over `schemas/index.json` and had no name for the record; and it silently dropped every
+  keyword TypeScript has no words for. The generated file's header now lists them, per keyword with a
+  count and an example site (`allOf` with `if`/`then`, `propertyNames`, `pattern`, the bounds), so a
+  reader of the types knows to validate with the schema as well.
+- **`capabilities.tool_args`** on both plugin schemas: the lease `allow` shape, property for property,
+  now that `allow` carries `tool_args` (development stability, as there).
+- **The narrowing vectors are the reference's bytes.** `tool-args-dropped` was added by hand in 1.2.0;
+  the file is now regenerated from the reference implementation (CDF Harness) as the others always
+  were, which placed the vector second and gave it the `diff` the generator records.
+- A valid lease-record fixture's reason no longer contains the word "secret", which the reference
+  deployment's corpus hygiene test bans as a marker.
 - **The frozen copy deploys after a release.** The github-pages environment admits `main` only, so
   the tag push that was meant to lay out `/1.2.0/` was refused at the deploy step; `release.yml` now
   dispatches `pages.yml` on `main` after publishing (it fetches every tag), and the tag trigger is

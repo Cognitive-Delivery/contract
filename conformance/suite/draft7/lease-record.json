@@ -1460,7 +1460,7 @@
           "event": "revoked",
           "lease_id": "3e7a9c5d-1b2f-4a8e-9c6d-5b4a3f2e1d0c",
           "by": "issuer",
-          "reason": "workspace secret rotated",
+          "reason": "issuer signing key rotated",
           "signature": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         "valid": true
