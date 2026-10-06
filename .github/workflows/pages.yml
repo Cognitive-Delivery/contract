@@ -7,9 +7,11 @@ name: pages
 #   /<major>.x/        the current schemas on main, which every `$id` names (the 1.x alias)
 #   /<version>/        the schemas AS TAGGED, one directory per v1.* tag, byte for byte, never
 #                      rewritten: a reader that pinned 1.1.0 can fetch exactly what 1.1.0 shipped
-# plus `index.json` beside each set and a plain index page. Nothing is committed anywhere for
-# the site; it is laid out from `schemas/` on main and from each tag's `schemas/` at deploy time,
-# so there is nothing to drift. Runs on a push to main and on dispatch; release.yml dispatches it
+# plus `index.json` beside each set, and the documentation site (`tooling/build-site.mjs`: the
+# front page, the guides, the SPEC, the schema reference, conformance, proposals and versions,
+# every page generated from files `npm test` checks). Nothing is committed anywhere for the site;
+# the schema bytes are laid out from `schemas/` on main and from each tag's `schemas/` at deploy
+# time, and the generator never writes a JSON file, so there is nothing to drift. Runs on a push to main and on dispatch; release.yml dispatches it
 # after publishing, so a release's frozen copy appears when the release does. (A tag push cannot
 # deploy directly: the github-pages environment's branch policy admits `main` only, and the
 # v1.2.0 tag run was refused at the deploy step for exactly that reason.)
@@ -57,24 +59,12 @@ jobs:
             done
             echo "froze ${tag} -> /${version}/ ($(ls "_site/${version}" | wc -l) files)"
           done
-          node -e '
-            const fs = require("fs");
-            const major = process.argv[1];
-            const files = fs.readdirSync(`_site/${major}.x`).filter((f) => f.endsWith(".schema.json")).sort();
-            for (const f of files) {
-              const id = JSON.parse(fs.readFileSync(`_site/${major}.x/${f}`, "utf8")).$id;
-              const wanted = `https://cognitive-delivery.github.io/contract/${major}.x/${f}`;
-              if (id !== wanted) { console.error(`${f}: $id is ${id}, not ${wanted}`); process.exit(1); }
-            }
-            const versions = fs.readdirSync("_site").filter((d) => /^\d+\.\d+\.\d+$/.test(d)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-            const items = files.map((f) => `<li><a href="${major}.x/${f}">${f}</a></li>`).join("\n");
-            const frozen = versions.map((v) => `<li><a href="${v}/">${v}/</a> — the schemas as tagged v${v}, frozen</li>`).join("\n");
-            fs.writeFileSync("_site/index.html", `<!doctype html><meta charset="utf-8"><title>Cognitive Delivery governance contract</title><h1>Cognitive Delivery governance contract</h1><p>The schema set, served at each schema\x27s <code>$id</code> (the current <code>${major}.x</code>), with <a href="${major}.x/index.json">index.json</a>. Source, corpus and specification: <a href="https://github.com/Cognitive-Delivery/contract">github.com/Cognitive-Delivery/contract</a>.</p><h2>Current (${major}.x)</h2><ul>${items}</ul><h2>Released, frozen</h2><ul>${frozen}</ul>`);
-            for (const v of versions) {
-              const vf = fs.readdirSync(`_site/${v}`).sort().map((f) => `<li><a href="${f}">${f}</a></li>`).join("\n");
-              fs.writeFileSync(`_site/${v}/index.html`, `<!doctype html><meta charset="utf-8"><title>contract ${v}</title><h1>@cognitive-delivery/contract ${v}</h1><p>Byte for byte as tagged. Never rewritten.</p><ul>${vf}</ul>`);
-            }
-          ' "$MAJOR"
+
+      - name: Build the site pages from the tree (the generator writes no JSON; the schema bytes above are untouched)
+        run: |
+          set -e
+          npm ci
+          node tooling/build-site.mjs _site
           find _site -type f | sort
 
       - uses: actions/upload-pages-artifact@v3

@@ -56,13 +56,15 @@
     "check:additive": "node ./check-additive.mjs",
     "generate": "node ./generate-contract-types.mjs",
     "check": "node ./generate-contract-types.mjs --check",
-    "version:sync": "node ./tooling/sync-version.mjs"
+    "version:sync": "node ./tooling/sync-version.mjs",
+    "site": "node ./tooling/build-site.mjs _site"
   },
   "cdfContract": {
     "schemaSetVersion": "1.2.1",
     "compatibility": "Within 1.x, changes are additive only. New optional fields are allowed. Renaming, removing, narrowing or redefining a field requires 2.0.0 and a documented migration."
   },
   "devDependencies": {
-    "ajv": "^8.20.0"
+    "ajv": "^8.20.0",
+    "marked": "18.1.0"
   }
 }

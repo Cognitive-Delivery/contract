@@ -25,6 +25,9 @@ inlined copy is byte-for-byte its source dereferenced, every schema validates ag
 `conformance/metaschema.json`, `schemas/index.json` is valid and current, and
 `cdfContract.schemaSetVersion` matches the package version. Then the guard's own scenarios
 (`conformance/guard-tests.mjs`), the README's Layout block (`conformance/layout-check.mjs`), the
+site (`conformance/site-check.mjs`: built twice into temporary directories from this tree; every
+link and anchor resolves, every schema and document has a page, the `$id` bytes are untouched, no
+page carries a script or reaches another host, and the two builds are byte-identical), the
 SPEC traceability map (`conformance/traceability-check.mjs`), the currency of the exported suite
 (`conformance/suite/`), and the version statement: `package.json` (twice), the README, the
 CHANGELOG (a section with a body and a link definition), `schemas.lock.json`, every `$id` and the
