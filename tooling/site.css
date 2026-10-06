@@ -1,250 +1,174 @@
-/* The one stylesheet of the contract's documentation site. No fonts or resources are fetched. */
+/* The one stylesheet of the contract's documentation site: the cognitivedelivery.co.uk theme,
+   served from the site. The token block is the website's, verbatim; the header, nav, heading,
+   eyebrow, button, card and footer rules are the website's, ported with their values; the rest
+   is what a documentation site needs and the website does not, written on the tokens only. No
+   font, image or icon is fetched from anywhere but this site. The build's self-test holds the
+   rule that no literal colour appears outside the :root blocks and the one data URI
+   (CDF_SITE_SELF_TEST=1 node tooling/build-site.mjs). */
 
+/* ---- Tokens: the website's :root, verbatim ---- */
 :root {
-  color-scheme: light dark;
-  --ink: #1d2327;
-  --muted: #5b666d;
-  --paper: #ffffff;
-  --panel: #f3f5f6;
-  --rule: #d4dadd;
-  --accent: #1f4e5f;
-  --focus: #c6620a;
+	--teal: #1F4E5F;
+	--teal2: #2D6878;
+	--teal3: #4A8A9A;
+	--teal4: #88BAC4;
+	--cyan: #4FB6C9;
+	--white: #FFFFFF;
+	--ink: #2D3D44;
+	--slate: #607079;
+	--hair: #DCE5E8;
+	--surface: #F4F8FA;
+	--cream: #FFF7E6;
+	--orange: #E89B2C;
+	--mint: #E8F4EC;
+	--rose: #FBEFEF;
+	--sans: 'Source Sans 3', sans-serif;
+	--mono: 'JetBrains Mono', monospace;
+	--maxw: 1200px;
 }
 
+/* ---- Hoisted: the values the website hard-codes in its header and footer rules (the header's
+   translucent white, the footer's pale text, its white headings and its 15% white rule), lifted
+   into tokens so the no-literal-colour rule holds for every rule below, and the footer's ground
+   named so the dark scheme can keep it on the brand teal. ---- */
+:root {
+	color-scheme: light dark;
+	--header-bg: rgba(255,255,255,.92);
+	--footer-bg: var(--teal);
+	--footer-text: #bcd6dd;
+	--footer-bright: #FFFFFF;
+	--footer-rule: rgba(255,255,255,.15);
+}
+
+/* ---- Type: the website's variable latin subsets, relative to this stylesheet ---- */
+@font-face {
+	font-family: 'Source Sans 3';
+	font-style: normal;
+	font-weight: 300 700;
+	font-display: swap;
+	src: url(fonts/source-sans-3-variable.woff2) format('woff2');
+}
+@font-face {
+	font-family: 'Source Sans 3';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url(fonts/source-sans-3-italic-variable.woff2) format('woff2');
+}
+@font-face {
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400 500;
+	font-display: swap;
+	src: url(fonts/jetbrains-mono-variable.woff2) format('woff2');
+}
+
+/* ---- The website's rules, with their values ---- */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--white); line-height: 1.55; font-size: 17px; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-weight: 300; color: var(--teal); letter-spacing: .2px; line-height: 1.15; }
+h1 { font-size: clamp(34px, 6vw, 58px); margin: .4em 0 .5em; }
+h2 { font-size: clamp(26px, 4vw, 38px); margin: 1.6em 0 .5em; }
+h3 { font-size: 22px; margin: 1.6em 0 .4em; }
+.eyebrow { font-size: 11px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--teal); font-weight: 400; margin: 2.4em 0 .7em; }
+/* The section motif, the website's own line, byte for byte: the one data URI on the site. */
+.eyebrow::before{content:'';display:inline-block;width:13px;height:13px;margin-right:11px;vertical-align:-2px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 L15 5 L8 9 L1 5 Z' fill='%237FCBD9'/%3E%3Cpath d='M1 5 L8 9 L8 15 L1 11 Z' fill='%234FB6C9'/%3E%3Cpath d='M15 5 L8 9 L8 15 L15 11 Z' fill='%233A93A5'/%3E%3C/svg%3E") center/contain no-repeat}
+
+header { position: sticky; top: 0; z-index: 50; background: var(--header-bg); backdrop-filter: blur(8px); border-bottom: 1px solid var(--hair); }
+nav { max-width: var(--maxw); margin: 0 auto; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 26px; }
+.brand { display: flex; align-items: center; }
+.brand img { height: 38px; width: auto; display: block; }
+.navlinks { display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+.navlinks a { font-size: 14px; font-weight: 600; color: var(--slate); letter-spacing: .2px; padding: 4px 0; border-bottom: 2px solid transparent; transition: .18s; white-space: nowrap; text-decoration: none; }
+.navlinks a:hover { color: var(--teal); }
+.navlinks a[aria-current="page"] { color: var(--teal); border-bottom-color: var(--cyan); }
+.btn { display: inline-block; background: var(--teal); color: var(--white); padding: 13px 26px; border-radius: 3px; font-weight: 600; font-size: 15px; transition: .18s; border: 1px solid var(--teal); text-decoration: none; }
+.btn:hover { background: var(--teal2); border-color: var(--teal2); }
+.card { background: var(--surface); border: 1px solid var(--hair); border-radius: 5px; padding: 26px; }
+
+footer { background: var(--footer-bg); color: var(--footer-text); padding: 54px 0 38px; font-size: 14px; margin-top: 72px; }
+footer .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+footer .ft { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px; }
+footer .brand img { height: 42px; }
+footer a { color: var(--footer-text); display: block; padding: 4px 0; text-decoration: none; }
+footer a:hover { color: var(--footer-bright); text-decoration: underline; }
+footer .col h3 { color: var(--footer-bright); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; margin: 0 0 12px; }
+footer .legal { border-top: 1px solid var(--footer-rule); margin: 36px 0 0; padding-top: 22px; font-size: 13px; opacity: .7; }
+
+/* ---- The site's own rules, on the tokens ---- */
+.site-name { font-size: 14px; font-weight: 600; color: var(--slate); letter-spacing: .2px; }
+.site-name .version { color: var(--teal); font-weight: 400; margin-left: .35em; }
+
+.skip { position: absolute; left: 16px; top: -100px; z-index: 60; padding: 8px 12px; background: var(--surface); color: var(--teal); border: 1px solid var(--hair); }
+.skip:focus { top: 12px; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+main { max-width: var(--maxw); margin: 0 auto; padding: 24px 28px 48px; }
+/* A reading measure for prose; tables and code keep the full width. */
+main > p, main > ul, main > ol, main > dl, main > blockquote, main > .quoted, main > h1, main > h2, main > h3, main > h4, main > .eyebrow { max-width: 78ch; }
+h4 { color: var(--teal); font-weight: 600; font-size: 17px; margin: 1.6em 0 .4em; }
+p.lead { font-size: 19px; }
+/* Links in prose: teal, and always underlined so a link is never told apart by colour alone; the
+   underline is a cyan rule that turns teal on hover. */
+main a { color: var(--teal); text-decoration: underline; text-decoration-color: var(--cyan); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+main a:hover { text-decoration-color: var(--teal); text-decoration-thickness: 2px; }
+main .btn { text-decoration: none; }
+
+table { display: block; overflow-x: auto; border-collapse: collapse; margin: 1rem 0; font-size: 15px; border: 1px solid var(--hair); }
+th, td { border: 1px solid var(--hair); padding: .4rem .65rem; text-align: left; vertical-align: top; }
+th { background: var(--surface); color: var(--teal); font-weight: 600; }
+td.mono, td.path { font-family: var(--mono); }
+table.reference td.path { white-space: nowrap; }
+table.reference small.note, p.note, small.note { color: var(--slate); white-space: normal; font-family: var(--sans); }
+
+code, pre { font-family: var(--mono); font-size: 14px; }
+code { background: var(--surface); padding: .1em .3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { background: var(--surface); border: 1px solid var(--hair); padding: .75rem 1rem; overflow-x: auto; line-height: 1.45; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+h1 code, h2 code, h3 code { font-size: .8em; background: none; padding: 0; }
+
+blockquote { margin: 1rem 0; padding: .25rem 1rem; border-left: 2px solid var(--cyan); color: var(--slate); }
+.quoted { margin: 1rem 0; padding: .25rem 1rem; border-left: 2px solid var(--hair); }
+hr { border: 0; border-top: 1px solid var(--hair); margin: 2rem 0; }
+
+/* Stability, as the reference emits it. `stable` is plain. `development` is marked by an orange
+   rule, not orange text: --orange on --white is 2.3:1, so the label itself is --teal on --surface
+   (8.5:1). Cream is reserved for governance-theatre warnings and appears nowhere here.
+   `deprecated` is struck in --slate, with the replacement name and any note left legible. */
+td.stability-development { color: var(--teal); font-weight: 600; background: var(--surface); border-left: 3px solid var(--orange); }
+td.deprecated { color: var(--slate); text-decoration: line-through; }
+td.deprecated code, td.deprecated small { display: inline-block; text-decoration: none; }
+ul.legend li { margin-bottom: .25rem; }
+
+/* The front page's three ways in, and the fact lists. */
+ul.ways { list-style: none; padding: 0; margin: 1.5rem 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); max-width: none; }
+ul.ways .btn { margin-bottom: 12px; }
+ul.ways span { display: block; color: var(--slate); font-size: 15px; }
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; }
+dl.facts dt { font-weight: 600; color: var(--teal); }
+dl.facts dd { margin: 0; }
+
+@media (max-width: 640px) {
+	body { font-size: 16px; }
+	nav, main, footer .wrap { padding-left: 16px; padding-right: 16px; }
+	nav { gap: 8px 14px; }
+	.navlinks { gap: 14px; }
+	dl.facts { grid-template-columns: 1fr; }
+}
+
+/* ---- Dark scheme: the tokens only, so every rule above follows. The footer keeps the brand
+   teal as its ground because --teal itself has lightened to serve as text. ---- */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e6e9eb;
-    --muted: #a3adb3;
-    --paper: #15191c;
-    --panel: #1f2529;
-    --rule: #3a4349;
-    --accent: #8fd0e0;
-    --focus: #ffb259;
-  }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--ink);
-  background: var(--paper);
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-}
-
-a {
-  color: var(--accent);
-}
-
-:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
-.skip {
-  position: absolute;
-  left: 1rem;
-  top: -4rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--panel);
-  color: var(--ink);
-  border: 1px solid var(--rule);
-}
-
-.skip:focus {
-  top: 1rem;
-  z-index: 1;
-}
-
-header {
-  border-bottom: 1px solid var(--rule);
-  padding: 0.75rem 1rem;
-}
-
-header .site {
-  margin: 0 0 0.5rem;
-  font-weight: 600;
-}
-
-header .site a {
-  color: var(--ink);
-  text-decoration: none;
-}
-
-header .version {
-  color: var(--muted);
-  font-weight: 400;
-  margin-left: 0.5rem;
-}
-
-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-}
-
-nav a[aria-current="page"] {
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 2px solid var(--accent);
-}
-
-main {
-  max-width: 78ch;
-  margin: 0 auto;
-  padding: 1rem 1rem 3rem;
-}
-
-footer {
-  border-top: 1px solid var(--rule);
-  padding: 1rem;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-h1, h2, h3, h4 {
-  line-height: 1.25;
-  margin-top: 1.75em;
-}
-
-h1 {
-  margin-top: 0.5em;
-}
-
-h1 .site-prefix {
-  color: var(--muted);
-}
-
-p.lead {
-  font-size: 1.15rem;
-}
-
-code, pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 0.92em;
-}
-
-code {
-  overflow-wrap: anywhere;
-}
-
-pre {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  padding: 0.75rem;
-  overflow-x: auto;
-  line-height: 1.4;
-}
-
-pre code {
-  overflow-wrap: normal;
-}
-
-table {
-  display: block;
-  overflow-x: auto;
-  border-collapse: collapse;
-  margin: 1rem 0;
-}
-
-th, td {
-  border: 1px solid var(--rule);
-  padding: 0.35rem 0.6rem;
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  background: var(--panel);
-}
-
-table.reference td.path {
-  white-space: nowrap;
-}
-
-table.reference small.note,
-p.note {
-  color: var(--muted);
-  white-space: normal;
-}
-
-td.stability-development {
-  font-weight: 600;
-}
-
-td.deprecated {
-  text-decoration: underline dotted;
-}
-
-ul.legend li {
-  margin-bottom: 0.25rem;
-}
-
-blockquote, .quoted {
-  margin: 1rem 0;
-  padding: 0.25rem 1rem;
-  border-left: 4px solid var(--rule);
-}
-
-blockquote {
-  color: var(--muted);
-}
-
-hr {
-  border: 0;
-  border-top: 1px solid var(--rule);
-}
-
-ul.ways {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-}
-
-ul.ways li {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  padding: 0.75rem 1rem;
-}
-
-ul.ways span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-dl.facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-}
-
-dl.facts dt {
-  font-weight: 600;
-}
-
-dl.facts dd {
-  margin: 0;
-}
-
-@media (max-width: 40rem) {
-  html {
-    font-size: 16px;
-  }
-  dl.facts {
-    grid-template-columns: 1fr;
-  }
+	:root {
+		--white: #15232A;
+		--ink: #E6EEF1;
+		--surface: #1B2A30;
+		--hair: #2F444C;
+		--slate: #A9B9C0;
+		--teal: #88BAC4;
+		--teal2: #4A8A9A;
+		--header-bg: rgba(21,35,42,.92);
+		--footer-bg: #1F4E5F;
+	}
 }
