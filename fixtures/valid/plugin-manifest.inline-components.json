@@ -65,7 +65,7 @@
             "type": "http",
             "url": "https://hooks.example/session",
             "headers": {
-              "Authorization": "${HOOK_AUTH}",
+              "X-Hook-Auth": "${HOOK_AUTH}",
               "X-Source": "cdf"
             },
             "allowedEnvVars": [
@@ -111,7 +111,7 @@
       "type": "http",
       "url": "https://mcp.example/docs",
       "headers": {
-        "Authorization": "${DOCS_AUTH}"
+        "X-Docs-Auth": "${DOCS_AUTH}"
       },
       "headersHelper": "./scripts/docs-auth.sh",
       "timeout": 600000,
