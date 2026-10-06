@@ -15,6 +15,7 @@ import { createAjvAdapter } from './ajv-adapter.mjs';
 import { runGuardTests } from './guard-tests.mjs';
 import { runSchemaChecks } from './schema-checks.mjs';
 import { runLayoutCheck } from './layout-check.mjs';
+import { runSiteCheck } from './site-check.mjs';
 import { idFor } from './ids.mjs';
 import { changelogSection } from './changelog.mjs';
 import { runTraceabilityCheck } from './traceability-check.mjs';
@@ -129,6 +130,19 @@ console.log(layout.checked
   ? `Layout: README.md names every entry at the top level and under conformance/, fixtures/ and tooling/, ${layout.failures.length} failure(s).`
   : 'Layout: NOT CHECKED (published package; the repository check runs from a clone).');
 
+// The site, built twice into temporary directories from this tree and checked before anything
+// deploys it: every link and anchor resolves, every schema and document has a page, the `$id`
+// bytes are untouched, no page carries a script or reaches another host, and the two builds are
+// the same bytes. The generator and `marked` are not in the package, so from the tarball the
+// check says so rather than failing a documented subset.
+const site = await runSiteCheck(resolve(here, '..'));
+if (site.checked) {
+  console.log(`Site: ${site.pages} pages, ${site.links} links, ${site.failures.length} failure(s).`);
+  console.log(`Site: external hosts linked by href: ${site.externalHosts.length > 0 ? site.externalHosts.join(', ') : 'none'}.`);
+} else {
+  console.log(`Site: NOT CHECKED (${site.reason}).`);
+}
+
 // Every normative clause of the SPEC is answered by a named fixture, vector, check or rule, or
 // excluded with a reason; an edited clause must be re-affirmed.
 const trace = await runTraceabilityCheck();
@@ -142,7 +156,7 @@ console.log(stale.length === 0
   : `Suite export: ${stale.length} stale file(s) — run \`npm run lock\`.`);
 const suiteFailures = stale.map((f) => `suite: conformance/suite/${f} is stale; run \`npm run lock\` and commit it.`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...trace.failures, ...suiteFailures];
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...site.failures, ...trace.failures, ...suiteFailures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

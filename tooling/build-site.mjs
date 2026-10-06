@@ -63,8 +63,8 @@ const NAV = [
 /** Directories never walked when the repository tree is read for link resolution. */
 const UNWALKED = new Set(['.git', 'node_modules', '_site']);
 
-/** A refusal with a named cause; the command line reports it and exits 1. */
-class SiteError extends Error {}
+/** A refusal with a named cause; the command line reports it and exits 1, and the site check (`conformance/site-check.mjs`) reports it as a failure line. */
+export class SiteError extends Error {}
 
 // ---------------------------------------------------------------------------------------------
 // Heading anchors: GitHub's slug algorithm, so a link that works on GitHub works here.

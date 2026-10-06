@@ -391,6 +391,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
   metaschema.json           the conventions every schema is held to: dialect, $id, title, no `format`, a stability $comment on every property
   layout-check.mjs          this block is current
+  site-check.mjs            the site, built twice into temporary directories: links, anchors, every page present, $id bytes untouched, no script, the same bytes; reported not checked in the published package
   lease-rules.mjs           SPEC §6 rules L1 to L3, which a schema cannot state; the reference `rules` adapter
   spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
