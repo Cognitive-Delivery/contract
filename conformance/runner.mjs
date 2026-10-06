@@ -8,16 +8,20 @@
  *
  * It takes the implementation under test as an argument and imports nothing from any product.
  *
- * Five things are asserted. The third is the one people forget, the fourth decides whether two
+ * Seven things are asserted. The third is the one people forget, the fourth decides whether two
  * implementations can verify each other's signatures at all, and the fifth is the heart of the
  * specification:
  *
- *   1. Every valid fixture is accepted.
- *   2. Every invalid fixture is rejected — and carries a written reason why, because
- *      "this should fail" with no reason is untestable folklore.
- *   3. A valid fixture round-trips **without losing unknown-but-valid fields**. That is what
- *      lets a newer writer and an older reader coexist, and it is the property most easily
- *      broken by a well-meaning field pick.
+ *   1. Every valid fixture is accepted, and a valid config's `sealed` paths each name a field
+ *      the fixture carries.
+ *   2. Every invalid fixture is rejected, carries a written reason why (because "this should
+ *      fail" with no reason is untestable folklore) and, when the adapter reports its errors
+ *      (`lastErrors`), is rejected AT the instance path its `.expect.json` names: a rejection
+ *      for the wrong reason is not conformance.
+ *   3. A valid fixture round-trips **without losing unknown-but-valid fields**, planted at the
+ *      top level and inside the first nested object. That is what lets a newer writer and an
+ *      older reader coexist, and it is the property most easily broken by a well-meaning field
+ *      pick.
  *   4. Canonical bytes match, for an adapter that offers a `canonicalise`: the contract's nine
  *      vectors and RFC 8785's own six (`jcs/`). Schema agreement is not interoperability: every
  *      hash in this contract is taken over canonical bytes, so two implementations that both pass
@@ -26,6 +30,11 @@
  *      has the vectors checked for shape.
  *   6. The signed fixtures verify under the published test key, for an adapter that offers
  *      `hash` and `verify`, and stop verifying when a byte changes.
+ *   7. The lease rules L1 to L3 (`lease-rules.mjs`, SPEC §6 and §6.1) hold for every valid lease
+ *      and record, and fail at the named rule and path for every fixture under
+ *      `fixtures/invalid-by-rule/`, for an adapter that offers `rules`; every adapter has those
+ *      fixtures checked for schema validity, because a by-rule fixture the schema refuses is
+ *      testing the schema and not the rule.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -105,7 +114,8 @@ async function expectFor(file, kind = 'invalid') {
  * another. Every valid lease fixture must pass every rule; every fixture under
  * `fixtures/invalid-by-rule/` must be schema-VALID (the schema is not what refuses it) and must
  * fail exactly the rule its `.expect.json` names, at the path it names. An adapter proves its
- * own rules by supplying `rules(lease) => [{ rule, path }]`; one that does not is reported as
+ * own rules by supplying `rules(lease, context?) => [{ rule, path }]` (L3 receives the chain as
+ * `context.chainOf(leaseId)`, from the fixture's `.expect.json`); one that does not is reported as
  * not checked, never as passing.
  */
 async function checkLeaseRules(adapter, valid, failures) {
@@ -369,7 +379,7 @@ async function checkSignatures(adapter, failures) {
  *                   canonicalise?(value: unknown): string,
  *                   narrow?(declared: unknown, parent: unknown): { granted: unknown } | { refusals: string[] },
  *                   hash?(value: unknown): string, verify?(lease: unknown, keyHex: string): boolean,
- *                   rules?(lease: unknown): Array<{ rule: string, path: string }>,
+ *                   rules?(lease: unknown, context?: { chainOf(leaseId: string): string[] }): Array<{ rule: string, path: string }>,
  *                   lastErrors?: Array<{ instancePath: string, keyword: string }> }}
  * @returns a report; `failures` empty means conformant.
  */

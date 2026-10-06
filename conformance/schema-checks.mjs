@@ -6,10 +6,16 @@
  *   1. Every schema compiles under Ajv strict mode. Strict mode refuses unknown keywords and
  *      ambiguous constructs that a lenient compiler silently ignores — and a keyword Ajv
  *      ignores is a constraint no implementation enforces.
- *   2. The granted manifest inlined in agent-lease.schema.json is byte-for-byte the manifest
- *      schema, dereferenced. The contract keeps every schema self-contained, so the copy
- *      exists; this is what stops it drifting.
- *   3. package.json's `cdfContract.schemaSetVersion` matches the package version. The version
+ *   2. Every inlined copy (the granted manifest in agent-lease.schema.json, the manifest and the
+ *      lease in lease-record.schema.json) is byte-for-byte its source schema, dereferenced
+ *      (`inlined-copies.mjs`). The contract keeps every schema self-contained, so the copies
+ *      exist; this is what stops them drifting.
+ *   3. Every schema validates against conformance/metaschema.json: the dialect, `$id`, title and
+ *      description conventions, no `format`, and a stability `$comment` on every declared
+ *      property.
+ *   4. schemas/index.json is valid against its own schema (`schema-index.mjs`) and current with
+ *      the schemas, so a registry entry never points at a file the index does not know.
+ *   5. package.json's `cdfContract.schemaSetVersion` matches the package version. The version
  *      currency check in run.mjs covers the README, CHANGELOG and lock; this field had been
  *      left out and sat stale at 1.0.0 through two releases.
  */
@@ -74,7 +80,7 @@ export async function runSchemaChecks() {
     }
   }
 
-  // 2c. Conventions: every schema validates against conformance/metaschema.json (dialect, $id,
+  // 3. Conventions: every schema validates against conformance/metaschema.json (dialect, $id,
   //     title, description; no `format`; a stability $comment on every declared property).
   const meta = JSON.parse(await readFile(resolve(here, 'metaschema.json'), 'utf8'));
   const conventions = new Ajv({ strict: false, allErrors: true }).compile(meta);
@@ -85,7 +91,7 @@ export async function runSchemaChecks() {
     }
   }
 
-  // 2d. The schema index (schemas/index.json) is valid against its own schema and current with
+  // 4. The schema index (schemas/index.json) is valid against its own schema and current with
   //     the schemas: a registry entry that points at a file the index does not know is a registry
   //     entry nobody checked.
   try {
@@ -100,7 +106,7 @@ export async function runSchemaChecks() {
   const indexStale = await indexStaleness();
   if (indexStale) failures.push(`index/${indexStale} — run \`npm run lock\` and commit it.`);
 
-  // 3. The package's own statement of the schema-set version.
+  // 5. The package's own statement of the schema-set version.
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const stated = pkg.cdfContract?.schemaSetVersion;
   if (stated !== pkg.version) {

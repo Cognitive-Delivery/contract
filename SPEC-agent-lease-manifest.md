@@ -465,7 +465,8 @@ What this specification defends against, and what it does not.
 
 ## 9. Conformance
 
-An implementation claiming conformance with schema set 1.0 **MUST**:
+An implementation claiming conformance with schema set 1.2 (or any 1.x set, under the additive rule
+of §10) **MUST**:
 
 1. Validate every manifest and lease against the published schemas, and refuse what does not validate.
 2. Implement the narrowing algebra of §5 exactly, including refusal of an empty grant, and pass
@@ -486,8 +487,9 @@ An implementation claiming conformance with schema set 1.0 **MUST**:
    somewhere else has rejected it for the wrong reason, which is not conformance. The runner checks
    the path when the adapter reports its errors, and says so when it cannot.
 6. State which signature algorithm it uses.
-7. Apply the lease rules of §6 (L1, L2) and pass every fixture under `fixtures/invalid-by-rule/` by
-   supplying `rules(lease)` on its adapter: each such fixture is schema-valid and **MUST** be refused
+7. Apply the lease rules of §6 and §6.1 (L1, L2, and L3 when the journal is available) and pass
+   every fixture under `fixtures/invalid-by-rule/` by supplying `rules(lease, context)` on its
+   adapter: each such fixture is schema-valid and **MUST** be refused
    at the rule its `.expect.json` names. An implementation that supplies no `rules` is reported as
    unchecked, not as passing.
 
@@ -564,6 +566,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-06 | Editorial, no normative change: §9 names schema set 1.2 (any 1.x set under §10) rather than 1.0, and names rule L3 of §6.1 beside L1 and L2 with its journal condition and the `rules(lease, context)` adapter hook |
 | 1.2 | 2026-10-05 | §4.4 adds `allow.tool_args`, a per-tool argument-schema declaration with development stability that an issuer MAY omit from the grant and MUST NOT treat as authority; the vector `tool-args-dropped` shows the reference dropping it; §11 cites Progent |
 | 1.2 | 2026-10-05 | §6.2 states that `schema_version` is `major.minor` everywhere and compared on the major only; reserves the reference writer's audit `event_type` first segments and gives other writers the vendor-name rule; adds `actor.runtime_agent` to the audit event while `actor.runtime` stays open |
 | 1.2 | 2026-10-05 | §6.1 specifies the lease record: nine events with what each carries, `declared_hash` and `granted_hash` as the two identities of a decision, revocation by an ancestor or the issuer (rule L3), and §5.2 the three reserved forms a refusal reason takes |

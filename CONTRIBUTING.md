@@ -11,20 +11,38 @@ npm test                 # the conformance corpus against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
-`npm test` runs four things: every valid fixture, every rejection and its written reason, a
-round trip that must not lose an unknown field, and the canonical-bytes vectors of
-[SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) §7. It also checks that the version
-in `package.json` matches the one stated in the README, the CHANGELOG and `schemas.lock.json` —
-added because the lock silently kept the previous version through a release.
+`npm test` is `conformance/run.mjs`, and it checks more than the corpus. The runner
+(`conformance/runner.mjs`): every valid fixture accepted; every invalid fixture rejected with a
+written reason and, when the adapter reports its errors, at the instance path its `.expect.json`
+names; a valid config's `sealed` paths each naming a field the fixture carries; a round trip that
+must not lose an unknown field at the top level or inside a nested object; the canonical-bytes
+vectors of [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) §7 and RFC 8785's own; the
+narrowing vectors (shape for every adapter, behaviour when `narrow` is supplied); the signature
+vectors when `hash` and `verify` are supplied; and the lease rules L1 to L3 when `rules` is
+supplied. A half the adapter does not offer is reported as not checked, never as passed. Then the
+schema checks (`conformance/schema-checks.mjs`): every schema compiles under Ajv strict mode, every
+inlined copy is byte-for-byte its source dereferenced, every schema validates against
+`conformance/metaschema.json`, `schemas/index.json` is valid and current, and
+`cdfContract.schemaSetVersion` matches the package version. Then the guard's own scenarios
+(`conformance/guard-tests.mjs`), the README's Layout block (`conformance/layout-check.mjs`), the
+SPEC traceability map (`conformance/traceability-check.mjs`), the currency of the exported suite
+(`conformance/suite/`), and the version statement: `package.json` (twice), the README, the
+CHANGELOG (a section with a body and a link definition), `schemas.lock.json`, every `$id` and the
+SPEC header agree, and nothing still names the old `$id` host. The version check was added
+because the lock silently kept the previous version through a release.
 
 `npm run check:additive -- --baseline-ref origin/main` compares the schema set against the shape
 it had at that ref, digesting the baseline's schemas with the current generator; in CI the baseline
 is the branch you are merging into, or the pushed-from commit. It reports named findings in the style of
 `buf breaking`: `FIELD_REMOVED`, `FIELD_NOW_REQUIRED`, `TYPE_CHANGED`, `ENUM_NARROWED`, `STABILITY_LOWERED`, `CONDITIONAL_REQUIRED_ADDED`,
 `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED`, `UNION_CHANGED` and
-`SCHEMA_REMOVED`. Since lock format 4 a local `$ref` is digested at the path that refers to it, so re-pointing a property to a stricter definition is a visible change rather than a changed string the guard ignores. The last four findings need a baseline in lock format 2 (`lockFormat` in
-`schemas.lock.json`); against an older baseline they are reported as not comparable rather than
-passed quietly. Note what the check does **not** do: it compares schema shapes only, and will
+`SCHEMA_REMOVED`. Since lock format 4 a local `$ref` is digested at the path that refers to it, so re-pointing a property to a stricter definition is a visible change rather than a changed string the guard ignores. `PATTERN_TIGHTENED`, `BOUND_TIGHTENED`, `CONTENT_MODEL_CLOSED` and `UNION_CHANGED` need a baseline
+in lock format 2 or later (`lockFormat` in `schemas.lock.json`), and against an older one are
+reported as not comparable rather than passed quietly; a union's branch types and patterns are
+compared from format 3; `STABILITY_LOWERED` and `CONDITIONAL_REQUIRED_ADDED` need format 5 and are
+not compared against an older baseline; and a re-pointed `$ref` is visible only against a format
+4 or later baseline. A `--baseline-ref` baseline is always digested with the current generator,
+so an older format arises only with an explicit `--baseline` lock file. Note what the check does **not** do: it compares schema shapes only, and will
 report "Lock is current" on a lock whose version field is stale. That check lives in `npm test`,
 as do the guard's own scenario tests (`conformance/guard-tests.mjs`): every finding is seen to
 fire and every additive change seen to pass, because a guard nobody has watched fail is a
@@ -82,6 +100,15 @@ so the entry that admitted a `maximum` of 2^53 does not quietly admit lowering i
 refuses an entry whose evidence file does not exist, and refuses a change that drops an entry the
 baseline had: the list is history, never configuration. An entry is a claim that no reader in a customer's
 repository loses a record it depends on, and it is reviewed like a schema change.
+
+An entry's `path` may name a definition rather than a property. Since lock format 4 a constraint
+reached through a local `$ref` is recorded with `via`, the place it lives in the definition
+(`#allow.read_paths[]` for `allow.read_paths[]`, as `schemas.lock.json` records it), and the guard
+accepts an entry whose `path` is either the property path or that `via`, in the same `schema`. So
+one entry at a definition's path covers every property in that schema that refers to it, which
+is why 110 entries cover the 115 tightenings the guard reports against v1.1.0. It does not reach
+across files: the copies inlined in `agent-lease` and `lease-record` are separate schemas and
+carry their own entries.
 
 ## Changing the specification
 

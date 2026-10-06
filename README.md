@@ -133,7 +133,8 @@ emit one.
 
 Since 1.2 every declared property says which promise it is under: a `$comment` of
 `stability: stable` (held to the additive rule) or `stability: development` (may change within the
-major, and says so; `allow.tool_args` is the one such field today). Lowering a field from stable to
+major, and says so; `allow.tool_args` and the plugin schemas' `capabilities.tool_args` are the only
+such fields today). Lowering a field from stable to
 development is a breaking change the guard reports; retiring a field is `; deprecated: <replacement>`
 on its comment, which is additive, and the field stays until the next major.
 
@@ -158,7 +159,7 @@ nothing else. Each schema is also served at its `$id`
 identifiers finds the current 1.x schema there; the version a document was written against is its
 own `schema_version` field.
 Each release is also served frozen at `https://cognitive-delivery.github.io/contract/<version>/`
-(`/1.1.0/`, `/1.2.0/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
+(`/1.1.0/`, `/1.2.0/`, `/1.2.1/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
 version can fetch exactly what it shipped; and `schemas/index.json`, served beside both, lists every
 schema with its `$id`, title, dialect and the file patterns it describes (`**/.cdf/config.yaml` for
 `config-core`, the `.claude-plugin/` files for the plugin schemas), which is what a registry such as
@@ -224,7 +225,10 @@ The full rules, including the six conditions that require a refusal, are in
 
 ```
 npm ci
-npm test                 # the corpus, the vectors and the guard's own tests, against the reference adapter
+npm test                 # the corpus (valid, invalid at the named path, round trip), the canonical,
+                         # narrowing and signature vectors, the lease rules, the guard's own scenarios,
+                         # the schema and meta-schema checks, the Layout block, traceability, suite and
+                         # index currency and the version statement, against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
@@ -245,8 +249,10 @@ The latest result is the `contract` workflow's run on `main`:
 
 The same `npm test` runs from the **installed package**, not only from a clone: CI packs the
 tarball, installs it into an empty directory with `ajv`, and runs the installed package's own test.
-1.1.0's package could not, because two files it imported were not in the tarball, and no check in
-the clone could see that. Every file under `conformance/` and `schemas.lock.json` are importable
+The 1.1.0 release candidate (`main` at e91afb0, before the tag) could not, because two files it
+imported were not in `files`, and no check in the clone could see that; the fix landed before
+v1.1.0 was tagged, so the published 1.1.0 tarball runs its own test. Every file under
+`conformance/` and `schemas.lock.json` are importable
 through `exports`, so `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves.
 From the tarball the additive guard's scenarios are reported as not present rather than passed,
 because the guard ships with the repository.
@@ -277,12 +283,16 @@ for its enhancement proposals, applied to a schema contract.
 ### Lease rules
 
 Draft-07 cannot compare one field with another, so "`expires_at` is after `issued_at`" (L1) and
-"not its own parent" (L2) are rules of SPEC §6 rather than patterns. `fixtures/invalid-by-rule/`
-holds leases the schema accepts and a rule refuses, each with an `.expect.json` naming the rule
-and the path. Supply `rules(lease)` on your adapter (returning `[{ rule, path }]`) and the runner
-checks every valid lease passes and every by-rule fixture fails at the named rule; omit it and the
-run says **rules NOT CHECKED** while still confirming the fixtures are schema-valid. The reference
-rules are `conformance/lease-rules.mjs`.
+"not its own parent" (L2) are rules of SPEC §6 rather than patterns, and "a `revoked` record's
+`by` names the issuer or an ancestor lease" (L3, SPEC §6.1) needs the journal, which no schema
+holds. `fixtures/invalid-by-rule/` holds leases and records the schema accepts and a rule refuses,
+each with an `.expect.json` naming the rule and the path; the L3 fixture's also carries
+`context.chain`, the ancestors of the revoked lease. Supply `rules(lease, context)` on your adapter
+(returning `[{ rule, path }]`) and the runner checks every valid lease and record passes and every
+by-rule fixture fails at the named rule, handing L3 its chain as `context.chainOf(leaseId)`; a rule
+that needs the journal applies only when the chain is supplied. Omit `rules` and the run says
+**rules NOT CHECKED** while still confirming the fixtures are schema-valid. The reference rules are
+`conformance/lease-rules.mjs`.
 
 ### Narrowing vectors
 
@@ -292,7 +302,9 @@ codes (R1 to R6 of SPEC §5.2) it must return. Supply `narrow(declared, parent)`
 the runner compares granted manifests by canonical bytes and refusal sets exactly; omit it and the
 run says **behaviour NOT CHECKED** while still checking every vector's shape. The vectors were
 generated from the reference implementation and committed, so a disagreement is a finding about one
-of the two implementations, and either kind is wanted.
+of the two implementations, and either kind is wanted. The reference implementation's own report, with
+the hooks it supplies and the run that produced it, is
+[docs/conformance/cdf-harness.md](docs/conformance/cdf-harness.md).
 
 ### Canonical bytes
 
@@ -315,6 +327,16 @@ adapter and the runner checks all fifteen; omit it and the run reports **NOT CHE
 passing quietly. The restated rules are section 7 of
 [SPEC-agent-lease-manifest.md](SPEC-agent-lease-manifest.md) — the escape set is closed, keys sort
 by UTF-16 code unit, and an absent member is omitted rather than nulled.
+
+## Implementing the contract
+
+[docs/implementing.md](docs/implementing.md) is the adapter interface in one place: each hook as the
+runner calls it, what sits beside an invalid fixture, how a validator that is not the runner consumes
+`conformance/suite/draft7/`, what every NOT CHECKED line means, and a worked example from the
+installed package. [docs/upgrading-1.0-to-1.2.md](docs/upgrading-1.0-to-1.2.md) is for a reader or
+writer built against 1.0: what the schemas now refuse, what a 1.2 writer owes, and what did not
+change. [docs/conformance/](docs/conformance/) holds conformance reports, the reference
+implementation's first.
 
 ## Privacy properties that must not be lost
 
@@ -342,8 +364,9 @@ most 200 characters; `schema_version` is `major.minor` everywhere and compared o
 provenance `spec` is a slug; an assessment has exactly six integer-scored dimensions; a sealed config
 path is well-formed and names a field the file carries. `actor.runtime` stays open, because the real
 journal spells it eleven ways, and `actor.runtime_agent` carries the closed identity. Every one of
-the reference deployment's 33,608 audit records, 19,207 signals, provenance records and assessments
-validates under these rules.
+the reference deployment's records validates under these rules: 33,608 audit records, 19,231 signals,
+995 provenance records and 2 assessments at the 5 October check (`fixtures/evidence/`), and 33,665,
+19,287, 4,588 and 2 at the 1.2.1 pin on 6 October (`docs/conformance/cdf-harness.md`).
 
 ## Layout
 
@@ -399,7 +422,7 @@ README.md                   this file
 CHANGELOG.md                what changed, per release
 CONTRIBUTING.md             how to run the checks and tighten a schema within 1.x
 GOVERNANCE.md               who decides, what needs a proposal, how a change lands, how a release is cut
-docs/                       proposals: one page per semantic change, on docs/proposals/TEMPLATE.md, kept as the record
+docs/                       implementing.md, upgrading-1.0-to-1.2.md, decisions.md, conformance/cdf-harness.md, and proposals/ (one page per semantic change, on TEMPLATE.md, kept as the record)
 SECURITY.md                 what counts as a vulnerability here, and where to report one
 LICENSE                     Apache-2.0
 package.json                the npm package; `files` is the tarball's allow-list
@@ -418,3 +441,8 @@ schemas with a corpus let them demonstrate it, and let anyone else check the cla
 
 The implementations remain PolyForm Noncommercial 1.0.0. Reading and writing the format is open;
 building a competing governed-delivery product out of this codebase is not.
+
+The decision records that shaped each release live in the harness repository, under that licence.
+[docs/decisions.md](docs/decisions.md) indexes them from here, release by release, with the three
+reviews, so a CHANGELOG entry can be followed back to its decision without crossing the boundary
+unread.

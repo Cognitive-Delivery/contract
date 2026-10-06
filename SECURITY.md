@@ -27,9 +27,10 @@ the contract itself permits something it should not:
 - **A sealing bypass.** `config-core.sealed` lists fields an upper layer has fixed. A lower
   layer may match a sealed value or make it stricter, never looser. A schema that permits
   loosening would let a workspace quietly undo a control its organisation set.
-- **A lease escape.** `agent-lease-manifest` and `agent-lease` describe what an agent may reach.
-  A shape that would let a manifest declare, or a lease grant, more than the harness intends
-  is in scope.
+- **A lease escape.** `agent-lease-manifest`, `agent-lease` and `lease-record` describe what an
+  agent may reach and what was decided about it. A shape that would let a manifest declare, or a
+  lease grant, more than the harness intends, or let a `revoked` record name a `by` outside the
+  chain, or a `granted` record carry a `granted_hash` that is not its lease's, is in scope.
 - **A path in the corpus or runner that executes fixture content** rather than reading it as
   data.
 - **The published test key.** `conformance/test-key.txt` is public on purpose: the signature

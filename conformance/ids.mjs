@@ -2,7 +2,7 @@
  * Where a schema's `$id` lives, stated once.
  *
  * This file sits under `conformance/` rather than `tooling/` because the published package
- * carries `conformance/` and not `tooling/`, and `npm test` needs it: 1.1.0's `run.mjs`
+ * carries `conformance/` and not `tooling/`, and `npm test` needs it: the 1.1.0 candidate's (e91afb0) `run.mjs`
  * imported it from `../tooling/sync-version.mjs`, which is not in the tarball, so the package
  * a consumer installed could not run its own test (contract review of 5 October 2026, defect 1).
  * `tooling/sync-version.mjs` re-exports from here so nothing else moves.

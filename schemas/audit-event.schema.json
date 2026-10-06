@@ -160,7 +160,7 @@
         "description": "A flat scalar; a string value is at most 200 characters, the reference writer's own cap, because `details` reaches a permanent record."
       },
       "propertyNames": {
-        "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of eleven words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",
+        "description": "Mirrors the reference writer's rule, which splits a key on non-alphanumerics and camelCase boundaries and drops it when any segment is one of ten words: authorization, content, file, password, path, payload, prompt, request, secret, token. The three clauses refuse the lower-case segment form (`api_token`, `file-path`), the camelCase interior form (`filePath`, `apiToken`) and the camelCase leading form (`tokenCount`). `estimated_files_touched` is legal: `files` is not `file`. No lookahead, so RE2 validators load it.",
         "allOf": [
           {
             "not": {

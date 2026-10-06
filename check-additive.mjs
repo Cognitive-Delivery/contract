@@ -35,8 +35,13 @@
  *   STABILITY_LOWERED       a stable field became development (its promise was withdrawn)   [format 5]
  *   CONDITIONAL_REQUIRED_ADDED  an allOf if/then made a name required                      [format 5]
  *
- * The last four need a baseline in lock format 2. Against a format-1 baseline they are
- * reported as NOT COMPARABLE rather than passed quietly.
+ * PATTERN_TIGHTENED, BOUND_TIGHTENED, CONTENT_MODEL_CLOSED and UNION_CHANGED need a baseline in
+ * lock format 2 or later; against a format-1 baseline they are reported as NOT COMPARABLE rather
+ * than passed quietly. A union's branch types and patterns are compared from format 3.
+ * STABILITY_LOWERED and CONDITIONAL_REQUIRED_ADDED need format 5 and are not compared against an
+ * older baseline. A re-pointed `$ref` is visible only against a format 4 or later baseline. A
+ * --baseline-ref baseline is always digested with the current generator, so an older format
+ * arises only with an explicit --baseline lock file.
  *
  * Usage:
  *   node check-additive.mjs                          drift check only

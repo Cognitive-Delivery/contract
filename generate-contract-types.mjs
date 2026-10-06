@@ -2,7 +2,7 @@
 /**
  * CDF governance contract → TypeScript generator.
  *
- * Reads contract/schemas/*.json and emits src/generated/contractTypes.ts.
+ * Reads contract/schemas/*.schema.json (never schemas/index.json) and emits src/generated/contractTypes.ts.
  * Run via `npm run generate:contract`.
  *
  * --check mode: regenerate in memory, compare to the committed file, exit 1 on diff.
@@ -198,7 +198,7 @@ async function build() {
     '/**',
     ' * CDF governance contract types (generated — do not edit).',
     ' *',
-    ' * Source of truth: contract/schemas/*.json. Regenerate with `npm run generate:contract`.',
+    ' * Source of truth: contract/schemas/*.schema.json. Regenerate with `npm run generate:contract`.',
     ' * Editing this file by hand makes the type disagree with the contract, and the contract',
     ' * is what a second implementation reads.',
     ' *',
