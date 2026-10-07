@@ -262,8 +262,9 @@ imported were not in `files`, and no check in the clone could see that; the fix 
 v1.1.0 was tagged, so the published 1.1.0 tarball runs its own test. Every file under
 `conformance/` and `schemas.lock.json` are importable
 through `exports`, so `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves.
-From the tarball the additive guard's scenarios are reported as not present rather than passed,
-because the guard ships with the repository.
+From the tarball the additive guard's scenarios and the type generator's injection checks are
+reported as not present rather than passed, because the guard and the generator ship with the
+repository.
 
 ### The corpus in numbers
 
@@ -439,7 +440,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   ajv-adapter.mjs           the reference adapter, so the corpus runs here and not only in a product
   run.mjs                   `npm test`
   ids.mjs                   where a schema's $id lives, stated once (the package ships this, not tooling/)
-  schema-checks.mjs         strict compile, every inlined copy identical to its source, the version
+  schema-checks.mjs         strict compile, every inlined copy identical to its source, the version, no annotation that could close a generated doc comment
   inlined-copies.mjs        where a schema carries a copy of another, stated once; the identity check and the inliner read it
   metaschema.json           the conventions every schema is held to: dialect, $id, title, no `format`, a stability $comment on every property
   layout-check.mjs          this block is current
@@ -454,6 +455,7 @@ conformance/                the reference runner and the vectors; takes an adapt
   suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what the six validators, Ajv among them, run
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
+  generator-tests.mjs       renders a hostile schema through the type generator and checks no schema text becomes code; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII
   jcs/                      RFC 8785's own reference vectors, vendored with their licence
   narrowing-vectors.json    declared and parent, with the grant or the refusal codes narrowing must produce

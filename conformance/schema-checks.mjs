@@ -18,6 +18,11 @@
  *   5. package.json's `cdfContract.schemaSetVersion` matches the package version. The version
  *      currency check in run.mjs covers the README, CHANGELOG and lock; this field had been
  *      left out and sat stale at 1.0.0 through two releases.
+ *   6. No `description`, `title` or `$comment` anywhere in a schema contains the block-comment
+ *      terminator (star then slash). The type generator writes description text into doc comments
+ *      in a consumer's source tree; it escapes the terminator, and this refuses the text in the
+ *      first place, so the protection does not rest on one function. The check is watched firing
+ *      on a sample every run, because a check nobody has seen fail is a sentence in a comment.
  */
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -31,6 +36,30 @@ import { INDEX_SCHEMA, indexStaleness } from './schema-index.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const schemaDir = resolve(root, 'schemas');
+
+const ANNOTATIONS = ['description', 'title', '$comment'];
+
+/**
+ * Every annotation in a schema tree that carries the block-comment terminator, as JSON pointers.
+ * Only string values are annotations: a property NAMED `description` under `properties` is a
+ * schema, and is walked rather than read.
+ */
+export function commentTerminatorSites(node, pointer = '') {
+  const sites = [];
+  if (Array.isArray(node)) {
+    node.forEach((child, i) => sites.push(...commentTerminatorSites(child, `${pointer}/${i}`)));
+  } else if (node && typeof node === 'object') {
+    for (const [key, value] of Object.entries(node)) {
+      const here = `${pointer}/${key.replace(/~/g, '~0').replace(/\//g, '~1')}`;
+      if (ANNOTATIONS.includes(key) && typeof value === 'string') {
+        if (value.includes('*/')) sites.push(here);
+      } else {
+        sites.push(...commentTerminatorSites(value, here));
+      }
+    }
+  }
+  return sites;
+}
 
 async function loadSchemas() {
   const files = (await readdir(schemaDir)).filter((n) => n.endsWith('.schema.json')).sort();
@@ -111,6 +140,24 @@ export async function runSchemaChecks() {
   const stated = pkg.cdfContract?.schemaSetVersion;
   if (stated !== pkg.version) {
     failures.push(`version/package.json cdfContract.schemaSetVersion is ${stated}, not ${pkg.version}.`);
+  }
+
+  // 6. No annotation can close a generated doc comment. Seen firing first, on a sample with the
+  //     terminator at each annotation keyword and a property named `description` that is clean.
+  const sample = {
+    title: 'a */ b',
+    properties: { description: { type: 'string', description: 'clean' }, x: { $comment: '*/' } },
+    definitions: { d: { description: 'x */ export const y = 1; /**' } },
+  };
+  const fired = commentTerminatorSites(sample).sort();
+  const wanted = ['/definitions/d/description', '/properties/x/$comment', '/title'];
+  if (JSON.stringify(fired) !== JSON.stringify(wanted)) {
+    failures.push(`comment-terminator/self-test: expected ${JSON.stringify(wanted)}, got ${JSON.stringify(fired)}`);
+  }
+  for (const [file, schema] of schemas) {
+    for (const site of commentTerminatorSites(schema)) {
+      failures.push(`comment-terminator/${file}#${site}: contains the block-comment terminator, which would end a generated doc comment.`);
+    }
   }
 
   return { schemaCount: schemas.size, failures };

@@ -79,11 +79,12 @@ field behind it and the absence that produces it.
 | `rejection paths NOT CHECKED (adapter reports no errors)` | `errorPathsChecked: false` | `lastErrors` is not an array after a rejection |
 
 An absent `roundTrip` prints nothing and has no field: the planted fixture is still validated, but
-nothing checks that the field survives. Three further lines from the installed package are about
-the tarball, not the adapter: `Additive guard: NOT PRESENT in this package`, `Layout: NOT CHECKED
+nothing checks that the field survives. Four further lines from the installed package are about
+the tarball, not the adapter: `Additive guard: NOT PRESENT in this package`, `Type generator: NOT
+PRESENT in this package`, `Layout: NOT CHECKED
 (published package; the repository check runs from a clone)` and `Site: NOT CHECKED (tooling/ is not
-in the package)`, because `check-additive.mjs`, the repository layout and the site generator ship
-with the repository only. The claims line, `Claims: N checked, F failure(s).`, is printed from the
+in the package)`, because `check-additive.mjs`, `generate-contract-types.mjs`, the repository layout
+and the site generator ship with the repository only. The claims line, `Claims: N checked, F failure(s).`, is printed from the
 package too, with each claim whose source is not in the package (CONTRIBUTING, `docs/`, the
 allow-list, the git history) listed as NOT CHECKED rather than passed.
 

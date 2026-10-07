@@ -22,9 +22,12 @@ vectors when `hash` and `verify` are supplied; and the lease rules L1 to L3 when
 supplied. A half the adapter does not offer is reported as not checked, never as passed. Then the
 schema checks (`conformance/schema-checks.mjs`): every schema compiles under Ajv strict mode, every
 inlined copy is byte-for-byte its source dereferenced, every schema validates against
-`conformance/metaschema.json`, `schemas/index.json` is valid and current, and
-`cdfContract.schemaSetVersion` matches the package version. Then the guard's own scenarios
-(`conformance/guard-tests.mjs`), the README's Layout block (`conformance/layout-check.mjs`), the
+`conformance/metaschema.json`, `schemas/index.json` is valid and current,
+`cdfContract.schemaSetVersion` matches the package version, and no `description`, `title` or
+`$comment` contains the block-comment terminator. Then the guard's own scenarios
+(`conformance/guard-tests.mjs`), the type generator's injection checks
+(`conformance/generator-tests.mjs`: a hostile schema is rendered and its output read back as code),
+the README's Layout block (`conformance/layout-check.mjs`), the
 site (`conformance/site-check.mjs`: built twice into temporary directories from this tree; every
 link and anchor resolves, every schema and document has a page, the `$id` bytes are untouched, no
 page carries a script or reaches another host, and the two builds are byte-identical), the
