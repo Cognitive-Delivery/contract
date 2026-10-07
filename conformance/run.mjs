@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { runConformance } from './runner.mjs';
 import { createAjvAdapter } from './ajv-adapter.mjs';
 import { runGuardTests } from './guard-tests.mjs';
+import { runGeneratorTests } from './generator-tests.mjs';
 import { runSchemaChecks } from './schema-checks.mjs';
 import { runLayoutCheck } from './layout-check.mjs';
 import { runSiteCheck } from './site-check.mjs';
@@ -119,10 +120,17 @@ console.log(guard.present
   ? `Additive guard: ${guard.count} scenarios, ${guard.failures.length} failure(s).`
   : 'Additive guard: NOT PRESENT in this package (check-additive.mjs ships with the repository, not the tarball); its scenarios run from a clone.');
 
+// The type generator writes into a consumer's source tree, so what it emits from a hostile schema
+// is read back as code: schema text must stay comment or string, never become a statement.
+const generatorTests = await runGeneratorTests();
+console.log(generatorTests.present
+  ? `Type generator: ${generatorTests.count} injection checks, ${generatorTests.failures.length} failure(s).`
+  : 'Type generator: NOT PRESENT in this package (generate-contract-types.mjs ships with the repository, not the tarball); its checks run from a clone.');
+
 // The schema set itself: strict compile, the inlined granted manifest identical to its
 // source, and the package's own version statement. Held here, not in a consumer.
 const schemaChecks = await runSchemaChecks();
-console.log(`Schema checks: ${schemaChecks.schemaCount} schemas strict-compiled, identity and version checked, ${schemaChecks.failures.length} failure(s).`);
+console.log(`Schema checks: ${schemaChecks.schemaCount} schemas strict-compiled, identity, version and annotations checked, ${schemaChecks.failures.length} failure(s).`);
 
 // The README's Layout block names every file, or a reader learns about a file by stumbling on
 // it. Repository only: the tarball is a documented subset.
@@ -170,7 +178,7 @@ if (claims.notChecked.length > 0) {
   console.log(`Claims: ${claims.notChecked.length} NOT CHECKED (\`node conformance/claims-check.mjs\` lists each): ${[...byReason].map(([reason, ids]) => `${ids.length} because ${reason}`).join('; ')}.`);
 }
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...site.failures, ...trace.failures, ...suiteFailures, ...claims.failures];
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...generatorTests.failures, ...schemaChecks.failures, ...layout.failures, ...site.failures, ...trace.failures, ...suiteFailures, ...claims.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

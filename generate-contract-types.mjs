@@ -23,7 +23,7 @@
 
 import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -66,7 +66,7 @@ const TYPE_NAMES = {
  * `minItems`, `maxItems`. Silently ignoring them was the defect the second contract review named.
  */
 const UNEXPRESSIBLE = ['allOf', 'oneOf', 'not', 'if', 'then', 'else', 'propertyNames', 'minProperties', 'maxProperties', 'contains', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'minItems', 'maxItems', 'uniqueItems', 'dependencies'];
-const unexpressible = new Map();
+let unexpressible = new Map();
 function noteUnexpressible(node, where) {
   for (const key of UNEXPRESSIBLE) {
     if (key in node) {
@@ -81,9 +81,56 @@ function pascal(name) {
   return name.replace(/(^|[^a-zA-Z0-9])([a-zA-Z0-9])/g, (_m, _s, c) => c.toUpperCase());
 }
 
+/*
+ * EVERYTHING BELOW THAT COMES FROM A SCHEMA IS DATA, AND IS EMITTED AS DATA.
+ *
+ * The output is TypeScript that a consumer compiles into its own product, so a schema string that
+ * reached it unescaped would be code in every repository that regenerates. An internal security
+ * review showed exactly that: a description containing the comment terminator closed the doc
+ * comment and the rest of it became a top-level statement in the consumer's generated file, while
+ * `npm test` here stayed Conformant. So every schema-sourced string goes out through one of three doors, and nothing
+ * else in this file interpolates schema text:
+ *
+ *   docComment()     description text, inside a block comment that it cannot close
+ *   stringLiteral()  enum values, as JSON (a valid TypeScript string literal, every character escaped)
+ *   identifier()     type names derived from definition keys and `$ref`s, refused unless they are
+ *                    plain identifiers
+ */
+
+/**
+ * Description text as a one-line JSDoc block. Whitespace (including CR, LF, U+2028 and U+2029)
+ * collapses to one space, so the comment is one line; a backslash goes between every star and
+ * slash that would close it, so the text cannot end the comment early. An opening slash-star
+ * inside a block comment opens nothing in TypeScript, so it needs no treatment.
+ */
+export function docComment(text, pad = '') {
+  const flat = String(text).replace(/\s+/g, ' ').trim().replace(/\*\//g, '*\\/');
+  return `${pad}/** ${flat} */\n`;
+}
+
+/** An enum member as a TypeScript literal type, or a refusal. */
+export function stringLiteral(value) {
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean') return String(value);
+  if (value === null) return 'null';
+  throw new Error(`Unsupported enum value ${JSON.stringify(value)}: this generator is deliberately narrow.`);
+}
+
+/** A generated type name, or a refusal: nothing but identifier characters reaches the output. */
+export function identifier(name) {
+  if (typeof name !== 'string' || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) {
+    throw new Error(`Refusing to emit ${JSON.stringify(name)} as a type name: not a plain identifier.`);
+  }
+  return name;
+}
+
 function refName(root, ref) {
-  const key = ref.replace('#/definitions/', '');
-  return `${root}${pascal(key)}`;
+  if (typeof ref !== 'string' || !ref.startsWith('#/definitions/')) {
+    throw new Error(`Unsupported $ref ${JSON.stringify(ref)}: only #/definitions/ is understood.`);
+  }
+  const key = ref.slice('#/definitions/'.length);
+  return identifier(`${root}${pascal(key)}`);
 }
 
 /** Render one schema node as a TypeScript type expression. */
@@ -98,7 +145,7 @@ function renderType(node, rootName, indent, where = rootName) {
   }
 
   if (Array.isArray(node.enum)) {
-    return node.enum.map((value) => (typeof value === 'string' ? `'${value}'` : String(value))).join(' | ');
+    return node.enum.map(stringLiteral).join(' | ');
   }
 
   const kind = node.type;
@@ -151,9 +198,7 @@ function renderObject(node, rootName, indent) {
   const lines = keys.map((key) => {
     const property = properties[key];
     const optional = required.has(key) ? '' : '?';
-    const doc = property.description
-      ? `${inner}/** ${property.description.replace(/\s+/g, ' ').trim()} */\n`
-      : '';
+    const doc = property.description ? docComment(property.description, inner) : '';
     return `${doc}${inner}readonly ${JSON.stringify(key)}${optional}: ${renderType(property, rootName, indent + 2)};`;
   });
 
@@ -169,30 +214,36 @@ function renderObject(node, rootName, indent) {
   return `{\n${lines.join('\n')}\n${pad}}`;
 }
 
-async function build() {
-  // `.schema.json` only: schemas/index.json is the index of the schemas, not one of them.
-  const files = (await readdir(schemaDir)).filter((name) => name.endsWith('.schema.json')).sort();
+/**
+ * The pure render: schemas in (file name → parsed schema), TypeScript out. No filesystem, so the
+ * conformance run can feed it a hostile schema and read what it would have written
+ * (`conformance/generator-tests.mjs`). `typeNames` defaults to the registered set.
+ */
+export function renderContractTypes(schemasByFile, version, typeNames = TYPE_NAMES) {
+  if (typeof version !== 'string' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+    throw new Error(`Refusing to emit version ${JSON.stringify(version)}: not a semantic version.`);
+  }
+  unexpressible = new Map();
   const blocks = [];
 
-  for (const file of files) {
-    const typeName = TYPE_NAMES[file];
+  for (const file of Object.keys(schemasByFile).sort()) {
+    const typeName = typeNames[file];
     if (!typeName) {
       throw new Error(`No type name registered for ${file} — add it to TYPE_NAMES deliberately.`);
     }
+    identifier(typeName);
 
-    const schema = JSON.parse(await readFile(join(schemaDir, file), 'utf8'));
+    const schema = schemasByFile[file];
 
     for (const [key, definition] of Object.entries(schema.definitions ?? {}).sort(([a], [b]) => a.localeCompare(b))) {
-      const name = `${typeName}${pascal(key)}`;
-      const doc = definition.description ? `/** ${definition.description.replace(/\s+/g, ' ').trim()} */\n` : '';
+      const name = identifier(`${typeName}${pascal(key)}`);
+      const doc = definition.description ? docComment(definition.description) : '';
       blocks.push(`${doc}export type ${name} = ${renderType(definition, typeName, 0)};`);
     }
 
-    const doc = schema.description ? `/** ${schema.description.replace(/\s+/g, ' ').trim()} */\n` : '';
+    const doc = schema.description ? docComment(schema.description) : '';
     blocks.push(`${doc}export type ${typeName} = ${renderType(schema, typeName, 0)};`);
   }
-
-  const version = JSON.parse(await readFile(packagePath, 'utf8')).version;
 
   return [
     '/**',
@@ -218,6 +269,17 @@ async function build() {
     blocks.join('\n\n'),
     '',
   ].join('\n');
+}
+
+async function build() {
+  // `.schema.json` only: schemas/index.json is the index of the schemas, not one of them.
+  const files = (await readdir(schemaDir)).filter((name) => name.endsWith('.schema.json')).sort();
+  const schemas = {};
+  for (const file of files) {
+    schemas[file] = JSON.parse(await readFile(join(schemaDir, file), 'utf8'));
+  }
+  const version = JSON.parse(await readFile(packagePath, 'utf8')).version;
+  return renderContractTypes(schemas, version);
 }
 
 /**
@@ -263,7 +325,11 @@ async function main() {
   console.log(`Wrote ${outputPath}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Run as a command only when executed, so the conformance run can import the render without
+// tripping the consumer guard (or writing anything).
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

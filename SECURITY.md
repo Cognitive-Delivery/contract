@@ -35,6 +35,13 @@ the contract itself permits something it should not:
   chain, or a `granted` record carry a `granted_hash` that is not its lease's, is in scope.
 - **A path in the corpus or runner that executes fixture content** rather than reading it as
   data.
+- **Schema text that becomes code.** `generate-contract-types.mjs` writes TypeScript into the
+  repository that embeds the contract, and that repository compiles it. Its guarantee is that
+  schema text reaches the output only as a doc comment it cannot close, a JSON string literal, or
+  a type name made of identifier characters, and that anything else is refused rather than
+  emitted. `npm test` renders a hostile schema to check this, and refuses any `description`,
+  `title` or `$comment` that contains the block-comment terminator. A schema that gets text out of
+  a comment or a literal in the generated file, or a check that misses one, is in scope.
 - **The published test key.** `conformance/test-key.txt` is public on purpose: the signature
   vectors are signed with it so any implementation can check them. It signs fixtures and nothing
   else. A real lease, record or attestation that verifies under it is a vulnerability in whatever

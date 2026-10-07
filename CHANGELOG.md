@@ -113,6 +113,28 @@ tooling in this repository.
   the upstream projects' own (`adobe-fonts/source-sans` `LICENSE.md`, `JetBrains/JetBrainsMono`
   `OFL.txt`), and `tooling/site/BRAND-NOTICE.md` records where each came from and what differed.
 
+### Security
+
+- **The type generator could be made to write code into a consumer's source tree.** Found by an
+  internal security review. `generate-contract-types.mjs` copied schema `description` text into
+  `/** ... */` doc comments without escaping the block-comment terminator, and wrote enum values
+  between single quotes without escaping them. A description carrying the terminator closed its
+  comment, so the rest of the text became a top-level statement in the consumer's
+  `src/generated/contractTypes.ts`, which the consumer compiles into its product; `npm test` stayed
+  Conformant. A merged schema change could therefore run code in every repository that regenerated
+  its types. Now every schema-sourced string leaves the generator through one of three functions:
+  description text is flattened to one line with the terminator escaped, enum values are emitted as
+  JSON string literals (numbers only when finite), and every type name derived from a definition
+  key or a `$ref` is refused unless it is a plain identifier; a `$ref` outside `#/definitions/` and
+  a version that is not a semantic version are refused too. `conformance/generator-tests.mjs` renders
+  a schema carrying the review's payload at every emission site, and enum values carrying quotes,
+  backslashes and line breaks, and reads the output back as code; `conformance/schema-checks.mjs`
+  refuses any `description`, `title` or `$comment` containing the terminator, and is seen firing on
+  a sample each run. Both run in `npm test`, and each was seen failing with its protection undone.
+  **For a consumer:** the generated types for the current schemas are unchanged except that enum
+  members are now double-quoted, so regenerate once after updating (`--check` reports the file
+  stale until you do). No schema changed.
+
 ## [1.2.1] — 2026-10-06
 
 Tooling only; the SPEC's schema set stays 1.2 (no normative change) and `/1.x/` served the 1.2.1
