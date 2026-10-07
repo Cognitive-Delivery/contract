@@ -18,9 +18,11 @@ the contract itself permits something it should not:
   and retained indefinitely, so anything that reaches it is effectively permanent. Prompts are
   never recorded; `prompt_hash`, `request_hash`, `steering_hash` and `content_hash` are SHA-256
   and the schemas refuse any other shape; `workspace_id` is a hash of the git remote URL or a
-  per-checkout UUID; `details` keys whose segment is one of `authorization`, `content`, `file`,
-  `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` are refused by the
-  schema; `summary` and `reasoning` are capped. The actor records a kind and a model, never a
+  per-checkout UUID; `details` keys whose lower-case or camelCase segment is one of
+  `authorization`, `content`, `file`, `password`, `path`, `payload`, `prompt`, `request`, `secret`
+  or `token` are refused by the schema, which approximates the reference writer's case-insensitive
+  rule rather than mirroring it (the schema admits `Authorization` and `API_TOKEN`; the
+  `propertyNames` description lists every difference); `summary` and `reasoning` are capped. The actor records a kind and a model, never a
   name, email or git identity.
   A shape that lets identifying data into a permanent record is a security issue, not a style
   one.

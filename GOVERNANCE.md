@@ -36,7 +36,9 @@ description, a tooling fix, a dependency bump. It goes straight to a pull reques
    one that is not.
 2. The checks the README names, all required: the corpus on two Node versions, the additive guard
    against `main`, the published-package self-test, the RE2 compile, line endings, the corpus under
-   six other validators, and Sourcemeta's meta-schema and lint.
+   six validators (Ajv among them; the job keeps its required-check name, "corpus under six other
+   validators (Bowtie)", because renaming it would change a required check), and Sourcemeta's
+   meta-schema and lint.
 3. The pull-request template's boxes: CHANGELOG entry, SPEC §13 row where the SPEC changes, README
    current, every tightening allow-listed with its evidence.
 4. Review by the maintainer. A pull request from the maintainer is reviewed by the checks and the

@@ -1,6 +1,6 @@
 [
   {
-    "description": "CDF config, shared core (config-core.schema.json, @cognitive-delivery/contract 1.2.1): every fixture of the conformance corpus",
+    "description": "CDF config, shared core (config-core.schema.json, exported from a tree at @cognitive-delivery/contract 1.2.1; on main its descriptions may be ahead of that tag): every fixture of the conformance corpus",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/config-core.schema.json",

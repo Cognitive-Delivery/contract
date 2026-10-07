@@ -20,6 +20,7 @@ import { idFor } from './ids.mjs';
 import { changelogSection } from './changelog.mjs';
 import { runTraceabilityCheck } from './traceability-check.mjs';
 import { staleSuiteFiles } from './suite-export.mjs';
+import { runClaimsCheck } from './claims-check.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -157,7 +158,19 @@ console.log(stale.length === 0
   : `Suite export: ${stale.length} stale file(s) — run \`npm run lock\`.`);
 const suiteFailures = stale.map((f) => `suite: conformance/suite/${f} is stale; run \`npm run lock\` and commit it.`);
 
-const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...site.failures, ...trace.failures, ...suiteFailures];
+// Every count and list the documents state, recomputed from the repository: a number in prose is
+// a fact with a short half-life unless something checks it (the fourth review found twenty-two
+// that had gone stale). A claim whose source is not in the package, or that needs the release tags,
+// is listed NOT CHECKED rather than passed.
+const claims = await runClaimsCheck();
+console.log(`Claims: ${claims.checked} checked, ${claims.failures.length} failure(s).`);
+if (claims.notChecked.length > 0) {
+  const byReason = new Map();
+  for (const n of claims.notChecked) byReason.set(n.reason, [...(byReason.get(n.reason) ?? []), n.id]);
+  console.log(`Claims: ${claims.notChecked.length} NOT CHECKED (\`node conformance/claims-check.mjs\` lists each): ${[...byReason].map(([reason, ids]) => `${ids.length} because ${reason}`).join('; ')}.`);
+}
+
+const failures = [...report.failures, ...currency.problems, ...guard.failures, ...schemaChecks.failures, ...layout.failures, ...site.failures, ...trace.failures, ...suiteFailures, ...claims.failures];
 
 if (failures.length > 0) {
   console.error(`\n${failures.length} failure(s):\n`);

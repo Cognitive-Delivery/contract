@@ -127,13 +127,16 @@ function refName(node) {
   return node.$ref.slice('#/definitions/'.length);
 }
 
-/** `enum` in full up to ten values; beyond that a count and three examples. */
+/**
+ * `enum` in full, always. Up to ten values inline; beyond that the count, then every value inside
+ * a `<details>` element, which the browser opens without a script. An earlier version showed three
+ * examples past ten, which dropped a constraint the index page says is shown.
+ */
 function enumText(values, what = 'one of') {
-  const shown = values.length <= ENUM_IN_FULL ? values : values.slice(0, 3);
-  const list = shown.map((v) => json(v)).join(', ');
+  const list = values.map((v) => json(v)).join(', ');
   return values.length <= ENUM_IN_FULL
     ? `${what} ${list}`
-    : `${what} ${values.length} values, e.g. ${list}`;
+    : `${what} ${values.length} values <details class="enum"><summary>all ${values.length}</summary>${list}</details>`;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -644,7 +647,7 @@ function indexPage(walkedAll, { base, major, siteName, stabilityLegend }) {
   });
   const total = walkedAll.reduce((n, w) => n + w.propertyCount, 0);
   const body = `<h1>Schema reference</h1>
-<p>One page per schema of set ${esc(major)}.x, read from the schema files themselves: every declared property with its path, type, requirement, description, constraints and stability, and every definition a property refers to. The pages are generated from <code>schemas/*.schema.json</code> at every deploy, so they say what the schemas say and nothing else; the JSON each page links to is the file served at the schema's <code>$id</code>.</p>
+<p>One page per schema of set ${esc(major)}.x, read from the schema files themselves: every declared property with its path, type, requirement, description, constraints and stability, and every definition a property refers to. An enumeration longer than ten values is shown in full under a disclosure; inside the one-line summary of a union branch, a deeper union or <code>allOf</code> is counted rather than listed, and the schema's JSON, linked from each page, is authoritative. The pages are generated from <code>schemas/*.schema.json</code> at every deploy, so they say what the schemas say and nothing else; the JSON each page links to is the file served at the schema's <code>$id</code>.</p>
 <table>
 <thead><tr><th>Schema</th><th>Title</th><th>Description</th><th>Properties</th><th>Raw</th></tr></thead>
 <tbody>
@@ -837,9 +840,16 @@ export async function selfTestReference() {
   const reasonCode = leaseRecord.definitions.find((d) => d.name === 'reasonCode');
   includes(reasonCode.rows[0].constraints.join('\n'), 'any of: (1) pattern <code>^R[1-9][0-9]?$</code>; (2) pattern', 'a pattern-only branch is summarised without a type');
 
-  // Enum collapse past ten values: the hooks event map's key list.
+  // An enum past ten values is rendered in full inside <details>: the hooks event map's key list.
   const hooksMap = byName['plugin-manifest'].definitions.find((d) => d.name === 'hooksMap');
-  includes(hooksMap.rows[0].constraints.join('\n'), 'keys one of 33 values, e.g.', 'an enum past ten values collapses to a count');
+  const hooksKeys = hooksMap.rows[0].constraints.join('\n');
+  includes(hooksKeys, 'keys one of 33 values <details class="enum"><summary>all 33</summary>', 'an enum past ten values is counted and disclosed');
+  const hookEvents = inputs.schemas.find((x) => x.file === 'plugin-manifest.schema.json').schema.definitions.hooksMap.propertyNames.enum;
+  check(hookEvents.length, 33, 'the hooks event map lists thirty-three events');
+  for (const event of hookEvents) includes(hooksKeys, json(event), `every hook event is shown, ${event} among them`);
+  const eventTypes = byName['cdi-signal'].rows.find((r) => r.path === 'event_type');
+  const eventTypeEnum = inputs.schemas.find((x) => x.file === 'cdi-signal.schema.json').schema.properties.event_type.enum;
+  for (const value of eventTypeEnum) includes(eventTypes.constraints.join('\n'), json(value), 'every cdi-signal event_type value is shown');
   const dimensions = byName['cdi-assessment'].rows.find((r) => r.path === 'dimensions');
   includes(dimensions.constraints.join('\n'), 'must contain an item: object, with <code>id</code> = <code>&quot;provenance-integrity&quot;</code>, requires <code>id</code>', 'contains is rendered as a constraint');
 

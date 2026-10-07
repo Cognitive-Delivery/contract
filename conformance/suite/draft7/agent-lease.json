@@ -1,6 +1,6 @@
 [
   {
-    "description": "Agent Lease (agent-lease.schema.json, @cognitive-delivery/contract 1.2.1): every fixture of the conformance corpus",
+    "description": "Agent Lease (agent-lease.schema.json, exported from a tree at @cognitive-delivery/contract 1.2.1; on main its descriptions may be ahead of that tag): every fixture of the conformance corpus",
     "schema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "https://cognitive-delivery.github.io/contract/1.x/agent-lease.schema.json",
@@ -164,7 +164,7 @@
                 },
                 "read_paths": {
                   "type": "array",
-                  "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2 or I-Regexp validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
+                  "description": "Workspace-relative POSIX globs the agent may read. Refused here, without lookahead so any RE2-based validator can load the rule: a leading `/`, any `..` segment, a leading `~`, a drive-letter prefix and any backslash. The registry re-checks the resolved path against the workspace root.",
                   "items": {
                     "type": "string",
                     "minLength": 1,
@@ -242,7 +242,7 @@
                     "minLength": 1,
                     "maxLength": 253,
                     "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
-                    "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+                    "description": "A host the agent may reach. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which uses no lookahead or backreference and compiles under RE2: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
                   },
                   "$comment": "stability: stable"
                 },
@@ -327,7 +327,7 @@
                     "minLength": 1,
                     "maxLength": 253,
                     "pattern": "^(\\*|(\\*\\.)?[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*)$",
-                    "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which is RFC 9485 I-Regexp with no lookahead: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
+                    "description": "A host refused outright. A lower-case DNS name of one or more labels, an IPv4 literal or `localhost` (both are DNS-name shaped), with an optional single leading `*.` label, or the bare `*`. Refused by the pattern, which uses no lookahead or backreference and compiles under RE2: a scheme, a port, a path, whitespace, upper case, a trailing dot and a wildcard anywhere but the first label. A port is not a host: the egress proxy matches hostnames, and a rule nothing enforces is a claim. IP literals are admitted because a local model provider (Ollama, LM Studio) lives at 127.0.0.1 and the root policy derives its hosts from provider URLs."
                   },
                   "$comment": "stability: stable"
                 }

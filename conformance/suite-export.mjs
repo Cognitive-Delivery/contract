@@ -64,7 +64,7 @@ export async function buildSuite() {
     // carrying the full schema; a schema alone above the budget still gets one test per case,
     // which is the best that can be done without changing what is tested.
     const cases = [];
-    const title = `${schema.title ?? shape} (${file}, @cognitive-delivery/contract ${pkg.version})`;
+    const title = `${schema.title ?? shape} (${file}, exported from a tree at @cognitive-delivery/contract ${pkg.version}; on main its descriptions may be ahead of that tag)`;
     let chunk = [];
     const lineLength = (list, index) => JSON.stringify({ description: `${title}: fixtures ${index}`, schema, tests: list }).length;
     for (const test of tests) {

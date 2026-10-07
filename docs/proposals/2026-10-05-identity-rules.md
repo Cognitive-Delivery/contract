@@ -29,8 +29,8 @@ of at most 253 characters, which admits IPv4 literals and `localhost`; a command
 `^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$`; a tool or approval is `^[A-Za-z0-9_][A-Za-z0-9_.:/-]{0,127}$`,
 never `*`. Applied to `allow` and `deny`, to the inlined copies in `agent-lease` and `lease-record`,
 and to the plugin schemas' `capabilities`. `agent.name` is capped at 120 and described as never a
-person's name; `intent.purpose` at 500. Every pattern is in the I-Regexp subset and compiles under
-RE2 in CI.
+person's name; `intent.purpose` at 500. Every pattern is an ECMA-262 regular expression without
+lookaround or backreferences, applied as an unanchored search, and compiles under RE2 in CI.
 
 ## Backward compatibility
 

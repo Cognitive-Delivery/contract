@@ -21,7 +21,11 @@ jobs:
       matrix:
         node: ['20', '22']
     steps:
+      # Full history with tags: the claims check recomputes the guard's counts between two
+      # release tags, and reports them NOT CHECKED in a clone without the tags.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -32,11 +36,13 @@ jobs:
 
       # Every valid fixture accepted, every invalid one rejected with a written reason and at the
       # path its .expect.json names, an unknown field surviving a round trip (top level and nested),
-      # the canonical, narrowing and signature vectors, the lease rules, the guard's own scenarios,
-      # every schema compiling under Ajv strict mode and validating against the meta-schema, every
-      # inlined copy identical to its source, schemas/index.json valid and current, the README's
-      # Layout block, the SPEC traceability map, the exported suite current, and the version
-      # stated consistently everywhere.
+      # the canonical and signature vectors, the narrowing vectors checked for shape only (the
+      # reference adapter offers no `narrow`, so their behaviour is NOT CHECKED here; the reference
+      # implementation runs them), the lease rules, the guard's own scenarios, every schema
+      # compiling under Ajv strict mode and validating against the meta-schema, every inlined copy
+      # identical to its source, schemas/index.json valid and current, the README's Layout block,
+      # the site build, the SPEC traceability map, the exported suite current, the stated counts
+      # (the claims check), and the version stated consistently everywhere.
       - run: npm test
 
   package:

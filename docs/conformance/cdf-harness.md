@@ -46,8 +46,9 @@ the adapter reaches no editor code.
 
 ## Real artefacts
 
-`test/unit/contractRealArtefacts.test.ts` validates the harness's own journals, and a zero count
-fails. At the pin, 2026-10-06: 33,665 audit events, 19,287 CDI signals, 4,588 provenance records,
+`test/unit/contractRealArtefacts.test.ts` validates the harness's own journals. A zero count fails
+for the audit events, CDI signals, provenance records and assessments; an empty or absent lease
+journal passes, because a workspace that has never issued a lease has none. At the pin, 2026-10-06: 33,665 audit events, 19,287 CDI signals, 4,588 provenance records,
 2 assessments, 6 lease records and 1 config; zero rejected.
 
 ## Narrowing vectors
