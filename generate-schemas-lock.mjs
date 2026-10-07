@@ -58,7 +58,7 @@ function compareJson(a, b) {
 
 /**
  * The patterns a value must NOT match, expressed as `allOf: [{ not: { pattern } }, …]`.
- * This is how a path rule is written without lookahead (RFC 9485 I-Regexp has none), so the
+ * This is how a path rule is written without lookahead (RE2 has none), so the
  * lock has to see it as the constraint it is: adding one tightens, removing one loosens.
  */
 function notPatternsOf(node) {

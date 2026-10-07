@@ -4,9 +4,11 @@
 // load, and a schema set that carries one is not "usable from another language with
 // nothing else", whatever the README says.
 //
-// RE2 syntax is a superset of RFC 9485 I-Regexp, which is the portability target the
-// specification names, so passing here is necessary and not quite sufficient; it catches
-// the construct implementers actually hit.
+// The specification's portability target (SPEC section 4.4) is an ECMA-262 regular
+// expression in the subset that also compiles under RE2, applied as an unanchored search.
+// Passing here is necessary and not quite sufficient: it catches lookaround and
+// backreferences, the constructs implementers actually hit, but not a construct both
+// engines accept with different meanings.
 //
 // Usage, from this directory: go run . ../../schemas
 package main

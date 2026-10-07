@@ -454,7 +454,7 @@ async function frontPage(ctx) {
 ${ways.map(([label, path, blurb]) => `<li class="card"><a class="btn" href="${site(path)}">${label}</a> <span>${blurb}</span></li>`).join('\n')}
 </ul>
 <dl class="facts">
-<dt>Current version</dt><dd>${esc(ctx.version)}</dd>
+<dt>Current release</dt><dd>${esc(ctx.version)}</dd>
 <dt>Specification</dt><dd>${link(site('/spec/'), 'The Agent Lease Manifest')}: ${specInline(specHeader)}</dd>
 <dt>Licence</dt><dd>${esc(ctx.licence)}</dd>
 <dt>Repository</dt><dd>${link(REPO_URL, 'github.com/Cognitive-Delivery/contract')}</dd>
@@ -462,13 +462,13 @@ ${ways.map(([label, path, blurb]) => `<li class="card"><a class="btn" href="${si
 <dt>Registry</dt><dd>${link(SCHEMASTORE_URL, 'SchemaStore')}</dd>
 </dl>
 ${eyebrow('current', `Current (${esc(ctx.major)}.x)`)}
-<p>The schema set, served at each schema's <code>$id</code> (the current <code>${esc(ctx.major)}.x</code>)${indexJson}.</p>
+<p>The schema set as it is on <code>main</code>, served at each schema's <code>$id</code> (<code>${esc(ctx.major)}.x</code>)${indexJson}. It may carry description-only changes ahead of the ${esc(ctx.version)} tag; the frozen copy below is the release byte for byte.</p>
 <ul>
 ${current}
 </ul>
 ${eyebrow('released', 'Released, frozen')}
 ${frozen}
-<p>${link(site('/versions/'), 'Versions')} links each release to its GitHub Release and its changelog section.</p>
+<p>${link(site('/versions/'), 'Versions')} links each release to its GitHub Release (its tag, for the 1.0.x releases) and its changelog section.</p>
 `;
   return { path: '/', title: SITE_NAME, body };
 }
@@ -608,15 +608,34 @@ function eyebrowReferenceLabels(page) {
   return { ...page, body };
 }
 
-/** `/versions/`: every frozen directory, its GitHub Release and its changelog section. */
+/**
+ * The first version with a GitHub Release. `release.yml` has created one for every tag since
+ * v1.1.0 (CHANGELOG 1.1.0, "A GitHub Release for every tag"); the 1.0.x tags were cut before it
+ * and have a tag and no release. Stated here as a constant from the CHANGELOG rather than asked of
+ * GitHub, because the build makes no network request.
+ */
+const FIRST_GITHUB_RELEASE = '1.1.0';
+
+export function hasGithubRelease(version) {
+  return version.localeCompare(FIRST_GITHUB_RELEASE, undefined, { numeric: true }) >= 0;
+}
+
+/** A release's GitHub Release, or its tag when it has none, labelled as what it is. */
+function releaseLink(version, { long = false } = {}) {
+  return hasGithubRelease(version)
+    ? link(`${REPO_URL}/releases/tag/v${version}`, long ? `Release v${version}` : `release v${version}`)
+    : link(`${REPO_URL}/tree/v${version}`, long ? `Tag v${version} (no GitHub Release)` : `tag v${version} (no GitHub Release)`);
+}
+
+/** `/versions/`: every frozen directory, its GitHub Release or tag and its changelog section. */
 function versionsPage(ctx) {
   const rows = ctx.frozen.map((v) => `<tr><td>${esc(v.version)}</td>`
     + `<td>${link(site(`/${v.version}/`), `/${v.version}/`)}</td>`
-    + `<td>${link(`${REPO_URL}/releases/tag/v${v.version}`, `v${v.version}`)}</td>`
+    + `<td>${releaseLink(v.version)}</td>`
     + `<td>${link(`${site('/changelog/')}#${v.version}`, `CHANGELOG ${v.version}`)}</td></tr>`);
   const body = `<h1>Versions</h1>
-<p>The current schema set is ${esc(ctx.version)}, served at each schema's <code>$id</code> under <code>/${esc(ctx.major)}.x/</code> and listed on the ${link(site('/'), 'front page')}. Each release is also served frozen under its own directory, byte for byte as tagged and never rewritten.</p>
-${rows.length === 0 ? '<p>No frozen copies were laid out in this build.</p>' : `<table>\n<thead><tr><th>Version</th><th>Frozen copy</th><th>Release</th><th>Changelog</th></tr></thead>\n<tbody>\n${rows.join('\n')}\n</tbody>\n</table>`}
+<p>The current release is ${esc(ctx.version)}. Each schema's <code>$id</code> under <code>/${esc(ctx.major)}.x/</code> serves the schema as it is on <code>main</code>, listed on the ${link(site('/'), 'front page')}; <code>main</code> may carry description-only changes ahead of the next tag. Each release is also served frozen under its own directory, byte for byte as tagged and never rewritten. Releases from ${esc(FIRST_GITHUB_RELEASE)} have a GitHub Release; the 1.0.x releases were tagged before the release workflow created GitHub Releases, so they link to their tags.</p>
+${rows.length === 0 ? '<p>No frozen copies were laid out in this build.</p>' : `<table>\n<thead><tr><th>Version</th><th>Frozen copy</th><th>GitHub Release or tag</th><th>Changelog</th></tr></thead>\n<tbody>\n${rows.join('\n')}\n</tbody>\n</table>`}
 `;
   return { path: '/versions/', title: `Versions · ${SITE_NAME}`, body };
 }
@@ -629,7 +648,7 @@ function versionPage(ctx, v) {
 <ul>
 ${files}
 </ul>
-<p>${link(`${REPO_URL}/releases/tag/v${v.version}`, `Release v${v.version}`)} and its ${link(`${site('/changelog/')}#${v.version}`, 'changelog section')}.</p>
+<p>${releaseLink(v.version, { long: true })} and its ${link(`${site('/changelog/')}#${v.version}`, 'changelog section')}.</p>
 `;
   return { path: `/${v.version}/`, title: `contract ${v.version} · ${SITE_NAME}`, body };
 }
@@ -757,6 +776,15 @@ function selfTest() {
   try { siteHref('docs/missing.md', 'README.md', ctx); } catch (error) { refused = error instanceof SiteError; }
   check(refused, true, 'a link to a path not in the tree is refused');
   check(pageFor(BRAND_NOTICE), '/brand-notice/', 'the brand notice has its page');
+
+  // A release before the first GitHub Release links to its tag and says so; later ones to the release.
+  check(hasGithubRelease('1.0.2'), false, '1.0.2 has no GitHub Release');
+  check(hasGithubRelease('1.1.0'), true, '1.1.0 has a GitHub Release');
+  check(hasGithubRelease('1.10.0'), true, 'versions compare numerically');
+  const versions = versionsPage({ version: '1.2.1', major: '1', frozen: [{ version: '1.0.2', files: [] }, { version: '1.2.1', files: [] }] }).body;
+  check(versions.includes(`<a href="${REPO_URL}/tree/v1.0.2">tag v1.0.2 (no GitHub Release)</a>`), true, 'a 1.0.x row links its tag, labelled as one');
+  check(versions.includes(`<a href="${REPO_URL}/releases/tag/v1.2.1">release v1.2.1</a>`), true, 'a later row links its GitHub Release');
+  check(versions.includes('releases/tag/v1.0.2'), false, 'no 1.0.x row claims a GitHub Release');
   console.log(`build-site self-test: ${count} assertions passed`);
 }
 

@@ -1,6 +1,6 @@
 # The Agent Lease Manifest
 
-**Version 1.2 · Schema set 1.2 · 2026-10-05**
+**Version 1.2 · Schema set 1.2 · 2026-10-05, with editorial revisions of 2026-10-06 (§13)**
 
 A portable way for a software agent to declare what it needs, for a host to answer with a signed
 grant that is never wider than what it was given, and for both halves to be recorded so a third
@@ -128,8 +128,9 @@ that has any of these five forms, and the published schemas reject them too:
 | a drive-letter prefix | `C:/Users/x` | absolute on Windows, invisible to a slash-only check |
 | any backslash | `..\x`, `C:\Users\x` | never a separator in a POSIX glob; refused rather than normalised |
 
-The schema expresses the rule as `allOf` of `not`/`pattern` clauses, each in the RFC 9485 I-Regexp
-subset, with no lookahead. That is deliberate: Go's `regexp` and every validator built on it reject
+The schema expresses the rule as `allOf` of `not`/`pattern` clauses, each an ECMA-262 regular
+expression in the subset that also compiles under RE2 (no lookaround, no backreferences), applied as
+an unanchored search as JSON Schema specifies. That is deliberate: Go's `regexp` and every validator built on it reject
 lookahead, and a schema set a Go implementation cannot load is not portable whatever its README
 says. The contract's CI compiles every pattern under RE2. A `.` segment (`./x`, `src/./x`) and a
 percent-encoded sequence (`%2e%2e/x`) are **not** refused by pattern: a glob is not a URL, and the
@@ -145,7 +146,7 @@ can carry a conforming relative path outside the root.
 
 **Identity of a host, a command and a tool** (schema set 1.2). Two conforming implementations
 **MUST NOT** disagree about what an entry names, so each list has one identity rule, enforced by
-the schemas as a pattern in the I-Regexp subset:
+the schemas as a pattern in that same subset (ECMA-262, compiling under RE2, an unanchored search):
 
 | List | An entry is | Refused |
 |---|---|---|
@@ -335,7 +336,9 @@ to check, so a reader with one record and no journal cannot check it and **MUST 
 
 ### 6.2 Reading evidence
 
-Every schema in the set carries `schema_version` as `major.minor` (schema set 1.2). A reader
+Seven schemas in the set carry `schema_version` as `major.minor` (schema set 1.2): `agent-lease-manifest`,
+`agent-lease`, `audit-event`, `cdi-assessment`, `cdi-signal`, `lease-record` and `provenance` (in its
+inner record); `config-core`, `plugin-manifest` and `plugin-marketplace` do not carry it. A reader
 **MUST** compare the major only: within a major every change is additive, so a minor the reader has
 not met is a record with fields it may ignore, never one it may refuse.
 
@@ -347,8 +350,8 @@ first segments are reserved for its vocabulary (`agent`, `architecture`, `artefa
 `tool`, `ux`, `work`, `workbench`, `workspace`); any other writer **MUST** use its vendor name as the
 first segment, so two writers in one journal cannot collide. An audit event **MAY** carry
 `actor.runtime_agent` from the closed vocabulary of §4.2; `actor.runtime` is a label and stays open,
-because the real journal carries eleven spellings of it and a reader keys identity on
-`runtime_agent`.
+because the reference deployment's journal carries ten distinct values of it (and some records omit
+it) and a reader keys identity on `runtime_agent`.
 
 
 ## 7. Canonical bytes
@@ -566,6 +569,7 @@ is an additive change; removing or redefining one is not.
 
 | Version | Date | Change |
 |---|---|---|
+| 1.2 | 2026-10-06 | Editorial, no normative change: §4.4 names the pattern dialect as ECMA-262 compiling under RE2 and applied as an unanchored search, not RFC 9485 I-Regexp, whose implicitly anchored matching the schemas' `^`/`$` patterns do not follow; §6.2 names the seven schemas that carry `schema_version` and counts the reference journal's `actor.runtime` values as ten; the header dates the editorial revisions |
 | 1.2 | 2026-10-06 | Editorial, no normative change: §9 names schema set 1.2 (any 1.x set under §10) rather than 1.0, and names rule L3 of §6.1 beside L1 and L2 with its journal condition and the `rules(lease, context)` adapter hook |
 | 1.2 | 2026-10-05 | §4.4 adds `allow.tool_args`, a per-tool argument-schema declaration with development stability that an issuer MAY omit from the grant and MUST NOT treat as authority; the vector `tool-args-dropped` shows the reference dropping it; §11 cites Progent |
 | 1.2 | 2026-10-05 | §6.2 states that `schema_version` is `major.minor` everywhere and compared on the major only; reserves the reference writer's audit `event_type` first segments and gives other writers the vendor-name rule; adds `actor.runtime_agent` to the audit event while `actor.runtime` stays open |

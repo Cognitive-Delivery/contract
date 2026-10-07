@@ -27,8 +27,9 @@ would be nice.
 
 The shape, rule or check, concretely: a field with its type and constraints; a rule with its
 code and the fixture that would refuse it; a vector with the grant or refusal it must produce.
-Patterns are RFC 9485 I-Regexp without lookahead, and must read the same under Python's `re`, RE2
-and ECMAScript (the corpus runs under six validators).
+Patterns are ECMA-262 regular expressions in the subset that compiles under RE2 (no lookaround, no
+backreferences), applied as an unanchored search per JSON Schema, and must read the same under
+Python's `re`, RE2 and ECMAScript (the corpus runs under six validators).
 
 ## Backward compatibility
 

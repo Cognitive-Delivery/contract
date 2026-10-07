@@ -38,7 +38,7 @@ tooling in this repository.
   self-test defect is attributed to the release candidate (`main` at e91afb0) rather than the
   published tarball; "eleven words" is ten in the CHANGELOG and in the `details` descriptions of
   `audit-event` and `cdi-signal` (description text only; the suite export regenerated, the lock and
-  the index unchanged); `allow.tool_args` is described as a `` of `stability: development`;
+  the index unchanged); `allow.tool_args` is described as a `$comment` of `stability: development`;
   the 1.1.0 section carries one `Added`, one `Changed` and one `Fixed`; SPEC §9 names schema set 1.2
   and rule L3 (clauses 9-1 and 9-3 re-affirmed in `conformance/traceability.json`, a §13 editorial
   row); CONTRIBUTING lists everything `npm test` checks and which guard findings need which lock
@@ -48,7 +48,7 @@ tooling in this repository.
   `check-additive.mjs`, `generate-schemas-lock.mjs`, `generate-contract-types.mjs` and the two
   workflows say what the code does today.
 - **The site carries the cognitivedelivery.co.uk brand** (harness DR-186): the website's design tokens
-  in `tooling/site.css` (one `:root` palette, no literal colour outside it), Source Sans 3 and
+  in `tooling/site.css` (three `:root` blocks: the website's palette, the hoisted header and footer values, and the dark scheme; no literal colour outside them), Source Sans 3 and
   JetBrains Mono self-hosted as variable woff2 files under the SIL Open Font Licence with its text
   beside them, the teal and white logos and the three favicons under `tooling/site/`, every page's
   header and footer carrying the logo, and `tooling/site/BRAND-NOTICE.md`, rendered at
@@ -57,11 +57,67 @@ tooling in this repository.
   `icon` or `apple-touch-icon` only), an `<img src>`, a `<source srcset>` and a stylesheet `url()`
   only when site-internal and resolving to a written file, the one eyebrow-mark data URI by exact
   match, refuses `@import` and any other host, and reports the distinct targets as `assets`.
+- **`npm test` checks the numbers the documents state** (harness DR-187, the fourth review of 6
+  October 2026). `conformance/claims-check.mjs` holds a declarative list of claims, each a file, a
+  pattern capturing the stated value and a function computing the true one from the repository,
+  and fails on a difference or on a statement that is no longer there. It covers a new "corpus in
+  numbers" paragraph in the README (fixtures valid, invalid and by rule; suite tests and cases;
+  canonical, RFC 8785, narrowing and signature vectors; SPEC clauses and exclusions; patterns;
+  declared properties and `properties` keys; allow-list entries), the schemas carrying
+  `schema_version` in the README and the SPEC, the vector and event counts in the README, the SPEC
+  and `docs/`, the guard's counts between v1.1.0 and v1.2.0 in CONTRIBUTING and this file, the
+  1.2.0 and 1.2.1 property and clause counts, and the tagged commits in `docs/decisions.md`. A claim
+  whose source is not in the package, or that needs the release tags, is reported NOT CHECKED; CI's
+  conformance job now checks out full history so the tags are there. `run.mjs` prints
+  `Claims: N checked, F failure(s).`; the README's Layout block and CONTRIBUTING describe it.
+- **The site reference shows every enumeration in full**: past ten values the count is followed by
+  every value inside a `<details>` element (no script), where it used to show three examples
+  (`tooling/site-reference.mjs`, with self-test assertions that every hook event and every
+  `cdi-signal` event type is on the page). The versions page links a 1.0.x release to its tag,
+  labelled "no GitHub Release", because GitHub Releases start at 1.1.0 (a constant in
+  `tooling/build-site.mjs` read from this file's 1.1.0 entry, since the build makes no network
+  request); the front and versions pages say `/1.x/` serves `main`.
+
+### Fixed
+
+- **Twenty-two statements the fourth review found the artefacts contradicting** (harness DR-187),
+  each re-verified against the artefact before it was changed. The upgrading note had the
+  compatibility direction backwards (a 1.2 reader reads what a conformant 1.0 writer produced; a
+  1.0 reader may reject 1.2 output, and the 1.0.2 schemas reject two current valid fixtures). The
+  `details` key filter is described as approximating the reference writer's rule, not mirroring it,
+  with the differences listed (case-sensitive; a digit ends a camelCase segment) in the README,
+  SECURITY, the 1.1.0 entry below and the `propertyNames` descriptions of `audit-event` and
+  `cdi-signal`; a later task tightens it. "110 entries cover the 115 tightenings" is 58 of the 110.
+  `schema_version` is carried by seven schemas, not every one (README, SPEC §6.2, the upgrading
+  note). The pattern dialect is an ECMA-262 subset that compiles under RE2, applied as an
+  unanchored search, not RFC 9485 I-Regexp (SPEC §4.4, the host, path and credential descriptions,
+  two proposals, the 1.1.0 entry and two code comments). The `reasonCode` description says an
+  issuer MUST NOT mint R7 and above, which the pattern admits. `/1.x/` serves `main`, not the
+  1.2.1 tag (the 1.2.1 entry, the site's front and versions pages, the README, the suite export's
+  labels). `docs/decisions.md` gives the 1.0.x tagged commits rather than the annotated tag objects,
+  DR-182 as Approved, and a summary of each review in place of links to private documents. 666
+  `properties` keys are 651 declared properties and 15 condition keys. The corpus runs under "six
+  validators", Ajv among them (the CI job keeps its required-check name). Three CDF extensions, not
+  two. The CI paragraph says which job runs on which Node version and when. The push baseline is
+  the pushed-from commit. The two real-record counts are two provenance populations (front-matter
+  blocks and journal lines). From the installed package three lines report a repository-only
+  check, not two. The site reference shows every enumeration. The versions page labels the 1.0.x
+  links as tags. The harness's real-artefact test passes an empty lease journal. The site
+  stylesheet has three `:root` blocks. The SPEC header dates its editorial revisions (a §13 row)
+  and the journal carries ten distinct `actor.runtime` values, not eleven. The CI comment says the
+  narrowing vectors are checked for shape only. An empty code span in the entry above is `$comment`
+  again (lost to shell interpolation). Description text only in the schemas: the guard reports no
+  finding, the lock is unchanged, the suite export and the inlined copies regenerated.
+- **The Source Sans 3 licence named the wrong copyright holder.** The bundled OFL text said "Google
+  Inc."; the font is Adobe's, with the Reserved Font Name "Source". Both font licence texts are now
+  the upstream projects' own (`adobe-fonts/source-sans` `LICENSE.md`, `JetBrains/JetBrainsMono`
+  `OFL.txt`), and `tooling/site/BRAND-NOTICE.md` records where each came from and what differed.
 
 ## [1.2.1] — 2026-10-06
 
-Tooling only; the SPEC's schema set stays 1.2 (no normative change) and `/1.x/` serves the 1.2.1
-schemas, additive over 1.2.0 by one field; `schemaSetVersion` and `index.json`'s `schema_set`
+Tooling only; the SPEC's schema set stays 1.2 (no normative change) and `/1.x/` served the 1.2.1
+schemas when it was tagged, additive over 1.2.0 by one field (`/1.x/` serves the schemas on `main`,
+which may carry description-only changes ahead of the next tag; `/1.2.1/` is the frozen copy); `schemaSetVersion` and `index.json`'s `schema_set`
 follow the package version, of which only the major is load-bearing. Found by pinning the
 reference implementation to 1.2.0: the type generator, the Pages deploy on a tag, and the narrowing
 vectors being the reference's own bytes. One additive field, `capabilities.tool_args` on the plugin
@@ -89,13 +145,14 @@ schemas, so `capabilities` stays the lease `allow` shape property for property.
 ## [1.2.0] — 2026-10-05
 
 Schema set 1.2 (CDF spec `contract-batch-two-implement-all`, DR-183): the second review's fourteen
-improvements, from a package that could not run its own test to a corpus that runs under six other
-validators. **Additive within 1.x by the contract's own rule, mechanically checked**: against 1.1.0
-the guard reports 115 allow-listed tightenings, covered by 110 entries (an entry at a definition's
-path covers every property in its schema that refers to it), each naming the exact value it
+improvements, from a package that could not run its own test to a corpus that runs under six
+validators, Ajv among them. **Additive within 1.x by the contract's own rule, mechanically checked**: against 1.1.0
+the guard reports 115 allow-listed tightenings, covered by 58 of the allow-list's 110 entries (an
+entry at a definition's path covers every property in its schema that refers to it; the other 52
+entries are 1.1.0's), each naming the exact value it
 admits and the fixture or recorded check that proves no conformant writer ever produced what it now refuses, and
 every real journal in the reference deployment validates with zero rejections (33,608 audit
-records, 19,231 CDI signals, 995 provenance records, 2 assessments, the six-line lease journal, the
+records, 19,231 CDI signals, 995 provenance front-matter blocks, 2 assessments, the six-line lease journal, the
 workspace config). No byte of any existing hash or signature changes. One new schema,
 `lease-record`; one field at development stability, `allow.tool_args`; everything else stable.
 
@@ -157,8 +214,8 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   with the reference writer's first segments reserved and a vendor name for anyone else; `summary`
   and `reasoning` refuse any control character; a `details` string value is at most 200 characters;
   `actor.runtime_agent` (optional, the closed vocabulary) is added while `actor.runtime` stays open,
-  because the real journal spells it eleven ways; `schema_version` is `major.minor` on every schema
-  (the lease schemas widen from the literal `1.0`); `provenance.spec` is a slug; a CDI assessment has
+  because the real journal carries ten distinct values of it; `schema_version` is `major.minor` on
+  every schema that carries it (the lease schemas widen from the literal `1.0`); `provenance.spec` is a slug; a CDI assessment has
   exactly six dimensions, each id once, with integer scores; a sealed config path is dotted lower-case
   and the runner checks it names a field the fixture carries. Ten invalid fixtures, one valid. Every
   real audit record, signal, provenance record and assessment in the reference deployment validates.
@@ -177,7 +234,7 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   added where a clause had nothing to point at: a manifest with a bare-major `schema_version`, a
   `runtime_agent` outside the vocabulary, a model without `family`, an `allow` or `deny` missing a
   list, an attestation with an unknown issuer, and a valid home-relative deny path.
-- **The corpus runs under six other validators.** `conformance/suite/draft7/` is the corpus in the official
+- **The corpus runs under six validators.** `conformance/suite/draft7/` is the corpus in the official
   JSON-Schema-Test-Suite format (one file per schema, every fixture a test, written by
   `npm run lock` and checked current by `npm test`), and CI runs it through Bowtie against
   `go-jsonschema`, `rust-jsonschema`, `python-jsonschema`, `java-json-schema`,
@@ -186,8 +243,9 @@ workspace config). No byte of any existing hash or signature changes. One new sc
   its reason in the workflow). Two orphan `componentSource` definitions the typed hook and MCP
   shapes had left behind are removed, and the marketplace's empty `relevance.signals` schema
   gained a description, both found by that lint.
-- **Every property says what it promises.** All 664 declared properties (666 at 1.2.1, with
-  `capabilities.tool_args` on both plugin schemas) carry a `$comment` of `stability: stable` or
+- **Every property says what it promises.** All 664 `properties` keys (666 at 1.2.1, with
+  `capabilities.tool_args` on both plugin schemas), which are 649 declared properties (651 at 1.2.1)
+  and 15 keys inside `if` and `contains` conditions, carry a `$comment` of `stability: stable` or
   `stability: development` (only `allow.tool_args` is development), with
   `; deprecated: <replacement>` for retiring a field. `conformance/metaschema.json` holds that and
   the other conventions (dialect, `$id`, title, description, no `format`) and `npm test` validates
@@ -314,7 +372,7 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 - **The README no longer claims the plugin schemas contain every key Claude Code has.** The
   sentence was true at 1.0.0 and stopped being true as Claude Code grew; a standing superlative
   about a moving target is the kind of sentence this contract exists to refuse. The README now says
-  what is modelled and as of which date, names the two CDF extensions (`cdf`; the `local` source
+  what is modelled and as of which date, names the three CDF extensions (`cdf`; the `local` source
   form; plugin-level `category`) so nobody mistakes them for Claude Code's, and the old wording is
   a banned claim in the reference implementation's documentation gate.
 
@@ -332,8 +390,9 @@ refuses, and every real journal in the reference deployment (33,557 audit record
   `steering_hash` and `content_hash` require a 64-character lower-case hex digest; `details` on the
   audit event and the CDI signal refuses by `propertyNames` any key whose segment is one of the
   reference writer's ten words (`authorization`, `content`, `file`, `password`, `path`, `payload`,
-  `prompt`, `request`, `secret`, `token`), split on non-alphanumerics and camelCase boundaries
-  exactly as the writer does; `summary` is capped at 300 characters and `reasoning` at 500, the
+  `prompt`, `request`, `secret`, `token`), split on non-alphanumerics and camelCase boundaries,
+  which approximates the writer's rule (the schema is case-sensitive where the writer is not; see
+  the `propertyNames` descriptions for the differences); `summary` is capped at 300 characters and `reasoning` at 500, the
   writer's own caps. Before this a raw prompt in `request_hash` validated, which SECURITY.md itself
   calls a security issue. Each tightening is allow-listed with its fixture; the check against the
   reference deployment's journals (33,538 audit records, 5,634 signals, 4,535 provenance lines) rejects
@@ -350,7 +409,7 @@ refuses, and every real journal in the reference deployment (33,557 audit record
 
 - **Path rules are written without lookahead, and refuse three forms they used to accept.** Every
   `read_paths`, `write_paths`, `deny.paths`, plugin `worker`, `docPacks` and `git-subdir` `path`
-  rule is now `allOf` of `not`/`pattern` clauses in the RFC 9485 I-Regexp subset. Go's `regexp`
+  rule is now `allOf` of `not`/`pattern` clauses written without lookahead in the ECMA-262 subset RE2 also compiles. Go's `regexp`
   (RE2) and the validators built on it could not load the old `(?!…)` rule at all, so the README's
   "an implementation in another language needs nothing else" was false for Go; the new
   `regex portability (RE2)` CI job now passes and is required. An `allow` path additionally refuses

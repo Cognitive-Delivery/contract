@@ -73,7 +73,7 @@ keep about a moving target: that every key Claude Code would ever define was alr
 wording stopped being true as Claude Code grew, and it is now a banned claim in the reference
 implementation's documentation gate.
 
-**The contract has, Claude Code lacks.** Two extensions, both named here so no one mistakes them
+**The contract has, Claude Code lacks.** Three extensions, all named here so no one mistakes them
 for Claude Code's:
 
 - **`cdf`** on a manifest and on a marketplace entry: what the harness alone understands
@@ -125,11 +125,15 @@ version change.
 
 The comparison is against the shape *before* the change, not against the lock sitting beside the
 schemas: a lock regenerated in the same commit agrees with whatever broke it. On a pull request
-the baseline is the branch being merged into; on a push it is the previous commit.
+the baseline is the branch being merged into; on a push to `main` it is the commit the push started
+from (`github.event.before`), so every commit of a multi-commit push is inside the comparison.
 
-Every artefact carries `schema_version`, and the schemas require it: a conformant writer always
-writes it. A reader meeting a pre-contract artefact without it may read it as `1.0`; it must not
-emit one.
+Seven schemas carry `schema_version` and require it (`agent-lease-manifest`, `agent-lease`,
+`audit-event`, `cdi-assessment`, `cdi-signal`, `lease-record` and `provenance`, in its inner record),
+so a conformant writer of those artefacts always writes it. `config-core`, `plugin-manifest` and
+`plugin-marketplace` do not carry it: the first is a section of a product's config file and the
+plugin files are Claude Code's format. A reader meeting a pre-contract artefact without it may read
+it as `1.0`; it must not emit one.
 
 Since 1.2 every declared property says which promise it is under: a `$comment` of
 `stability: stable` (held to the additive rule) or `stability: development` (may change within the
@@ -156,8 +160,9 @@ You can also use it straight from this repository, as a submodule or a clone pin
 `schemas/` and `fixtures/` are plain files and an implementation in another language needs
 nothing else. Each schema is also served at its `$id`
 (`https://cognitive-delivery.github.io/contract/1.x/<file>`), so a validator that resolves
-identifiers finds the current 1.x schema there; the version a document was written against is its
-own `schema_version` field.
+identifiers finds the 1.x schema there as it is on `main`, which may carry description-only changes
+ahead of the next tag; the version a document was written against is its own `schema_version`
+field.
 Each release is also served frozen at `https://cognitive-delivery.github.io/contract/<version>/`
 (`/1.1.0/`, `/1.2.0/`, `/1.2.1/`, …), byte for byte as tagged and never rewritten, so a reader that pinned a
 version can fetch exactly what it shipped; and `schemas/index.json`, served beside both, lists every
@@ -228,13 +233,16 @@ npm ci
 npm test                 # the corpus (valid, invalid at the named path, round trip), the canonical,
                          # narrowing and signature vectors, the lease rules, the guard's own scenarios,
                          # the schema and meta-schema checks, the Layout block, traceability, suite and
-                         # index currency and the version statement, against the reference adapter
+                         # index currency, the version statement and the stated counts (claims),
+                         # against the reference adapter
 npm run check:additive   # the lock is current, and this change is additive
 ```
 
-Both run in CI on every push and pull request, against Node 20 and 22, beside a job that compiles
-every pattern under RE2. The point of a corpus is that a third party can check the claim, so the
-check has to be runnable by someone who has never seen the product.
+In CI, on every pull request and every push to `main`, `npm test` runs on Node 20 and 22 and the
+additive guard runs on Node 22 (against the base branch of a pull request, or the commit a push
+started from), beside a job that compiles every pattern under RE2. The point of a corpus is that a
+third party can check the claim, so the check has to be runnable by someone who has never seen the
+product.
 
 Since 1.2 the claim that "a reader in any language needs nothing else" is checked rather than
 made. `conformance/suite/draft7/` carries the corpus in the official
@@ -256,6 +264,19 @@ v1.1.0 was tagged, so the published 1.1.0 tarball runs its own test. Every file 
 through `exports`, so `@cognitive-delivery/contract/conformance/narrowing-vectors.json` resolves.
 From the tarball the additive guard's scenarios are reported as not present rather than passed,
 because the guard ships with the repository.
+
+### The corpus in numbers
+
+At this commit the corpus holds **40** valid fixtures, **98** invalid fixtures and **4** by-rule
+fixtures, which the exported suite carries as **142** tests in **11** cases. Beside them are **9**
+canonical-bytes vectors with **2** values that must fail to serialise, RFC 8785's own **6**, **28**
+narrowing vectors and **3** signature vectors. The SPEC has **87** normative clauses, **16** of them
+excluded from the traceability map with a reason. The schemas carry **232** patterns, every one
+compiled under RE2 in CI, and **651** declared properties; counted as `properties` keys there are
+**666**, because **15** keys sit inside `if` and `contains` conditions, and every one of the 666
+carries a stability comment. `compat-allowlist.json` holds **110** entries. These are checked, not
+remembered: `conformance/claims-check.mjs` recomputes every number in this paragraph, and the other
+counts the documents state, from the repository in `npm test`, and fails when one is stale.
 
 ### Signature vectors and rejection places
 
@@ -351,22 +372,30 @@ anything that reaches it is effectively permanent.
   exactly those two shapes.
 - The actor records a **kind** — human, agent or system — and the model. Never a name, email or
   git identity.
-- `details` is sanitised before write, and the schema enforces the same rule: a key whose segment
-  (split on non-alphanumerics and camelCase boundaries) is `authorization`, `content`, `file`,
-  `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` is refused. Values are
-  flat scalars. `summary` is capped at 300 characters and `reasoning` at 500. Renaming a sensitive
+- `details` is sanitised before write, and the schema approximates the writer's rule: a key whose
+  lower-case segment (split on non-alphanumerics) or camelCase segment is `authorization`,
+  `content`, `file`, `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` is
+  refused. It is an approximation, not a mirror: the writer lower-cases a key before splitting it and
+  the schema does not, so the schema admits `Authorization`, `API_TOKEN`, `TokenCount` and `x-Token`,
+  which the writer drops; and the schema ends a camelCase segment at a digit, so it refuses
+  `apiToken2`, which the writer keeps. The `propertyNames` description lists the differences. Values
+  are flat scalars. `summary` is capped at 300 characters and `reasoning` at 500. Renaming a sensitive
   field to evade the list defeats the control.
 
 Since 1.2 the evidence schemas also hold the hygiene the reference writer already kept: an audit
 `event_type` is lower-case dotted segments with the writer's first segments reserved and a vendor
 name for anyone else; `summary` and `reasoning` carry no control character; a `details` value is at
-most 200 characters; `schema_version` is `major.minor` everywhere and compared on the major; a
+most 200 characters; `schema_version` is `major.minor` wherever it is carried and compared on the
+major; a
 provenance `spec` is a slug; an assessment has exactly six integer-scored dimensions; a sealed config
 path is well-formed and names a field the file carries. `actor.runtime` stays open, because the real
-journal spells it eleven ways, and `actor.runtime_agent` carries the closed identity. Every one of
-the reference deployment's records validates under these rules: 33,608 audit records, 19,231 signals,
-995 provenance records and 2 assessments at the 5 October check (`fixtures/evidence/`), and 33,665,
-19,287, 4,588 and 2 at the 1.2.1 pin on 6 October (`docs/conformance/cdf-harness.md`).
+journal carries ten distinct values of it (and some records omit it), and `actor.runtime_agent`
+carries the closed identity. Every one of the reference deployment's records validates under these
+rules, counted twice over two different provenance populations: at the 5 October check
+(`fixtures/evidence/`), 33,608 audit records, 19,231 signals, 995 provenance front-matter blocks (the
+`cdf` block of every Markdown file under `.cdf/specs/`) and 2 assessments; at the 1.2.1 pin on 6
+October (`docs/conformance/cdf-harness.md`), 33,665 audit records, 19,287 signals, 4,588 provenance
+journal lines (every line of every `.cdf/specs/*/provenance.jsonl`) and 2 assessments.
 
 ## The site
 
@@ -377,7 +406,8 @@ upgrade a writer); the schema reference, one page per schema walked from the sch
 property's description, constraints and stability; the SPEC, this README, GOVERNANCE, CONTRIBUTING,
 SECURITY and the CHANGELOG as pages; the implementing guide, the upgrading note and the decision index;
 the conformance page with the claim rule, the implementation reports and the recorded portability
-results; the proposals; and the versions, each frozen copy linked to its release. The schema bytes at
+results; the proposals; and the versions, each frozen copy linked to its GitHub Release, or to its
+tag for the 1.0.x releases, which were cut before the release workflow created GitHub Releases. The schema bytes at
 every `$id` and under each `/<version>/` are laid out by the workflow and never touched by the
 generator. No page carries a script or reaches another host. `conformance/site-check.mjs` builds the
 site in `npm test` and fails on a broken link, a changed schema byte, a script tag, a resource from
@@ -418,9 +448,10 @@ conformance/                the reference runner and the vectors; takes an adapt
   spec-clauses.mjs          extracts every normative clause of the SPEC with a stable id and a drift key
   traceability.json         every clause mapped to the fixture, vector, check or rule that tests it, or excluded with a reason
   traceability-check.mjs    fails `npm test` on an unmapped, stale or edited clause, or a mapping that names nothing
+  claims-check.mjs          every count and list the documents state, recomputed from the repository; NOT CHECKED per claim when its source is not in the package
   suite-export.mjs          builds the corpus in the official JSON-Schema-Test-Suite format, and says when the export is stale
   schema-index.mjs          builds schemas/index.json (file, $id, title, dialect, fileMatch) and says when it is stale
-  suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what six other validators run
+  suite/                    that export under `draft7/` (Bowtie reads the dialect from the directory name); what the six validators, Ajv among them, run
   changelog.mjs             one release's CHANGELOG section, which the GitHub Release's notes come from
   guard-tests.mjs           the additive guard's own scenarios; reported absent in the published package
   canonical-vectors.json    the canonical-bytes vectors of SPEC section 7, in pure ASCII

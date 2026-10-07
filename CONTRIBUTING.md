@@ -32,7 +32,15 @@ SPEC traceability map (`conformance/traceability-check.mjs`), the currency of th
 (`conformance/suite/`), and the version statement: `package.json` (twice), the README, the
 CHANGELOG (a section with a body and a link definition), `schemas.lock.json`, every `$id` and the
 SPEC header agree, and nothing still names the old `$id` host. The version check was added
-because the lock silently kept the previous version through a release.
+because the lock silently kept the previous version through a release. Last, the claims check
+(`conformance/claims-check.mjs`): every count and list the documents state (the corpus in numbers
+in the README, the schemas that carry `schema_version`, the vector counts in the SPEC, the guard's
+counts between two release tags, the tagged commits in `docs/decisions.md`) is recomputed from the
+repository and compared. A statement you add with a number in it gets a claim beside it, with the
+file, a pattern capturing the value and a function computing it; a number you edit is checked on
+the next run; and a statement you remove fails the run until its claim goes too.
+`node conformance/claims-check.mjs` lists the claims that are NOT CHECKED and why, and the file's
+`EXCLUDED` list names the stated numbers it deliberately leaves alone.
 
 `npm run check:additive -- --baseline-ref origin/main` compares the schema set against the shape
 it had at that ref, digesting the baseline's schemas with the current generator; in CI the baseline
@@ -109,7 +117,8 @@ reached through a local `$ref` is recorded with `via`, the place it lives in the
 (`#allow.read_paths[]` for `allow.read_paths[]`, as `schemas.lock.json` records it), and the guard
 accepts an entry whose `path` is either the property path or that `via`, in the same `schema`. So
 one entry at a definition's path covers every property in that schema that refers to it, which
-is why 110 entries cover the 115 tightenings the guard reports against v1.1.0. It does not reach
+is why, at v1.2.0, 58 of the allow-list's 110 entries covered the 115 tightenings the guard reports
+between v1.1.0 and v1.2.0 (the other 52 entries are 1.1.0's own). It does not reach
 across files: the copies inlined in `agent-lease` and `lease-record` are separate schemas and
 carry their own entries.
 

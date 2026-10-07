@@ -54,5 +54,6 @@ nowhere to live and a later rule has no history. A custom keyword for stability:
 
 Accepted, 2026-10-05 (DR-183 D6). Shipped: SPEC §4.4, §11 and §13; the manifest schema and its
 inlined copies; the vector; the two fixtures; `conformance/metaschema.json`, which requires a
-stability comment on every declared property (666 at 1.2.1). At its 1.2.1 pin the harness's
+stability comment on every declared property (at 1.2.1, 666 `properties` keys carry one: the 651
+declared properties the site reference lists and 15 keys inside `if` and `contains` conditions). At its 1.2.1 pin the harness's
 `CapabilityLists` excludes `tool_args`: a declaration, never a grant.

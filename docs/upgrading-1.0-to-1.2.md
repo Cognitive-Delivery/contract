@@ -2,11 +2,18 @@
 
 For an implementation built against schema set 1.0 (contract 1.0.0, 1.0.1 and 1.0.2, all of
 2026-09-19). Every change from 1.0.2 to 1.2.1 is additive within 1.x by the contract's own rule, and
-mechanically checked: a 1.0 reader keeps reading every artefact a 1.2 writer produces. What did
-change is the set of values the schemas refuse. Each tightening is allow-listed in
-`compat-allowlist.json` with the fixture or recorded check proving no conformant writer produced
-what it refuses, and the reference deployment's journals validate under 1.2 with zero rejections.
-Each item below cites its CHANGELOG entry.
+mechanically checked in one direction: a 1.2 reader reads every artefact a conformant 1.0 writer
+produced. The other direction does not hold. A 1.0 reader validating with the 1.0.2 schemas may
+reject what a 1.2 writer produces: a `lease-record` line (no 1.0 schema describes it), a
+`schema_version` of `"1.2"` on the lease schemas (1.0 required the literal `1.0`), and plugin forms
+1.0 did not admit, such as `commands` as an object map in a plugin manifest (1.0 typed it as a path
+or a list of paths) or a marketplace source form 1.0 did not list. The corpus shows it: the 1.0.2
+schemas reject the valid fixtures `plugin-manifest.claude-code-reference` (at `/commands`) and
+`plugin-marketplace.populated` (at `/plugins/3/source`). Beyond those additions, what changed is
+the set of values the schemas refuse. Each tightening is allow-listed in `compat-allowlist.json`
+with the fixture or recorded check proving no conformant writer produced what it refuses, and the
+reference deployment's journals validate under 1.2 with zero rejections. Each item below cites its
+CHANGELOG entry.
 
 ## Part A: what the schemas now refuse
 
@@ -21,10 +28,10 @@ Each item below cites its CHANGELOG entry.
 | `agent.name` over 120 characters; `intent.purpose` over 500 | the manifest and its inlined copies | | same |
 | A lease timestamp in any form but UTC with milliseconds and `Z` | `agent-lease` `issued_at` and `expires_at` | `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$` | 1.2.0 "Lease rules L1 and L2, and one timestamp form inside the signed bytes" |
 | `budget.depth` above 16; `budget.fan_out` above 256; any integer above 2^53 - 1 | the manifest and its inlined copies; every integer field | | 1.2.0, the same entry; 1.1.0 "Canonical bytes are declared to be RFC 8785" for the 2^53 bound |
-| A `schema_version` that is not `major.minor` | every schema; the lease schemas widen from the literal `1.0` | `^\d+\.\d+$` | 1.2.0 "Evidence hygiene" |
+| A `schema_version` that is not `major.minor` | the seven schemas that carry it (all but `config-core` and the two plugin schemas); the lease schemas widen from the literal `1.0` | `^\d+\.\d+$` | 1.2.0 "Evidence hygiene" |
 | A control character in `summary` or `reasoning` | `audit-event` | | same |
 | A `details` string value over 200 characters; `summary` over 300; `reasoning` over 500 | `audit-event` | | 1.2.0 "Evidence hygiene" for the value cap; 1.1.0 "The privacy properties are enforced by shape, not prose" for the two caps |
-| A `details` key with a sensitive segment | `audit-event.details`, `cdi-signal.details` | by `propertyNames`: a key is refused when any segment, split on non-alphanumerics and camelCase boundaries, is `authorization`, `content`, `file`, `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` | 1.1.0 "The privacy properties are enforced by shape, not prose" |
+| A `details` key with a sensitive segment | `audit-event.details`, `cdi-signal.details` | by `propertyNames`, approximating the writer's rule: a key is refused when a lower-case segment (split on non-alphanumerics) or a camelCase segment is `authorization`, `content`, `file`, `password`, `path`, `payload`, `prompt`, `request`, `secret` or `token` | 1.1.0 "The privacy properties are enforced by shape, not prose" |
 | An `event_type` that is not two or more lower-case dotted segments, or over 120 characters | `audit-event` | `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`; the reference writer's first segments are reserved and any other writer leads with its vendor name (SPEC §6.2) | 1.2.0 "Evidence hygiene" |
 | A `spec` that is not a slug of at most 80 characters; an assessment without exactly six integer-scored dimensions; a `sealed` path that is not dotted lower-case | `provenance`, `cdi-assessment`, `config-core` | | same |
 | A plugin name outside Claude Code's rule; a `command` source `mode` other than `copy` or `link`, or a `timeout` outside 1 to 600; a credential-shaped value in a hook header, an MCP `env` or MCP `headers`; an `authorization` key in a marketplace entry's `headers`; a provider at plain `http://` off loopback | `plugin-manifest`, `plugin-marketplace` | | 1.1.0 "Every key the Claude Code plugin and marketplace references document"; 1.2.0 "Inline plugin hooks and MCP servers are typed, and a manifest cannot carry a credential" |
@@ -46,7 +53,7 @@ Each item below cites its CHANGELOG entry.
   `gemini-code-assist`, `github-copilot`, `cdf-native`, `unknown`), beside `actor.runtime`, which
   stays an open label. Optional in the schema; a 1.2 writer records it. CHANGELOG 1.2.0 "Evidence
   hygiene".
-- **`schema_version` as `major.minor`** everywhere, compared on the major. The same entry.
+- **`schema_version` as `major.minor`** wherever it is carried, compared on the major. The same entry.
 - **One timestamp form** in `issued_at` and `expires_at`, and L1 and L2 held before signing.
   CHANGELOG 1.2.0 "Lease rules L1 and L2, and one timestamp form inside the signed bytes".
 - **`allow.tool_args`** may be declared; an issuer may omit it from the grant and must not treat it
@@ -69,6 +76,6 @@ Each item below cites its CHANGELOG entry.
   declared to be RFC 8785".
 - **The closed vocabularies**: `cdi-signal.event_type` and the six dimension ids. `phase` stays open.
 - **`$id`.** The 1.0 identifiers never resolved; since 1.1.0 each is
-  `https://cognitive-delivery.github.io/contract/1.x/<file>`, and every release from 1.1.0 is also
-  frozen at `/<version>/`. A reader that resolved by `$id` lost nothing it had. CHANGELOG 1.1.0
+  `https://cognitive-delivery.github.io/contract/1.x/<file>`, and every `v1.*` tag, 1.0.0 included,
+  is also frozen at `/<version>/`. A reader that resolved by `$id` lost nothing it had. CHANGELOG 1.1.0
   "Every `$id` resolves".
