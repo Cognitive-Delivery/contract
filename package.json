@@ -65,6 +65,6 @@
   },
   "devDependencies": {
     "ajv": "^8.20.0",
-    "marked": "18.1.0"
+    "marked": "18.1.1"
   }
 }
